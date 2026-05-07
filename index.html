@@ -572,7 +572,12 @@ function viewStudent(id){
   const rP=rentPaid(id),dP=depositPaid(id),rD=rentDue(s),dD=depositDue(s),tD=totalDue(s);
   const sPays=CP.filter(p=>p.studentId===id).sort((a,b)=>new Date(b.date)-new Date(a.date));
   const byMonth={};
-  sPays.forEach(p=>{if(!byMonth[p.month])byMonth[p.month]=[];byMonth[p.month].push(p)});
+  sPays.forEach(p=>{
+    // Normalize month key - handle both '2026-05' and full date strings
+    let mKey = p.month||'';
+    if(mKey.length > 7) { const d=new Date(mKey); mKey=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'); }
+    if(!byMonth[mKey])byMonth[mKey]=[];byMonth[mKey].push(p);
+  });
 
   document.getElementById('viewStudBody').innerHTML=`
     <div style="background:linear-gradient(135deg,var(--navy-d),var(--navy-l));border-radius:14px;padding:16px;color:white;display:flex;gap:12px;margin-bottom:12px">
@@ -583,7 +588,7 @@ function viewStudent(id){
         <div style="font-family:'Playfair Display',serif;font-size:18px;color:var(--gold-l)">${s.name}</div>
         <div style="font-size:11px;color:rgba(255,255,255,.7)">📍 Room ${s.room} · Bed ${s.bed}</div>
         <div style="font-size:11px;color:rgba(255,255,255,.7)">📱 ${s.mobile}${s.parentMobile?' · 👪 '+s.parentMobile:''}</div>
-        <div style="font-size:11px;color:rgba(255,255,255,.7)">📅 Joined: ${s.joinDate}</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.7)">📅 Joined: ${s.joinDate ? new Date(s.joinDate).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}) : s.joinDate}</div>
         <div style="font-size:11px;color:rgba(255,255,255,.7)">🏠 ${fmt(s.rent)}/mo · 🔒 Deposit: ${fmt(s.deposit)}</div>
       </div>
     </div>
@@ -605,11 +610,11 @@ function viewStudent(id){
       </div>
     </div>
     <div style="font-weight:700;color:var(--navy);font-size:13px;margin-bottom:8px">📅 Month-wise Payment History</div>
-    ${Object.keys(byMonth).length?Object.entries(byMonth).sort((a,b)=>b[0].localeCompare(a[0])).map(([month,pays])=>{
+    ${Object.keys(byMonth).length?Object.entries(byMonth).sort((a,b)=>b[0].localeCompare(a[0])).map(([month,pays])=>{ const mLabel = month.length > 7 ? new Date(month).toLocaleDateString('en-IN',{month:'long',year:'numeric'}) : month;
       const mt=pays.reduce((s,p)=>s+Number(p.amount||0),0);
       return`<div style="background:white;border:1px solid var(--border);border-radius:10px;margin-bottom:8px;overflow:hidden">
         <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:#f5f7ff;border-bottom:1px solid var(--border)">
-          <div style="font-weight:700;color:var(--navy);font-size:13px">${month}</div>
+          <div style="font-weight:700;color:var(--navy);font-size:13px">${mLabel}</div>
           <div style="font-weight:700;color:var(--green)">${fmt(mt)}</div>
         </div>
         ${pays.map(p=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 12px;border-bottom:1px solid var(--border);font-size:12px">
@@ -737,7 +742,7 @@ function renderDashRecent(){
   if(!r.length){wrap.innerHTML=`<div class="empty" style="padding:14px"><div class="ei">💳</div><p>No payments yet</p></div>`;return}
   wrap.innerHTML=r.map(p=>{
     const s=CS.find(st=>st.id===p.studentId);
-    return`<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);font-size:12px"><div style="display:flex;align-items:center;gap:7px">${s?avHtml(s):'<div class="sav">?</div>'}<div><div style="font-weight:600">${s?.name||p.studentName||'?'}</div><div style="color:var(--muted);font-size:10px">${p.date} · ${p.month} · <span class="${p.paymentType==='deposit'?'ptb-dep':p.paymentType==='both'?'ptb-both':'ptb-rent'}" style="font-size:9px">${p.paymentType==='deposit'?'🔒':p.paymentType==='both'?'💰':'🏠'}</span></div></div></div><div style="font-weight:700;color:var(--green)">${fmt(p.amount)}</div></div>`;
+    return`<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);font-size:12px"><div style="display:flex;align-items:center;gap:7px">${s?avHtml(s):'<div class="sav">?</div>'}<div><div style="font-weight:600">${s?.name||p.studentName||'?'}</div><div style="color:var(--muted);font-size:10px">${p.date?new Date(p.date).toLocaleDateString('en-IN',{day:'2-digit',month:'short'}):'?'} · ${p.month&&p.month.length<=7?p.month:new Date(p.month).toLocaleDateString('en-IN',{month:'short',year:'numeric'})} · <span class="${p.paymentType==='deposit'?'ptb-dep':p.paymentType==='both'?'ptb-both':'ptb-rent'}" style="font-size:9px">${p.paymentType==='deposit'?'🔒':p.paymentType==='both'?'💰':'🏠'}</span></div></div></div><div style="font-weight:700;color:var(--green)">${fmt(p.amount)}</div></div>`;
   }).join('');
 }
 
