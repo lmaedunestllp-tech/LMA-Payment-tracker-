@@ -613,8 +613,13 @@ function viewStudent(id){
           <div style="font-weight:700;color:var(--green)">${fmt(mt)}</div>
         </div>
         ${pays.map(p=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 12px;border-bottom:1px solid var(--border);font-size:12px">
-          <div><span class="${p.paymentType==='deposit'?'ptb-dep':p.paymentType==='both'?'ptb-both':'ptb-rent'}">${p.paymentType==='deposit'?'🔒 Deposit':p.paymentType==='both'?'💰 Both':'🏠 Rent'}</span><span style="font-weight:700;color:var(--green);margin-left:6px">${fmt(p.amount)}</span></div>
-          <div style="text-align:right"><div style="color:var(--muted);font-size:10px">${p.date}</div><div style="color:var(--muted);font-size:10px">${p.mode}${p.recordedBy?' · '+p.recordedBy:''}</div></div>
+          <div style="flex:1">
+            <span class="${p.paymentType==='deposit'?'ptb-dep':p.paymentType==='both'?'ptb-both':'ptb-rent'}">${p.paymentType==='deposit'?'🔒 Deposit':p.paymentType==='both'?'💰 Both':'🏠 Rent'}</span>
+            <span style="font-weight:700;color:var(--green);margin-left:6px">${fmt(p.amount)}</span>
+            <div style="color:var(--muted);font-size:10px;margin-top:2px">${p.date} · ${p.mode}${p.recordedBy?' · by '+p.recordedBy:''}</div>
+            ${p.note?`<div style="color:var(--muted);font-size:10px;font-style:italic">${p.note}</div>`:''}
+          </div>
+          <button onclick="delPayment('${p.id}','${id}')" style="background:#fce4ec;border:none;color:var(--red);border-radius:7px;padding:5px 9px;font-size:11px;cursor:pointer;flex-shrink:0;font-weight:600">🗑 Delete</button>
         </div>`).join('')}
       </div>`;
     }).join(''):`<div style="text-align:center;color:var(--muted);font-size:13px;padding:16px">No payments yet.<br>Use <strong>Pay Rent</strong> or <strong>Pay Deposit</strong> buttons below.</div>`}
@@ -628,6 +633,31 @@ function viewStudent(id){
     <button class="btn btn-out btn-sm" onclick="closeM('viewStudM')">Close</button>
   `;
   openM('viewStudM');
+}
+
+async function delPaymentFromSummary(payId) {
+  if (!confirm('Delete this payment entry?')) return;
+  showLoading('Deleting...');
+  try {
+    await api({ action: 'deletePayment', id: payId });
+    await refreshAll();
+    renderFeesPage();
+    showToast('✅ Payment deleted!', 'tok');
+  } catch(e) { showToast('❌ ' + e.message, 'terr'); }
+  finally { hideLoading(); }
+}
+
+async function delPayment(payId, studentId) {
+  if (!confirm('Delete this payment entry?')) return;
+  showLoading('Deleting payment...');
+  try {
+    await api({ action: 'deletePayment', id: payId });
+    await refreshAll();
+    // Re-open student view
+    viewStudent(studentId);
+    showToast('✅ Payment deleted!', 'tok');
+  } catch(e) { showToast('❌ ' + e.message, 'terr'); }
+  finally { hideLoading(); }
 }
 
 async function delStudent(id){
@@ -665,7 +695,10 @@ function renderFeesPage(){
         <div style="background:#e8eaf6;border-radius:8px;padding:7px"><div style="color:var(--muted);font-size:9px">🔒 Dep Paid</div><div style="font-weight:700;color:var(--navy)">${fmt(dP)}</div>${dD>0?`<div style="color:var(--red);font-size:9px">Due: ${fmt(dD)}</div>`:`<div style="color:var(--green);font-size:9px">✓</div>`}</div>
         <div style="background:${tD>0?'#fce4ec':'#e8f5e9'};border-radius:8px;padding:7px"><div style="color:var(--muted);font-size:9px">💰 Total Due</div><div style="font-weight:800;color:${tD>0?'var(--red)':'var(--green)'}">${fmt(tD)}</div></div>
       </div>
-      ${sPays.length?`<div style="font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;margin-bottom:5px">Payments${monthF?' ('+monthF+')':''}</div>${sPays.map(p=>`<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);font-size:11px"><div><span class="${p.paymentType==='deposit'?'ptb-dep':p.paymentType==='both'?'ptb-both':'ptb-rent'}" style="font-size:9px">${p.paymentType==='deposit'?'🔒':p.paymentType==='both'?'💰':'🏠'}</span> <span style="font-weight:700;color:var(--green)">${fmt(p.amount)}</span></div><div style="color:var(--muted);font-size:10px">${p.date} · ${p.mode}</div></div>`).join('')}`:`<div style="text-align:center;color:var(--muted);font-size:11px;padding:6px">No payments${monthF?' for '+monthF:''}</div>`}
+      ${sPays.length?`<div style="font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;margin-bottom:5px">Payments${monthF?' ('+monthF+')':''}</div>${sPays.map(p=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border);font-size:11px">
+            <div><span class="${p.paymentType==='deposit'?'ptb-dep':p.paymentType==='both'?'ptb-both':'ptb-rent'}" style="font-size:9px">${p.paymentType==='deposit'?'🔒':p.paymentType==='both'?'💰':'🏠'}</span> <span style="font-weight:700;color:var(--green)">${fmt(p.amount)}</span><span style="color:var(--muted);font-size:10px;margin-left:6px">${p.date} · ${p.mode}</span></div>
+            <button onclick="delPaymentFromSummary('${p.id}')" style="background:#fce4ec;border:none;color:var(--red);border-radius:6px;padding:3px 7px;font-size:10px;cursor:pointer;font-weight:600">🗑</button>
+          </div>`).join('')}`:`<div style="text-align:center;color:var(--muted);font-size:11px;padding:6px">No payments${monthF?' for '+monthF:''}</div>`}
     </div></div>`;
   }).join('');
 }
@@ -712,6 +745,18 @@ function updateBadge(){const n=CS.filter(s=>totalDue(s)>0).length;const b=docume
 
 function buildMonthlyMsg(s){return(document.getElementById('waMonthly').value||'Dear {Name}, monthly rent ₹{Amount} due. Room:{Room} Bed:{Bed}.').replace(/{Name}/g,s.name).replace(/{Amount}/g,s.rent).replace(/{Room}/g,s.room).replace(/{Bed}/g,s.bed)}
 function buildPendingMsg(s){return(document.getElementById('waPending').value||'Dear {Name}, pending: Rent ₹{RentDue}, Deposit ₹{DepDue}. Total ₹{Total}.').replace(/{Name}/g,s.name).replace(/{RentDue}/g,Math.round(rentDue(s))).replace(/{DepDue}/g,Math.round(depositDue(s))).replace(/{Total}/g,Math.round(totalDue(s))).replace(/{Room}/g,s.room).replace(/{Bed}/g,s.bed)}
+async function triggerRemindersNow() {
+  showLoading('Sending reminders via email...');
+  try {
+    await api({ action: 'sendReminders' });
+    showToast('✅ Reminder email sent to admin! Check Gmail inbox.', 'tok');
+  } catch(e) {
+    showToast('❌ ' + e.message, 'terr');
+  } finally {
+    hideLoading();
+  }
+}
+
 function sendMonthlyToAll(){if(!CS.length){showToast('No students','terr');return}CS.forEach((s,i)=>setTimeout(()=>window.open(`https://wa.me/${(s.mobile||'').replace(/\D/g,'')}?text=${encodeURIComponent(buildMonthlyMsg(s))}`,'_blank'),i*2000));showToast(`📱 Sending to ${CS.length} students`,'tok')}
 function sendPendingSummaryToAdmin(){
   const an=localStorage.getItem('lma_admin_wa')||'';if(!an){showToast('Set admin WA number in Settings','terr');return}
