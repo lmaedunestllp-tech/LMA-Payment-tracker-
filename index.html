@@ -154,6 +154,10 @@ html,body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text
     <div class="lf"><label>Password</label><input type="password" id="loginPass" placeholder="Enter password" onkeydown="if(event.key==='Enter')doLogin()"></div>
     <button class="btn-login" id="loginBtn" onclick="doLogin()">Sign In →</button>
     <div class="l-err" id="loginErr"></div>
+    <div style="text-align:center;margin-top:14px">
+      <span style="color:rgba(255,255,255,.5);font-size:12px">Forgot password? </span>
+      <span onclick="showForgotPassword()" style="color:var(--gold-l);font-size:12px;cursor:pointer;text-decoration:underline">Contact Admin</span>
+    </div>
   </div>
 </div>
 
@@ -166,7 +170,8 @@ html,body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text
     </div>
     <div style="display:flex;align-items:center;gap:8px">
       <div class="user-chip"><div class="udot"></div><span id="userChip">-</span></div>
-      <button class="icon-btn" onclick="refreshAll()">🔄</button>
+      <button class="icon-btn" onclick="refreshAll()" title="Sync">🔄</button>
+      <button class="icon-btn" onclick="doLogout()" title="Logout" style="background:rgba(198,40,40,.3)">🚪</button>
     </div>
   </div>
   <div class="sync-bar"><div class="sdot" id="sdot"></div><span id="stext">Connecting...</span></div>
@@ -348,6 +353,31 @@ Kindly clear dues. 🙏</textarea></div>
   <div class="mmh"><h3>👩‍🎓 Student Profile</h3></div>
   <div class="mmb" id="viewStudBody"></div>
   <div class="mmf" id="viewStudFoot"></div>
+</div></div>
+
+<!-- FORGOT PASSWORD MODAL -->
+<div class="mov" id="forgotM"><div class="msh">
+  <div class="mhandle"></div>
+  <div class="mmh"><h3>🔐 Forgot Password</h3></div>
+  <div class="mmb">
+    <div class="ok-box" style="margin-bottom:14px">
+      <strong>Default Passwords:</strong><br>
+      👑 Lokesh (Owner): <code style="background:#e8f5e9;padding:2px 6px;border-radius:4px">Admin@1234</code><br>
+      👤 Milind Bhujbal: <code style="background:#e8f5e9;padding:2px 6px;border-radius:4px">Mgr1@1234</code><br>
+      👤 Anand Udavant: <code style="background:#e8f5e9;padding:2px 6px;border-radius:4px">Mgr2@1234</code>
+    </div>
+    <div style="background:#fff8e1;border:1px solid #ffe082;border-radius:10px;padding:12px;font-size:13px;color:#5d3d00">
+      <strong>Password change karna ho to:</strong><br>
+      App mein login karo → More (⚙️) tab → Change Password section
+    </div>
+    <div style="margin-top:14px;font-size:13px;color:var(--muted);text-align:center">
+      Default password bhi kaam na kare to<br>
+      <strong style="color:var(--navy)">Lokesh (Admin)</strong> se contact karo
+    </div>
+  </div>
+  <div class="mmf">
+    <button class="btn btn-p btn-block" onclick="closeM('forgotM');document.getElementById('loginScreen').style.display='flex'">← Back to Login</button>
+  </div>
 </div></div>
 
 <div class="toast" id="toast"></div>
@@ -782,6 +812,11 @@ function changeScriptUrl(){const u=prompt('Enter new Script URL:',SCRIPT_URL);if
 function exportData(){const blob=new Blob([JSON.stringify({students:CS,payments:CP},null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='LMA_EduNest_'+today()+'.json';a.click();URL.revokeObjectURL(url);showToast('📤 Exported!','tok')}
 
 // INIT
+function showForgotPassword() {
+  document.getElementById('loginScreen').style.display = 'none';
+  openM('forgotM');
+}
+
 document.getElementById('sJoin').value=today();
 document.getElementById('pDate').value=today();
 document.getElementById('pMonth').value=thisMonth();
