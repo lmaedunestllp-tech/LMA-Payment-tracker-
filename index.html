@@ -290,9 +290,9 @@ html,body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text
       <label>Select User</label>
       <select id="loginUser">
         <option value="">-- Select your name --</option>
-        <option value="admin">Admin (Owner)</option>
-        <option value="manager1">Manager 1</option>
-        <option value="manager2">Manager 2</option>
+        <option value="admin">Lokesh (Owner)</option>
+        <option value="manager1">Milind Bhujbal</option>
+        <option value="manager2">Anand Udavant</option>
       </select>
     </div>
     <div class="lf">
@@ -355,7 +355,15 @@ html,body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text
 
     <!-- FEES -->
     <div class="page" id="page-fees">
-      <div class="sec-t">💰 Fee Records <button class="btn btn-g btn-sm" onclick="openM('addPayM')">+ Record</button></div>
+      <div class="sec-t">💰 Fee Summary</div>
+      <!-- Summary filters -->
+      <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+        <select id="feesFilter" onchange="renderFeesList(cachedStudents,cachedPayments)" style="flex:1;padding:9px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:13px;font-family:'DM Sans',sans-serif">
+          <option value="all">All Students</option>
+          <option value="pending">Pending Only</option>
+          <option value="clear">Fully Clear</option>
+        </select>
+      </div>
       <div id="feesList"></div>
     </div>
 
@@ -388,6 +396,23 @@ html,body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text
           <div class="fg"><label>New Password</label><input type="password" id="cpNew" placeholder="New password"></div>
           <div class="fg"><label>Confirm New Password</label><input type="password" id="cpConf" placeholder="Confirm new password"></div>
           <button class="btn btn-p btn-block" onclick="changePassword()">💾 Update Password</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-hd">🔔 Auto WhatsApp Notifications</div>
+        <div class="card-bd">
+          <div class="fg">
+            <label>Admin WhatsApp Number (with country code)</label>
+            <input type="tel" id="adminWaNum" placeholder="919876543210" oninput="localStorage.setItem('lma_admin_wa',this.value)">
+          </div>
+          <div style="background:#e8f5e9;border:1px solid #a5d6a7;border-radius:10px;padding:12px;font-size:12px;color:#1b5e20;margin-top:8px;line-height:1.8">
+            <strong>Auto notifications:</strong><br>
+            ✅ Student ko monthly rent reminder<br>
+            ✅ Admin ko pending dues summary<br>
+            ✅ Payment receive hone par admin ko notification
+          </div>
+          <button class="btn btn-wa btn-block" style="margin-top:12px" onclick="sendMonthlyToAll()">📱 Send Monthly Reminder to All Students</button>
+          <button class="btn btn-p btn-block" style="margin-top:8px" onclick="sendPendingSummaryToAdmin()">📊 Send Pending Summary to Admin</button>
         </div>
       </div>
       <div class="card">
@@ -437,7 +462,7 @@ Kindly clear dues immediately. 🙏</textarea></div>
   <div class="bottom-nav">
     <button class="bnav active" onclick="switchTab('home',this)"><div class="bni">🏠</div><div class="bnl">Home</div></button>
     <button class="bnav" onclick="switchTab('students',this)"><div class="bni">👩‍🎓</div><div class="bnl">Students</div></button>
-    <button class="bnav" onclick="switchTab('fees',this)"><div class="bni">💰</div><div class="bnl">Fees</div></button>
+    <button class="bnav" onclick="switchTab('fees',this)"><div class="bni">📊</div><div class="bnl">Summary</div></button>
     <button class="bnav" onclick="switchTab('pending',this)"><div class="bni">⚠️</div><div class="bnl">Dues</div><div class="bnbadge" id="pendBadge" style="display:none">0</div></button>
     <button class="bnav" onclick="switchTab('more',this)"><div class="bni">⚙️</div><div class="bnl">More</div></button>
   </div>
@@ -470,13 +495,14 @@ Kindly clear dues immediately. 🙏</textarea></div>
         <div class="fg"><label>Bed No *</label><input type="text" id="sBed" placeholder="A"></div>
         <div class="fg"><label>Student Mobile *</label><input type="tel" id="sMob" placeholder="98765 43210"></div>
         <div class="fg"><label>Parent Mobile</label><input type="tel" id="sPMob" placeholder="98765 43210"></div>
-        <div class="fg"><label>Monthly Rent ₹ *</label><input type="number" id="sRent" placeholder="6000"></div>
-        <div class="fg"><label>Security Deposit ₹</label><input type="number" id="sDep" placeholder="10000"></div>
+        <div class="fg"><label>Monthly Rent ₹ *</label><input type="number" id="sRent" placeholder="6000" oninput="calcBalance()"></div>
+        <div class="fg"><label>Security Deposit ₹</label><input type="number" id="sDep" placeholder="10000" oninput="calcBalance()"></div>
         <div class="fg"><label>Joining Date *</label><input type="date" id="sJoin"></div>
         <div class="fg"><label>Due Day</label><select id="sDueDay"><option value="5">5th</option><option value="1">1st</option><option value="10">10th</option></select></div>
       </div>
       <div class="fg"><label>Permanent Address</label><textarea id="sAddr" placeholder="Home address..."></textarea></div>
-      <div class="fg"><label>Notes</label><input type="text" id="sNote" placeholder="Any remarks..."></div>
+
+      <div class="fg"><label>Notes / Remarks</label><input type="text" id="sNote" placeholder="Any remarks..."></div>
     </div>
     <div class="mmf">
       <button class="btn btn-out btn-sm" onclick="closeM('addStudentM')">Cancel</button>
@@ -491,7 +517,16 @@ Kindly clear dues immediately. 🙏</textarea></div>
     <div class="mhandle"></div>
     <div class="mmh"><h3>💳 Record Payment</h3></div>
     <div class="mmb">
-      <div class="fg"><label>Student *</label><select id="pStudId"></select></div>
+      <div class="fg"><label>Student *</label><select id="pStudId" onchange="showStudentBalance()"></select></div>
+      <div id="studentBalanceBox" style="display:none;background:#e8eaf6;border-radius:10px;padding:10px 14px;font-size:12px;margin-bottom:8px"></div>
+      <div class="fg">
+        <label>Payment Type *</label>
+        <select id="pType" onchange="showStudentBalance()">
+          <option value="rent">🏠 Rent Payment</option>
+          <option value="deposit">🔒 Security Deposit</option>
+          <option value="both">💰 Both (Rent + Deposit)</option>
+        </select>
+      </div>
       <div class="fg2">
         <div class="fg"><label>Month *</label><input type="month" id="pMonth"></div>
         <div class="fg"><label>Amount ₹ *</label><input type="number" id="pAmt" placeholder="6000"></div>
@@ -613,9 +648,9 @@ function init() {
 // ══════════════════════════════════════════════════════════
 // Hardcoded fallback users (in case Users sheet not set up yet)
 const HARDCODED_USERS = {
-  admin:    { name: 'Admin (Owner)', password: 'Admin@1234', role: 'admin' },
-  manager1: { name: 'Manager 1',    password: 'Mgr1@1234',  role: 'manager' },
-  manager2: { name: 'Manager 2',    password: 'Mgr2@1234',  role: 'manager' },
+  admin:    { name: 'Lokesh (Owner)', password: 'Admin@1234', role: 'admin' },
+  manager1: { name: 'Milind Bhujbal',    password: 'Mgr1@1234',  role: 'manager' },
+  manager2: { name: 'Anand Udavant',    password: 'Mgr2@1234',  role: 'manager' },
 };
 
 async function doLogin() {
@@ -760,16 +795,41 @@ function previewPhoto(inp) {
 // ══════════════════════════════════════════════════════════
 // FEE LOGIC (local calc from cached data)
 // ══════════════════════════════════════════════════════════
+// ── RENT payments only ──
+function rentPaid(sid) {
+  return cachedPayments
+    .filter(p => p.studentId === sid && (p.paymentType === 'rent' || p.paymentType === 'both' || !p.paymentType))
+    .reduce((s,p) => s + Number(p.amount||0), 0);
+}
+
+// ── DEPOSIT payments only ──
+function depositPaid(sid) {
+  return cachedPayments
+    .filter(p => p.studentId === sid && p.paymentType === 'deposit')
+    .reduce((s,p) => s + Number(p.amount||0), 0);
+}
+
+// ── TOTAL paid (rent + deposit) ──
 function totalPaid(sid) {
   return cachedPayments.filter(p => p.studentId === sid).reduce((s,p) => s + Number(p.amount||0), 0);
 }
+
+// ── EXPECTED rent so far ──
 function expectedAmt(s) {
   const join = new Date(s.joinDate);
   const now  = new Date();
   const m    = Math.max(1, (now.getFullYear()-join.getFullYear())*12 + (now.getMonth()-join.getMonth()) + 1);
   return m * Number(s.rent||0);
 }
-function pendingAmt(s) { return Math.max(0, expectedAmt(s) - totalPaid(s.id)); }
+
+// ── RENT pending ──
+function rentPending(s) { return Math.max(0, expectedAmt(s) - rentPaid(s.id)); }
+
+// ── DEPOSIT pending ──
+function depositPending(s) { return Math.max(0, Number(s.deposit||0) - depositPaid(s.id)); }
+
+// ── TOTAL pending (rent + deposit) ──
+function pendingAmt(s) { return rentPending(s) + depositPending(s); }
 
 // ══════════════════════════════════════════════════════════
 // RENDER ALL
@@ -809,12 +869,23 @@ function renderStudentList(students, payments, filter='') {
   if (!list.length) { wrap.innerHTML=`<div class="empty"><div class="ei">👩‍🎓</div><h3>${filter?'No results':'No students yet'}</h3><p>Tap + Add to get started</p></div>`; return; }
   wrap.innerHTML = list.map(s => {
     const paid = totalPaid(s.id), due = pendingAmt(s);
-    return `<div class="si" onclick="viewStudent('${s.id}')">
-      ${avatarHtml(s)}
-      <div class="sinfo"><div class="sname">${s.name}</div><div class="sdet">Room ${s.room} · Bed ${s.bed} · 📱 ${s.mobile}</div></div>
-      <div class="sright">
-        <div class="spaid">${fmt(paid)}</div>
-        ${due>0?`<div class="sdue">Due: ${fmt(due)}</div>`:`<div style="font-size:10px;color:var(--green)">✓ Clear</div>`}
+    return `<div style="border-bottom:1px solid var(--border);padding:10px 0">
+      <div class="si" style="border:none;padding:0 0 8px 0" onclick="viewStudent('${s.id}')">
+        ${avatarHtml(s)}
+        <div class="sinfo">
+          <div class="sname">${s.name}</div>
+          <div class="sdet">Room ${s.room} · Bed ${s.bed} · 📱 ${s.mobile}</div>
+        </div>
+        <div class="sright">
+          ${rentPending(s)>0?`<div class="sdue" style="font-size:10px">🏠 ${fmt(rentPending(s))}</div>`:'<div style="font-size:10px;color:var(--green)">🏠 ✓</div>'}
+          ${depositPending(s)>0?`<div class="sdue" style="font-size:10px">🔒 ${fmt(depositPending(s))}</div>`:'<div style="font-size:10px;color:var(--green)">🔒 ✓</div>'}
+          ${pendingAmt(s)>0?`<div style="font-size:12px;font-weight:800;color:var(--red)">₹${Math.round(pendingAmt(s)).toLocaleString('en-IN')}</div>`:'<div style="font-size:11px;color:var(--green);font-weight:700">✓ Clear</div>'}
+        </div>
+      </div>
+      <div style="display:flex;gap:6px;padding-left:58px">
+        <button class="btn btn-wa btn-sm" style="font-size:11px;padding:5px 10px" onclick="event.stopPropagation();quickPayType('${s.id}','rent')">🏠 Pay Rent</button>
+        <button class="btn btn-p btn-sm" style="font-size:11px;padding:5px 10px" onclick="event.stopPropagation();quickPayType('${s.id}','deposit')">🔒 Pay Deposit</button>
+        <button class="btn btn-g btn-sm" style="font-size:11px;padding:5px 10px" onclick="event.stopPropagation();viewStudent('${s.id}')">👁 View</button>
       </div>
     </div>`;
   }).join('');
@@ -822,25 +893,99 @@ function renderStudentList(students, payments, filter='') {
 
 function renderFeesList(students, payments) {
   const wrap = document.getElementById('feesList');
-  const sorted = [...payments].sort((a,b)=>new Date(b.date)-new Date(a.date));
-  if (!sorted.length) { wrap.innerHTML=`<div class="card"><div class="card-bd"><div class="empty"><div class="ei">💳</div><h3>No payments yet</h3></div></div></div>`; return; }
-  const byMonth = {};
-  sorted.forEach(p => { if(!byMonth[p.month]) byMonth[p.month]=[]; byMonth[p.month].push(p); });
-  wrap.innerHTML = Object.entries(byMonth).map(([month, recs]) => {
-    const total = recs.reduce((s,r)=>s+Number(r.amount||0),0);
-    return `<div class="card">
-      <div class="card-hd">${month} <span style="font-size:12px;color:var(--green);font-weight:700">${fmt(total)}</span></div>
-      <div class="card-bd" style="padding:10px 16px">
-        ${recs.map(p=>{
-          const s=students.find(st=>st.id===p.studentId);
-          return `<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)">
-            <div style="display:flex;align-items:center;gap:8px">
-              ${s?avatarHtml(s):'<div class="sav">?</div>'}
-              <div><div style="font-weight:600;font-size:13px">${s?.name||p.studentName||'Unknown'}</div><div style="font-size:11px;color:var(--muted)">${p.date} · ${p.mode}${p.recordedBy?' · by '+p.recordedBy:''}</div></div>
+  if (!wrap) return;
+  const filterEl = document.getElementById('feesFilter');
+  const filter = filterEl ? filterEl.value : 'all';
+  
+  let list = students;
+  if (filter === 'pending') list = students.filter(s => pendingAmt(s) > 0);
+  if (filter === 'clear')   list = students.filter(s => pendingAmt(s) === 0);
+
+  if (!list.length) {
+    wrap.innerHTML = `<div class="empty"><div class="ei">📊</div><h3>No students found</h3></div>`;
+    return;
+  }
+
+  // Total summary card
+  const totalRentDue    = students.reduce((s,st) => s + rentPending(st), 0);
+  const totalDepDue     = students.reduce((s,st) => s + depositPending(st), 0);
+  const totalCollected  = payments.reduce((s,p) => s + Number(p.amount||0), 0);
+
+  wrap.innerHTML = `
+    <div class="card" style="margin-bottom:14px">
+      <div class="card-hd">📊 Overall Summary</div>
+      <div class="card-bd" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;text-align:center">
+        <div style="background:#e8f5e9;border-radius:10px;padding:10px">
+          <div style="font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase">Total Collected</div>
+          <div style="font-weight:800;color:var(--green);font-size:16px;margin-top:3px">${fmt(totalCollected)}</div>
+        </div>
+        <div style="background:#fce4ec;border-radius:10px;padding:10px">
+          <div style="font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase">🏠 Rent Due</div>
+          <div style="font-weight:800;color:var(--red);font-size:16px;margin-top:3px">${fmt(totalRentDue)}</div>
+        </div>
+        <div style="background:#fce4ec;border-radius:10px;padding:10px">
+          <div style="font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase">🔒 Deposit Due</div>
+          <div style="font-weight:800;color:var(--red);font-size:16px;margin-top:3px">${fmt(totalDepDue)}</div>
+        </div>
+      </div>
+    </div>
+  ` + list.map(s => {
+    const rPaid = rentPaid(s.id);
+    const dPaid = depositPaid(s.id);
+    const rDue  = rentPending(s);
+    const dDue  = depositPending(s);
+    const tDue  = pendingAmt(s);
+    const sPays = payments.filter(p => p.studentId === s.id).sort((a,b) => new Date(b.date)-new Date(a.date));
+    const pct   = Number(s.rent) > 0 ? Math.min(100, Math.round(rPaid / Math.max(rPaid+rDue,1) * 100)) : 0;
+
+    return `<div class="card" style="margin-bottom:12px">
+      <div class="card-hd" style="padding:12px 14px">
+        <div style="display:flex;align-items:center;gap:10px">
+          ${avatarHtml(s)}
+          <div>
+            <div style="font-size:14px;font-weight:700;color:var(--navy)">${s.name}</div>
+            <div style="font-size:11px;color:var(--muted)">Room ${s.room} · Bed ${s.bed}</div>
+          </div>
+        </div>
+        <button class="btn btn-g btn-sm" onclick="quickPayType('${s.id}','rent')">+ Pay</button>
+      </div>
+      <div class="card-bd" style="padding:12px 14px">
+        <!-- Split balance row -->
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:10px;text-align:center;font-size:11px">
+          <div style="background:#e8f5e9;border-radius:8px;padding:8px">
+            <div style="color:var(--muted)">🏠 Rent Paid</div>
+            <div style="font-weight:700;color:var(--green)">${fmt(rPaid)}</div>
+            ${rDue>0?`<div style="color:var(--red);font-size:10px">Due: ${fmt(rDue)}</div>`:'<div style="color:var(--green);font-size:10px">✓ Clear</div>'}
+          </div>
+          <div style="background:#e8eaf6;border-radius:8px;padding:8px">
+            <div style="color:var(--muted)">🔒 Deposit Paid</div>
+            <div style="font-weight:700;color:var(--navy)">${fmt(dPaid)}</div>
+            ${dDue>0?`<div style="color:var(--red);font-size:10px">Due: ${fmt(dDue)}</div>`:'<div style="color:var(--green);font-size:10px">✓ Clear</div>'}
+          </div>
+          <div style="background:${tDue>0?'#fce4ec':'#e8f5e9'};border-radius:8px;padding:8px">
+            <div style="color:var(--muted)">💰 Total Due</div>
+            <div style="font-weight:800;color:${tDue>0?'var(--red)':'var(--green)'}">${fmt(tDue)}</div>
+            <div style="font-size:10px;color:var(--muted)">Combined</div>
+          </div>
+        </div>
+        <!-- Progress bar -->
+        <div style="margin-bottom:10px">
+          <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-bottom:3px">
+            <span>Rent Progress</span><span>${pct}%</span>
+          </div>
+          <div class="pw"><div class="pb ${pct<50?'pd':''}" style="width:${pct}%"></div></div>
+        </div>
+        <!-- Payment history -->
+        ${sPays.length ? `<div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Payment History</div>
+        <div style="max-height:160px;overflow-y:auto">
+          ${sPays.map(p=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);font-size:12px">
+            <div>
+              <span style="font-weight:600">${fmt(p.amount)}</span>
+              <span class="chip ${p.paymentType==='deposit'?'cb':p.paymentType==='both'?'c-o':'cg'}" style="font-size:9px;margin-left:4px">${p.paymentType==='deposit'?'🔒 Deposit':p.paymentType==='both'?'💰 Both':'🏠 Rent'}</span>
             </div>
-            <div style="font-weight:700;color:var(--green);font-size:14px">${fmt(p.amount)}</div>
-          </div>`;
-        }).join('')}
+            <div style="color:var(--muted)">${p.date} · ${p.mode}</div>
+          </div>`).join('')}
+        </div>` : `<div style="text-align:center;color:var(--muted);font-size:12px;padding:10px">No payments yet</div>`}
       </div>
     </div>`;
   }).join('');
@@ -852,11 +997,13 @@ function renderPendingList(students, payments) {
   if (!pending.length) { wrap.innerHTML=`<div class="empty"><div class="ei">🎉</div><h3>All dues cleared!</h3></div>`; return; }
   wrap.innerHTML = pending.map(s => {
     const due = pendingAmt(s);
+    const rDue = rentPending(s);
+    const dDue = depositPending(s);
     const wa  = waUrl(s, buildPendingMsg(s));
     return `<div class="pend">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:4px">
         <div><div class="pend-name">${s.name}</div><div class="pend-det">Room ${s.room} / Bed ${s.bed} · ${s.mobile}</div></div>
-        <div style="font-size:18px;font-weight:800;color:var(--red)">${fmt(due)}</div>
+        <div style="text-align:right">${rDue>0?`<div style="font-size:11px;color:var(--red)">🏠 Rent: ${fmt(rDue)}</div>`:''} ${dDue>0?`<div style="font-size:11px;color:var(--red)">🔒 Deposit: ${fmt(dDue)}</div>`:''}<div style="font-size:16px;font-weight:800;color:var(--red)">Total: ${fmt(due)}</div></div>
       </div>
       <div class="pend-acts">
         <a href="${wa}" target="_blank"><button class="btn btn-wa btn-sm">📱 WhatsApp</button></a>
@@ -952,6 +1099,7 @@ async function addStudent() {
         course:document.getElementById('sCourse').value.trim(),
         address:document.getElementById('sAddr').value.trim(),
         notes:document.getElementById('sNote').value.trim(),
+
         photoUrl, photoFileId
       }
     });
@@ -998,7 +1146,10 @@ async function recordPayment() {
   showLoading('Saving payment to Google Sheets...');
 
   try {
-    await api({ action:'addPayment', recordedBy:currentUser.name, payment:{studentId:sid,amount,month,date,mode,ref:document.getElementById('pRef').value.trim(),note:document.getElementById('pNote').value.trim()} });
+    await api({ action:'addPayment', recordedBy:currentUser.name, payment:{studentId:sid,amount,month,date,mode,paymentType:document.getElementById('pType').value,ref:document.getElementById('pRef').value.trim(),note:document.getElementById('pNote').value.trim()} });
+    // Notify admin about payment
+    const paidSt = cachedStudents.find(st=>st.id===sid);
+    if(paidSt) notifyAdminPayment(paidSt.name, amount, paidSt.room, paidSt.bed);
     closeM('addPayM');
     ['pAmt','pRef','pNote'].forEach(id=>document.getElementById(id).value='');
     await refreshAll();
@@ -1010,6 +1161,17 @@ async function recordPayment() {
     btn.disabled=false;
     hideLoading();
   }
+}
+
+function quickPayType(sid, type) {
+  openM('addPayM');
+  setTimeout(() => {
+    document.getElementById('pStudId').value = sid;
+    document.getElementById('pType').value = type || 'rent';
+    showStudentBalance();
+  }, 60);
+  document.getElementById('pDate').value = today();
+  document.getElementById('pMonth').value = thisMonth();
 }
 
 function quickPay(sid) {
@@ -1044,13 +1206,30 @@ async function viewStudent(id) {
     </div>
     ${s.address?`<div style="background:var(--gold-p);border:1.5px solid var(--gold);border-radius:10px;padding:10px 12px;font-size:12px;margin-bottom:12px;color:var(--navy)">📍 <strong>Address:</strong> ${s.address}</div>`:''}
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
-      <div class="stat sg" style="margin:0"><div class="slbl">Paid</div><div class="sval" style="font-size:20px">${fmt(paid)}</div></div>
-      <div class="stat ${pending>0?'sr':''}" style="margin:0;border-left-color:${pending>0?'var(--red)':'var(--green)'}"><div class="slbl">Pending</div><div class="sval" style="font-size:20px;color:${pending>0?'var(--red)':'var(--green)'}">${pending>0?fmt(pending):'₹0'}</div></div>
+      <div class="stat sg" style="margin:0"><div class="slbl">Total Paid</div><div class="sval" style="font-size:18px">${fmt(totalPaid(id))}</div></div>
+      <div class="stat ${pendingAmt(s)>0?'sr':''}" style="margin:0;border-left-color:${pendingAmt(s)>0?'var(--red)':'var(--green)'}"><div class="slbl">Total Due</div><div class="sval" style="font-size:18px;color:${pendingAmt(s)>0?'var(--red)':'var(--green)'}">${pendingAmt(s)>0?fmt(pendingAmt(s)):'₹0'}</div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px">
+      <div style="background:#e8f5e9;border-radius:10px;padding:10px;text-align:center">
+        <div style="font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase">🏠 Rent Paid</div>
+        <div style="font-weight:700;color:var(--green);font-size:14px;margin-top:3px">${fmt(rentPaid(id))}</div>
+        ${rentPending(s)>0?`<div style="font-size:10px;color:var(--red);margin-top:2px">Due: ${fmt(rentPending(s))}</div>`:'<div style="font-size:10px;color:var(--green);margin-top:2px">✓ Clear</div>'}
+      </div>
+      <div style="background:#e8eaf6;border-radius:10px;padding:10px;text-align:center">
+        <div style="font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase">🔒 Deposit Paid</div>
+        <div style="font-weight:700;color:var(--navy);font-size:14px;margin-top:3px">${fmt(depositPaid(id))}</div>
+        ${depositPending(s)>0?`<div style="font-size:10px;color:var(--red);margin-top:2px">Due: ${fmt(depositPending(s))}</div>`:'<div style="font-size:10px;color:var(--green);margin-top:2px">✓ Clear</div>'}
+      </div>
+      <div style="background:${pendingAmt(s)>0?'#fce4ec':'#e8f5e9'};border-radius:10px;padding:10px;text-align:center">
+        <div style="font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase">💰 Total Due</div>
+        <div style="font-weight:800;color:${pendingAmt(s)>0?'var(--red)':'var(--green)'};font-size:14px;margin-top:3px">${fmt(pendingAmt(s))}</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:2px">Rent+Deposit</div>
+      </div>
     </div>
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;font-size:11px;text-align:center">
       <div style="background:var(--gold-p);border-radius:9px;padding:8px"><div style="color:var(--muted)">Rent/mo</div><div style="font-weight:700;color:var(--navy)">${fmt(s.rent)}</div></div>
-      <div style="background:#e8eaf6;border-radius:9px;padding:8px"><div style="color:var(--muted)">Deposit</div><div style="font-weight:700;color:var(--navy)">${fmt(s.deposit)}</div></div>
-      <div style="background:#e8f5e9;border-radius:9px;padding:8px"><div style="color:var(--muted)">Progress</div><div style="font-weight:700;color:var(--green)">${pct}%</div></div>
+      <div style="background:#e8eaf6;border-radius:9px;padding:8px"><div style="color:var(--muted)">Agreed Deposit</div><div style="font-weight:700;color:var(--navy)">${fmt(s.deposit)}</div></div>
+      <div style="background:#e8f5e9;border-radius:9px;padding:8px"><div style="color:var(--muted)">Rent Progress</div><div style="font-weight:700;color:var(--green)">${pct}%</div></div>
     </div>
     <div style="margin-bottom:16px"><div class="pw"><div class="pb ${pct<50?'pd':''}" style="width:${pct}%"></div></div></div>
     <div style="font-weight:700;color:var(--navy);font-size:14px;margin-bottom:10px">Payment History</div>
@@ -1060,7 +1239,8 @@ async function viewStudent(id) {
   document.getElementById('viewStudFoot').innerHTML=`
     <a href="${waUrl(s,buildMonthlyMsg(s))}" target="_blank"><button class="btn btn-wa btn-sm">📱 WA Student</button></a>
     ${s.parentMobile?`<a href="${waUrl(s,buildMonthlyMsg(s),s.parentMobile)}" target="_blank"><button class="btn btn-sm btn-out">👪 WA Parent</button></a>`:''}
-    <button class="btn btn-g btn-sm" onclick="closeM('viewStudM');quickPay('${id}')">💳 Pay</button>
+    <button class="btn btn-g btn-sm" onclick="closeM('viewStudM');quickPayType('${id}','rent')">🏠 Pay Rent</button>
+    <button class="btn btn-p btn-sm" onclick="closeM('viewStudM');quickPayType('${id}','deposit')">🔒 Pay Deposit</button>
     ${currentUser?.role==='admin'?`<button class="btn btn-danger btn-sm" onclick="deleteStudent('${id}')">🗑</button>`:''}
     <button class="btn btn-out btn-sm" onclick="closeM('viewStudM')">Close</button>
   `;
@@ -1132,6 +1312,115 @@ async function changePassword() {
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js').catch(()=>{});
 }
+
+
+// ── SHOW STUDENT BALANCE IN PAYMENT MODAL ──
+function showStudentBalance() {
+  const sid = document.getElementById('pStudId').value;
+  const pType = document.getElementById('pType').value;
+  const box = document.getElementById('studentBalanceBox');
+  if (!sid || !box) return;
+  const s = cachedStudents.find(st => st.id === sid);
+  if (!s) return;
+  const rPaid = rentPaid(sid);
+  const dPaid = depositPaid(sid);
+  const rDue  = rentPending(s);
+  const dDue  = depositPending(s);
+  const tDue  = pendingAmt(s);
+  box.style.display = 'block';
+  box.innerHTML = `
+    <div style="font-weight:700;color:var(--navy);margin-bottom:6px">💰 ${s.name} — Balance Summary</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;font-size:11px;text-align:center">
+      <div style="background:white;border-radius:8px;padding:7px">
+        <div style="color:var(--muted)">🏠 Rent Due</div>
+        <div style="font-weight:700;color:${rDue>0?'var(--red)':'var(--green)'}">${fmt(rDue)}</div>
+      </div>
+      <div style="background:white;border-radius:8px;padding:7px">
+        <div style="color:var(--muted)">🔒 Deposit Due</div>
+        <div style="font-weight:700;color:${dDue>0?'var(--red)':'var(--green)'}">${fmt(dDue)}</div>
+      </div>
+      <div style="background:white;border-radius:8px;padding:7px">
+        <div style="color:var(--muted)">💰 Total Due</div>
+        <div style="font-weight:800;color:${tDue>0?'var(--red)':'var(--green)'}">${fmt(tDue)}</div>
+      </div>
+    </div>
+  `;
+  // Auto fill suggested amount
+  const amtEl = document.getElementById('pAmt');
+  if (pType === 'rent' && rDue > 0) amtEl.placeholder = 'Suggested: ' + rDue;
+  else if (pType === 'deposit' && dDue > 0) amtEl.placeholder = 'Suggested: ' + dDue;
+  else if (pType === 'both') amtEl.placeholder = 'Suggested: ' + tDue;
+}
+
+// ── BALANCE CALCULATOR ──
+function calcBalance() {
+  const rent = parseFloat(document.getElementById('sRent').value) || 0;
+  const dep  = parseFloat(document.getElementById('sDep').value) || 0;
+  const total = rent + dep;
+  let box = document.getElementById('balanceBox');
+  if (!box) {
+    box = document.createElement('div');
+    box.id = 'balanceBox';
+    box.style.cssText = 'background:#e8f5e9;border:1px solid #a5d6a7;border-radius:10px;padding:10px 14px;font-size:13px;color:#1b5e20;margin:8px 0';
+    const depEl = document.getElementById('sDep');
+    if (depEl) depEl.closest('.fg').parentElement.after(box);
+  }
+  box.innerHTML = '<strong>Total Amount from Student: ₹' + total.toLocaleString('en-IN') + '</strong>' +
+    '&nbsp;&nbsp;(Rent ₹' + rent.toLocaleString('en-IN') + ' + Deposit ₹' + dep.toLocaleString('en-IN') + ')';
+}
+
+// ── SEND MONTHLY REMINDER TO ALL STUDENTS ──
+function sendMonthlyToAll() {
+  if (!cachedStudents.length) { showToast('No students added yet','terr'); return; }
+  cachedStudents.forEach((s, i) => {
+    setTimeout(() => {
+      const msg = buildMonthlyMsg(s);
+      const num = s.mobile.replace(/\D/g,'');
+      window.open('https://wa.me/' + (num.startsWith('91') ? num : '91'+num) + '?text=' + encodeURIComponent(msg), '_blank');
+    }, i * 2000);
+  });
+  showToast('Opening WhatsApp for ' + cachedStudents.length + ' students...','tok');
+}
+
+// ── SEND PENDING SUMMARY TO ADMIN ──
+function sendPendingSummaryToAdmin() {
+  const adminNum = localStorage.getItem('lma_admin_wa') || '';
+  if (!adminNum) { showToast('Admin WA number set karo first (More tab)','terr'); return; }
+  const pending = cachedStudents.filter(s => pendingAmt(s) > 0);
+  if (!pending.length) { showToast('No pending dues!','tok'); return; }
+  let msg = '*LMA EduNest Girls Hostel*\n';
+  msg += '\u26a0️ *Pending Dues Summary*\n';
+  msg += new Date().toLocaleDateString('en-IN') + '\n\n';
+  let total = 0;
+  pending.forEach((s, i) => {
+    const due = pendingAmt(s);
+    total += due;
+    msg += (i+1) + '. *' + s.name + '*\n';
+    msg += '   Room: ' + s.room + ' | Bed: ' + s.bed + '\n';
+    msg += '   Pending: \u20b9' + Math.round(due).toLocaleString('en-IN') + '\n\n';
+  });
+  msg += '\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n';
+  msg += '*Total Pending: \u20b9' + Math.round(total).toLocaleString('en-IN') + '*\n';
+  msg += 'Students with dues: ' + pending.length;
+  const num = adminNum.replace(/\D/g,'');
+  window.open('https://wa.me/' + (num.startsWith('91') ? num : '91'+num) + '?text=' + encodeURIComponent(msg), '_blank');
+  showToast('Sending pending summary to Admin...','tok');
+}
+
+// ── NOTIFY ADMIN ON PAYMENT RECEIVED ──
+function notifyAdminPayment(studentName, amount, room, bed) {
+  const adminNum = localStorage.getItem('lma_admin_wa') || '';
+  if (!adminNum) return;
+  const msg = '*LMA EduNest* \u2705\n\nPayment Received!\n\nStudent: *' + studentName + '*\nRoom: ' + room + ' | Bed: ' + bed + '\nAmount: *\u20b9' + Number(amount).toLocaleString('en-IN') + '*\nDate: ' + new Date().toLocaleDateString('en-IN') + '\nTime: ' + new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+  const num = adminNum.replace(/\D/g,'');
+  setTimeout(() => window.open('https://wa.me/' + (num.startsWith('91') ? num : '91'+num) + '?text=' + encodeURIComponent(msg), '_blank'), 1000);
+}
+
+// ── LOAD ADMIN WA NUMBER ──
+setTimeout(() => {
+  const savedAdminWa = localStorage.getItem('lma_admin_wa');
+  if (savedAdminWa) { const el = document.getElementById('adminWaNum'); if(el) el.value = savedAdminWa; }
+}, 500);
 
 init();
 </script>
