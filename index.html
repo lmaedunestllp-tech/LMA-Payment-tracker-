@@ -387,8 +387,20 @@ function previewPhoto(inp){const r=new FileReader();r.onload=e=>{const img=docum
 function fileToBase64(f){return new Promise((res,rej)=>{const r=new FileReader();r.onload=e=>res(e.target.result);r.onerror=rej;r.readAsDataURL(f)})}
 
 // FEE CALC
-function rentPaid(sid){return CP.filter(p=>p.studentId===sid&&(p.paymentType==='rent'||p.paymentType==='both'||!p.paymentType)).reduce((s,p)=>s+Number(p.amount||0),0)}
-function depositPaid(sid){return CP.filter(p=>p.studentId===sid&&p.paymentType==='deposit').reduce((s,p)=>s+Number(p.amount||0),0)}
+function rentPaid(sid){
+  return CP.filter(p=>{
+    if(p.studentId!==sid) return false;
+    const pt=(p.paymentType||'').toString().trim().toLowerCase();
+    return pt==='rent'||pt==='both'||pt===''||pt==='undefined';
+  }).reduce((s,p)=>s+Number(p.amount||0),0);
+}
+function depositPaid(sid){
+  return CP.filter(p=>{
+    if(p.studentId!==sid) return false;
+    const pt=(p.paymentType||'').toString().trim().toLowerCase();
+    return pt==='deposit';
+  }).reduce((s,p)=>s+Number(p.amount||0),0);
+}
 function totalPaid(sid){return CP.filter(p=>p.studentId===sid).reduce((s,p)=>s+Number(p.amount||0),0)}
 function expectedRent(s){const j=new Date(s.joinDate),n=new Date();return Math.max(1,(n.getFullYear()-j.getFullYear())*12+(n.getMonth()-j.getMonth())+1)*Number(s.rent||0)}
 function rentDue(s){return Math.max(0,expectedRent(s)-rentPaid(s.id))}
@@ -428,7 +440,12 @@ async function refreshAll(){
   setSyncStatus('syncing','🔄 Syncing with Google Sheets...');showLoading('Loading data...');
   try{
     const[sr,pr]=await Promise.all([api({action:'getStudents'}),api({action:'getPayments'})]);
-    CS=sr.students||[];CP=pr.payments||[];renderAll();
+    CS=sr.students||[];
+    // Normalize paymentType field from Sheets
+    CP=(pr.payments||[]).map(p=>({
+      ...p,
+      paymentType: (p.paymentType||'rent').toString().trim().toLowerCase()||'rent'
+    }));renderAll();
     setSyncStatus('ok','✅ Synced · '+new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}));
   }catch(e){setSyncStatus('err','❌ Sync failed');showToast('❌ '+e.message,'terr')}finally{hideLoading()}
 }
@@ -487,6 +504,7 @@ function renderStudentList(students,filter=''){
         <button class="btn btn-wa btn-sm" style="flex:1;justify-content:center" onclick="openPayModal('${s.id}','rent')">🏠 Pay Rent</button>
         <button class="btn btn-p btn-sm" style="flex:1;justify-content:center" onclick="openPayModal('${s.id}','deposit')">🔒 Pay Deposit</button>
         <button class="btn btn-out btn-sm" onclick="viewStudent('${s.id}')">📋 History</button>
+        <a href="https://wa.me/${(s.mobile||'').replace(/\D/g,'')}?text=${encodeURIComponent(buildPendingMsg(s))}" target="_blank"><button class="btn btn-wa btn-sm" title="Send WA reminder">📱</button></a>
       </div>
     </div>`;
   }).join('');
@@ -604,7 +622,8 @@ function viewStudent(id){
   document.getElementById('viewStudFoot').innerHTML=`
     <button class="btn btn-wa btn-sm" onclick="closeM('viewStudM');openPayModal('${id}','rent')">🏠 Pay Rent</button>
     <button class="btn btn-p btn-sm" onclick="closeM('viewStudM');openPayModal('${id}','deposit')">🔒 Pay Deposit</button>
-    <a href="https://wa.me/${(s.mobile||'').replace(/\D/g,'')}?text=${encodeURIComponent(buildMonthlyMsg(s))}" target="_blank"><button class="btn btn-wa btn-sm">📱 WA</button></a>
+    <a href="https://wa.me/${(s.mobile||'').replace(/\D/g,'')}?text=${encodeURIComponent(buildMonthlyMsg(s))}" target="_blank"><button class="btn btn-wa btn-sm">📱 Monthly</button></a>
+    ${totalDue(s)>0?`<a href="https://wa.me/${(s.mobile||'').replace(/\D/g,'')}?text=${encodeURIComponent(buildPendingMsg(s))}" target="_blank"><button class="btn btn-danger btn-sm">⚠️ Dues WA</button></a>`:''}
     ${currentUser?.role==='admin'?`<button class="btn btn-danger btn-sm" onclick="delStudent('${id}')">🗑</button>`:''}
     <button class="btn btn-out btn-sm" onclick="closeM('viewStudM')">Close</button>
   `;
