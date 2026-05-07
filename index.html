@@ -11,19 +11,9 @@
 <title>LMA EduNest – Hostel</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
-:root{
-  --navy:#1a237e;--navy-d:#0d1547;--navy-l:#283593;
-  --gold:#c8973a;--gold-l:#e8b84b;--gold-p:#fdf3e0;
-  --green:#2e7d32;--red:#c62828;--orange:#e65100;
-  --bg:#f0f2f8;--white:#fff;--border:#dce0f0;
-  --text:#1a1f3a;--muted:#6b7299;
-  --r:14px;--shadow:0 4px 20px rgba(26,35,126,.10);
-  --safe-b:env(safe-area-inset-bottom,0px);
-}
+:root{--navy:#1a237e;--navy-d:#0d1547;--navy-l:#283593;--gold:#c8973a;--gold-l:#e8b84b;--gold-p:#fdf3e0;--green:#2e7d32;--red:#c62828;--orange:#e65100;--bg:#f0f2f8;--white:#fff;--border:#dce0f0;--text:#1a1f3a;--muted:#6b7299;--r:14px;--shadow:0 4px 20px rgba(26,35,126,.10);--safe-b:env(safe-area-inset-bottom,0px)}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);height:100%;overflow:hidden}
-
-/* LOGIN */
 #loginScreen{position:fixed;inset:0;background:linear-gradient(160deg,var(--navy-d) 0%,var(--navy) 55%,#1565c0 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;padding:24px;transition:opacity .4s,transform .4s}
 #loginScreen.hide{opacity:0;transform:scale(1.04);pointer-events:none}
 .l-logo{width:88px;height:88px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--gold-l));display:flex;align-items:center;justify-content:center;font-size:40px;margin-bottom:14px;box-shadow:0 8px 32px rgba(200,151,58,.4)}
@@ -37,23 +27,9 @@ html,body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text
 .lf input::placeholder{color:rgba(255,255,255,.35)}
 .lf input:focus,.lf select:focus{outline:none;border-color:var(--gold)}
 .lf select option{background:var(--navy-d);color:white}
-.btn-login{width:100%;padding:14px;background:linear-gradient(135deg,var(--gold),var(--gold-l));color:var(--navy-d);font-weight:800;font-size:15px;border:none;border-radius:12px;cursor:pointer;font-family:'DM Sans',sans-serif;margin-top:4px;box-shadow:0 4px 16px rgba(200,151,58,.4)}
+.btn-login{width:100%;padding:14px;background:linear-gradient(135deg,var(--gold),var(--gold-l));color:var(--navy-d);font-weight:800;font-size:15px;border:none;border-radius:12px;cursor:pointer;font-family:'DM Sans',sans-serif;margin-top:4px}
 .btn-login:active{transform:scale(.97)}
 .l-err{color:#ff8a80;font-size:12px;text-align:center;margin-top:8px;min-height:16px}
-
-/* SETUP SCREEN */
-#setupScreen{position:fixed;inset:0;background:var(--bg);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:9998;padding:24px;overflow-y:auto}
-#setupScreen.show{display:flex}
-.setup-card{background:white;border-radius:20px;padding:28px 24px;width:100%;max-width:500px;box-shadow:var(--shadow)}
-.setup-card h2{font-family:'Playfair Display',serif;color:var(--navy);font-size:20px;margin-bottom:6px}
-.setup-card p{font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.6}
-.setup-step{display:flex;gap:12px;align-items:flex-start;margin-bottom:18px;padding:14px;background:var(--bg);border-radius:12px}
-.setup-step .ss-num{width:28px;height:28px;border-radius:50%;background:var(--navy);color:white;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0}
-.setup-step .ss-body h4{font-size:13px;font-weight:700;color:var(--navy);margin-bottom:3px}
-.setup-step .ss-body p{font-size:12px;color:var(--muted);line-height:1.5;margin:0}
-.setup-step .ss-body code{background:#e8eaf6;color:var(--navy);padding:2px 6px;border-radius:4px;font-size:11px}
-
-/* APP SHELL */
 #appShell{display:none;flex-direction:column;height:100dvh;height:100vh}
 #appShell.show{display:flex}
 .topbar{background:linear-gradient(135deg,var(--navy-d),var(--navy));padding:0 16px;height:58px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;box-shadow:0 2px 12px rgba(0,0,0,.25);z-index:50}
@@ -61,1368 +37,689 @@ html,body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text
 .tb-logo{width:36px;height:36px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
 .tb-title{font-family:'Playfair Display',serif;font-size:16px;color:var(--gold-l);line-height:1.1}
 .tb-sub{font-size:9px;color:rgba(255,255,255,.5);letter-spacing:1px}
-.tb-right{display:flex;align-items:center;gap:8px}
 .user-chip{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:20px;padding:4px 10px;font-size:11px;color:white;font-weight:600;display:flex;align-items:center;gap:5px}
 .udot{width:8px;height:8px;border-radius:50%;background:#69f0ae}
 .icon-btn{background:rgba(255,255,255,.1);border:none;color:white;width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px}
-.icon-btn:active{background:rgba(255,255,255,.25)}
-
-/* SYNC BAR */
-.sync-bar{background:rgba(26,35,126,.06);border-bottom:1px solid rgba(26,35,126,.08);padding:5px 14px;display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted)}
+.sync-bar{background:rgba(26,35,126,.06);border-bottom:1px solid rgba(26,35,126,.08);padding:5px 14px;display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted);flex-shrink:0}
 .sdot{width:7px;height:7px;border-radius:50%;background:#69f0ae;flex-shrink:0}
-.sdot.syncing{animation:blink 1s infinite}
-.sdot.err{background:#ff8a80}
+.sdot.syncing{animation:blink 1s infinite}.sdot.err{background:#ff8a80}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
-
-/* CONTENT */
-.app-content{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px 14px;padding-bottom:calc(80px + var(--safe-b))}
-.page{display:none;animation:fadeUp .25s ease}
-.page.active{display:block}
+.app-content{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 12px;padding-bottom:calc(76px + var(--safe-b))}
+.page{display:none;animation:fadeUp .25s ease}.page.active{display:block}
 @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-
-/* BOTTOM NAV */
 .bottom-nav{position:fixed;bottom:0;left:0;right:0;background:white;border-top:1px solid var(--border);display:flex;padding-bottom:var(--safe-b);z-index:50;box-shadow:0 -4px 20px rgba(26,35,126,.08)}
-.bnav{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 4px 8px;cursor:pointer;border:none;background:none;font-family:'DM Sans',sans-serif;position:relative}
-.bni{font-size:22px;margin-bottom:2px;transition:transform .2s}
-.bnl{font-size:10px;font-weight:600;color:var(--muted);transition:color .2s}
-.bnav.active .bnl{color:var(--navy)}
-.bnav.active .bni{transform:scale(1.15)}
-.bnav.active::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:40px;height:3px;background:var(--gold);border-radius:0 0 4px 4px}
-.bnbadge{position:absolute;top:6px;right:calc(50% - 18px);background:var(--red);color:white;font-size:9px;font-weight:700;min-width:16px;height:16px;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 3px}
-
-/* CARDS */
-.card{background:var(--white);border-radius:var(--r);box-shadow:var(--shadow);margin-bottom:14px;overflow:hidden}
-.card-hd{padding:14px 16px;border-bottom:1px solid var(--border);font-weight:700;color:var(--navy);font-size:14px;display:flex;align-items:center;justify-content:space-between}
-.card-bd{padding:14px 16px}
-
-/* STATS */
-.stats-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
-.stat{background:var(--white);border-radius:var(--r);padding:14px;box-shadow:var(--shadow);border-left:4px solid var(--gold);position:relative;overflow:hidden}
+.bnav{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:9px 4px 7px;cursor:pointer;border:none;background:none;font-family:'DM Sans',sans-serif;position:relative}
+.bni{font-size:20px;margin-bottom:2px;transition:transform .2s}
+.bnl{font-size:10px;font-weight:600;color:var(--muted)}
+.bnav.active .bnl{color:var(--navy)}.bnav.active .bni{transform:scale(1.15)}
+.bnav.active::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:36px;height:3px;background:var(--gold);border-radius:0 0 4px 4px}
+.bnbadge{position:absolute;top:5px;right:calc(50% - 18px);background:var(--red);color:white;font-size:9px;font-weight:700;min-width:16px;height:16px;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 3px}
+.card{background:var(--white);border-radius:var(--r);box-shadow:var(--shadow);margin-bottom:12px;overflow:hidden}
+.card-hd{padding:12px 14px;border-bottom:1px solid var(--border);font-weight:700;color:var(--navy);font-size:13px;display:flex;align-items:center;justify-content:space-between}
+.card-bd{padding:12px 14px}
+.stats-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.stat{background:var(--white);border-radius:var(--r);padding:12px;box-shadow:var(--shadow);border-left:4px solid var(--gold);position:relative;overflow:hidden}
 .stat.sg{border-left-color:var(--green)}.stat.sr{border-left-color:var(--red)}.stat.so{border-left-color:var(--orange)}
-.slbl{font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
-.sval{font-size:22px;font-weight:800;color:var(--navy);line-height:1}
-.sico{position:absolute;right:10px;top:10px;font-size:26px;opacity:.12}
-
-/* SECTION TITLE */
-.sec-t{font-family:'Playfair Display',serif;font-size:18px;color:var(--navy);margin-bottom:12px;display:flex;align-items:center;justify-content:space-between}
-
-/* BUTTONS */
-.btn{padding:10px 16px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;border:none;font-family:'DM Sans',sans-serif;transition:all .2s;display:inline-flex;align-items:center;gap:6px}
+.slbl{font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px}
+.sval{font-size:20px;font-weight:800;color:var(--navy);line-height:1}
+.sico{position:absolute;right:10px;top:10px;font-size:24px;opacity:.12}
+.sec-t{font-family:'Playfair Display',serif;font-size:17px;color:var(--navy);margin-bottom:10px;display:flex;align-items:center;justify-content:space-between}
+.btn{padding:9px 14px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;border:none;font-family:'DM Sans',sans-serif;transition:all .2s;display:inline-flex;align-items:center;gap:5px}
 .btn:active{transform:scale(.96)}
-.btn-p{background:var(--navy);color:white}
-.btn-g{background:var(--gold);color:var(--navy-d)}
-.btn-wa{background:#25D366;color:white}
-.btn-out{background:transparent;border:1.5px solid var(--navy);color:var(--navy)}
-.btn-danger{background:var(--red);color:white}
-.btn-sm{padding:7px 12px;font-size:12px;border-radius:8px}
-.btn-block{width:100%;justify-content:center}
-
-/* STUDENT LIST */
-.si{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);cursor:pointer}
-.si:last-child{border-bottom:none}
-.si:active{background:#f5f7ff}
-.sav{width:46px;height:46px;border-radius:12px;background:var(--gold-p);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:var(--gold);flex-shrink:0;overflow:hidden;border:2px solid var(--border)}
-.sav img{width:100%;height:100%;object-fit:cover;border-radius:10px}
-.sinfo{flex:1;min-width:0}
-.sname{font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.sdet{font-size:11px;color:var(--muted);margin-top:1px}
-.sright{text-align:right;flex-shrink:0}
-.spaid{font-size:13px;font-weight:700;color:var(--green)}
-.sdue{font-size:12px;color:var(--red);font-weight:600}
-
-/* CHIPS */
-.chip{display:inline-block;padding:3px 8px;border-radius:20px;font-size:10px;font-weight:600}
-.cg{background:#e8f5e9;color:var(--green)}.cr{background:#fce4ec;color:var(--red)}.cb{background:#e8eaf6;color:var(--navy)}
-
+.btn-p{background:var(--navy);color:white}.btn-g{background:var(--gold);color:var(--navy-d)}.btn-wa{background:#25D366;color:white}.btn-out{background:transparent;border:1.5px solid var(--navy);color:var(--navy)}.btn-danger{background:var(--red);color:white}.btn-sm{padding:6px 11px;font-size:11px;border-radius:8px}.btn-block{width:100%;justify-content:center}
+/* STUDENT CARD */
+.s-card{background:white;border-radius:var(--r);box-shadow:var(--shadow);margin-bottom:12px;overflow:hidden}
+.s-card-top{padding:12px 14px;display:flex;align-items:center;gap:10px;cursor:pointer}
+.s-card-top:active{background:#f5f7ff}
+.sav{width:44px;height:44px;border-radius:10px;background:var(--gold-p);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:var(--gold);flex-shrink:0;overflow:hidden;border:2px solid var(--border)}
+.sav img{width:100%;height:100%;object-fit:cover;border-radius:8px}
+.s-name{font-weight:700;font-size:14px;color:var(--text)}
+.s-sub{font-size:11px;color:var(--muted);margin-top:1px}
+.split-bar{display:grid;grid-template-columns:1fr 1fr 1fr;border-top:1px solid var(--border)}
+.split-cell{padding:8px 6px;text-align:center}
+.split-cell:not(:last-child){border-right:1px solid var(--border)}
+.sc-lbl{color:var(--muted);font-size:9px;text-transform:uppercase;letter-spacing:.3px;margin-bottom:2px}
+.sc-val{font-weight:700;font-size:13px}
+.sc-due{font-size:9px;margin-top:1px}
+.pay-actions{display:flex;gap:6px;padding:8px 12px 10px;border-top:1px solid var(--border);background:#fafbff}
 /* PENDING */
-.pend{background:#fce4ec;border-left:4px solid var(--red);border-radius:10px;padding:12px 14px;margin-bottom:10px}
+.pend{background:#fce4ec;border-left:4px solid var(--red);border-radius:10px;padding:11px 13px;margin-bottom:10px}
 .pend-name{font-weight:700;font-size:13px;color:var(--red)}
 .pend-det{font-size:11px;color:#b71c1c;margin-top:2px}
-.pend-acts{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
-
-/* ALERT BANNER */
-.abanner{background:linear-gradient(135deg,var(--orange),#ff8f00);border-radius:12px;padding:12px 14px;margin-bottom:14px;display:flex;align-items:center;gap:10px;color:white}
-.abanner h4{font-size:13px;font-weight:700}
-.abanner p{font-size:11px;opacity:.9;margin-top:1px}
-
+.pend-acts{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
 /* FORM */
-.fg{margin-bottom:14px}
-.fg label{display:block;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
-.fg input,.fg select,.fg textarea{width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;font-family:'DM Sans',sans-serif;color:var(--text);background:var(--white);transition:border-color .2s}
+.fg{margin-bottom:12px}
+.fg label{display:block;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.fg input,.fg select,.fg textarea{width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;font-family:'DM Sans',sans-serif;color:var(--text);background:var(--white);transition:border-color .2s}
 .fg input:focus,.fg select:focus,.fg textarea:focus{outline:none;border-color:var(--navy)}
 .fg textarea{resize:vertical;min-height:60px}
-.fg2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-
-/* PHOTO UPLOAD */
-.pup{width:86px;height:96px;border:2px dashed var(--border);border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;flex-shrink:0}
+.fg2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pup{width:80px;height:90px;border:2px dashed var(--border);border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;flex-shrink:0}
 .pup img{width:100%;height:100%;object-fit:cover}
-
-/* PAYMENT TIMELINE */
-.ptl{position:relative;padding-left:18px}
-.ptl::before{content:'';position:absolute;left:5px;top:0;bottom:0;width:2px;background:var(--border)}
-.pti{position:relative;background:var(--white);border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:8px}
-.pti::before{content:'';position:absolute;left:-15px;top:12px;width:8px;height:8px;border-radius:50%;background:var(--gold);border:2px solid white;box-shadow:0 0 0 2px var(--gold)}
-.ptamt{font-size:16px;font-weight:800;color:var(--green)}
-.ptinf{font-size:11px;color:var(--muted);margin-top:2px}
-
-/* PROGRESS */
-.pw{background:#e8eaf6;border-radius:20px;height:7px;overflow:hidden}
-.pb{height:100%;border-radius:20px;background:linear-gradient(90deg,var(--gold),var(--gold-l));transition:width .5s}
-.pb.pd{background:linear-gradient(90deg,var(--red),#ef9a9a)}
-
-/* PROFILE */
-.phd{background:linear-gradient(135deg,var(--navy-d),var(--navy-l));border-radius:16px;padding:18px;color:white;display:flex;gap:14px;align-items:flex-start;margin-bottom:14px}
-.ppic{width:72px;height:80px;border-radius:10px;border:3px solid var(--gold);object-fit:cover;background:var(--navy-l);display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0;overflow:hidden}
-.ppic img{width:100%;height:100%;object-fit:cover}
-.pnam{font-family:'Playfair Display',serif;font-size:20px;color:var(--gold-l);margin-bottom:3px}
-.pdet{font-size:11px;color:rgba(255,255,255,.7);margin-bottom:1px}
-
-/* MODAL */
 .mov{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:500;display:none;align-items:flex-end}
 .mov.open{display:flex}
 .msh{background:var(--white);width:100%;max-height:92vh;border-radius:20px 20px 0 0;overflow-y:auto;animation:slideUp .3s cubic-bezier(.32,0,.67,0);padding-bottom:calc(20px + var(--safe-b))}
 @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
 .mhandle{width:40px;height:4px;background:var(--border);border-radius:2px;margin:12px auto 0}
-.mmh{padding:14px 18px;border-bottom:1px solid var(--border);background:linear-gradient(135deg,var(--navy-d),var(--navy));border-radius:20px 20px 0 0}
-.mmh h3{font-family:'Playfair Display',serif;font-size:17px;color:var(--gold-l)}
-.mmb{padding:18px}
-.mmf{padding:0 18px 8px;display:flex;gap:10px;flex-wrap:wrap}
-
-/* TOAST */
-.toast{position:fixed;top:70px;left:50%;transform:translateX(-50%) translateY(-20px);background:var(--navy-d);color:white;padding:10px 20px;border-radius:24px;font-size:13px;font-weight:600;z-index:9999;transition:all .3s;opacity:0;pointer-events:none;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,.3)}
+.mmh{padding:13px 16px;border-bottom:1px solid var(--border);background:linear-gradient(135deg,var(--navy-d),var(--navy));border-radius:20px 20px 0 0}
+.mmh h3{font-family:'Playfair Display',serif;font-size:16px;color:var(--gold-l)}
+.mmb{padding:16px}.mmf{padding:0 16px 6px;display:flex;gap:8px;flex-wrap:wrap}
+.toast{position:fixed;top:68px;left:50%;transform:translateX(-50%) translateY(-20px);background:var(--navy-d);color:white;padding:9px 18px;border-radius:24px;font-size:13px;font-weight:600;z-index:9999;transition:all .3s;opacity:0;pointer-events:none;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,.3)}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .toast.tok{background:var(--green)}.toast.terr{background:var(--red)}
-
-/* LOADER */
-.loader{display:inline-block;width:18px;height:18px;border:2px solid rgba(255,255,255,.3);border-top-color:white;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px}
+.loader{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:white;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:5px}
 @keyframes spin{to{transform:rotate(360deg)}}
-
-/* SEARCH */
-.sinp{width:100%;padding:10px 14px 10px 38px;border:1.5px solid var(--border);border-radius:12px;font-size:14px;font-family:'DM Sans',sans-serif;background:white url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%236b7299' viewBox='0 0 16 16'%3E%3Cpath d='M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.099zm-5.44 1.406a5 5 0 1 1 0-10 5 5 0 0 1 0 10z'/%3E%3C/svg%3E") no-repeat 12px center;margin-bottom:12px}
-.sinp:focus{outline:none;border-color:var(--navy)}
-
-.empty{text-align:center;padding:36px 20px;color:var(--muted)}
-.empty .ei{font-size:44px;margin-bottom:10px}
-.empty h3{font-size:15px;color:var(--navy);margin-bottom:4px}
-
-/* WA BOX */
-.wabox{background:#128c7e;border-radius:12px;padding:14px;margin-bottom:12px}
-.wabox h4{color:#25D366;font-size:13px;margin-bottom:8px}
-.wabox textarea{width:100%;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:8px;color:white;padding:10px;font-size:13px;font-family:'DM Sans',sans-serif;resize:vertical;min-height:90px}
-
-/* SETTINGS */
-.si-item{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--border)}
-.si-item:last-child{border-bottom:none}
-.si-item h4{font-size:14px;font-weight:600;color:var(--text)}
-.si-item p{font-size:11px;color:var(--muted);margin-top:1px}
-
-/* LOADING OVERLAY */
 #loadingOverlay{position:fixed;inset:0;background:rgba(13,21,71,.85);z-index:8000;display:none;flex-direction:column;align-items:center;justify-content:center;color:white}
 #loadingOverlay.show{display:flex}
-#loadingOverlay .lo-spinner{width:48px;height:48px;border:3px solid rgba(255,255,255,.2);border-top-color:var(--gold);border-radius:50%;animation:spin .8s linear infinite;margin-bottom:16px}
-#loadingOverlay p{font-size:14px;color:rgba(255,255,255,.8)}
+.lo-spin{width:44px;height:44px;border:3px solid rgba(255,255,255,.2);border-top-color:var(--gold);border-radius:50%;animation:spin .8s linear infinite;margin-bottom:14px}
+.sinp{width:100%;padding:9px 14px 9px 36px;border:1.5px solid var(--border);border-radius:12px;font-size:13px;font-family:'DM Sans',sans-serif;background:white url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' fill='%236b7299' viewBox='0 0 16 16'%3E%3Cpath d='M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.099zm-5.44 1.406a5 5 0 1 1 0-10 5 5 0 0 1 0 10z'/%3E%3C/svg%3E") no-repeat 11px center;margin-bottom:10px}
+.sinp:focus{outline:none;border-color:var(--navy)}
+.empty{text-align:center;padding:32px 20px;color:var(--muted)}
+.empty .ei{font-size:40px;margin-bottom:8px}
+.empty h3{font-size:14px;color:var(--navy);margin-bottom:3px}
+.abanner{background:linear-gradient(135deg,var(--orange),#ff8f00);border-radius:12px;padding:11px 13px;margin-bottom:12px;display:flex;align-items:center;gap:10px;color:white}
+.pw{background:#e8eaf6;border-radius:20px;height:6px;overflow:hidden}
+.pb{height:100%;border-radius:20px;background:linear-gradient(90deg,var(--gold),var(--gold-l))}
+.pb.pd{background:linear-gradient(90deg,var(--red),#ef9a9a)}
+.ok-box{background:#e8f5e9;border:1px solid #a5d6a7;border-radius:10px;padding:10px 13px;font-size:12px;color:#1b5e20;margin:8px 0;line-height:1.6}
+.si-item{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border)}
+.si-item:last-child{border-bottom:none}
+.si-item h4{font-size:13px;font-weight:600;color:var(--text)}
+.si-item p{font-size:11px;color:var(--muted);margin-top:1px}
+.ptb-rent{background:#e8f5e9;color:var(--green);padding:2px 7px;border-radius:20px;font-size:10px;font-weight:600}
+.ptb-dep{background:#e8eaf6;color:var(--navy);padding:2px 7px;border-radius:20px;font-size:10px;font-weight:600}
+.ptb-both{background:#fff8e1;color:var(--orange);padding:2px 7px;border-radius:20px;font-size:10px;font-weight:600}
+.bal-info{background:#e8eaf6;border-radius:10px;padding:11px 13px;margin-bottom:12px;display:none}
+.bal-row{display:flex;justify-content:space-between;font-size:12px;padding:3px 0}
+.bal-row.tot{border-top:1px solid var(--border);margin-top:5px;padding-top:6px;font-size:13px;font-weight:700}
 </style>
 </head>
 <body>
+<div id="loadingOverlay"><div class="lo-spin"></div><p id="loadingText">Loading...</p></div>
 
-<!-- LOADING OVERLAY -->
-<div id="loadingOverlay">
-  <div class="lo-spinner"></div>
-  <p id="loadingText">Loading...</p>
-</div>
-
-<!-- ═══ SETUP SCREEN ═══ -->
-<div id="setupScreen">
-  <div class="setup-card">
-    <h2>⚙️ One-Time Setup Required</h2>
-    <p>To connect this app to Google Sheets (so all 3 users share the same data), please enter your Google Apps Script Web App URL below. You only need to do this once.</p>
-
-    <div class="setup-step">
-      <div class="ss-num">1</div>
-      <div class="ss-body">
-        <h4>Open Google Sheets</h4>
-        <p>Go to <strong>sheets.google.com</strong> → Create a new blank spreadsheet → Name it <strong>"LMA EduNest Data"</strong></p>
-      </div>
-    </div>
-    <div class="setup-step">
-      <div class="ss-num">2</div>
-      <div class="ss-body">
-        <h4>Open Apps Script</h4>
-        <p>In the spreadsheet: <strong>Extensions → Apps Script</strong> → delete any existing code → paste the full <code>Code.gs</code> file contents</p>
-      </div>
-    </div>
-    <div class="setup-step">
-      <div class="ss-num">3</div>
-      <div class="ss-body">
-        <h4>Run Setup Once</h4>
-        <p>In Apps Script: select <code>setupSheets</code> from the dropdown → click <strong>Run</strong> → allow permissions when asked</p>
-      </div>
-    </div>
-    <div class="setup-step">
-      <div class="ss-num">4</div>
-      <div class="ss-body">
-        <h4>Deploy as Web App</h4>
-        <p><strong>Deploy → New Deployment → Web App</strong><br>
-        Execute as: <strong>Me</strong> | Access: <strong>Anyone</strong><br>
-        Copy the Web App URL and paste it below</p>
-      </div>
-    </div>
-
-    <div style="margin-top:16px">
-      <div class="fg">
-        <label>Google Apps Script Web App URL *</label>
-        <input type="url" id="scriptUrlInput" placeholder="https://script.google.com/macros/s/.../exec" style="font-size:12px">
-      </div>
-      <button class="btn btn-p btn-block" onclick="saveScriptUrl()">✅ Save & Connect</button>
-      <div id="setupErr" style="color:var(--red);font-size:12px;text-align:center;margin-top:8px"></div>
-    </div>
-  </div>
-</div>
-
-<!-- ═══ LOGIN SCREEN ═══ -->
+<!-- LOGIN -->
 <div id="loginScreen">
   <div class="l-logo">🏠</div>
   <div class="l-brand">LMA EduNest</div>
   <div class="l-sub">Girls Hostel · Pune</div>
   <div class="l-card">
     <h3>🔐 Sign in to continue</h3>
-    <div class="lf">
-      <label>Select User</label>
+    <div class="lf"><label>Select User</label>
       <select id="loginUser">
         <option value="">-- Select your name --</option>
         <option value="admin">Lokesh (Owner)</option>
         <option value="manager1">Milind Bhujbal</option>
         <option value="manager2">Anand Udavant</option>
-      </select>
-    </div>
-    <div class="lf">
-      <label>Password</label>
-      <input type="password" id="loginPass" placeholder="Enter password" onkeydown="if(event.key==='Enter')doLogin()">
-    </div>
+      </select></div>
+    <div class="lf"><label>Password</label><input type="password" id="loginPass" placeholder="Enter password" onkeydown="if(event.key==='Enter')doLogin()"></div>
     <button class="btn-login" id="loginBtn" onclick="doLogin()">Sign In →</button>
     <div class="l-err" id="loginErr"></div>
   </div>
-  <div style="margin-top:18px;text-align:center;font-size:11px;color:rgba(255,255,255,.25)">v3.0 · Google Sheets Powered · LMA EduNest</div>
 </div>
 
-<!-- ═══ APP SHELL ═══ -->
+<!-- APP -->
 <div id="appShell">
   <div class="topbar">
     <div class="tb-left">
       <div class="tb-logo">🏠</div>
-      <div>
-        <div class="tb-title">EduNest</div>
-        <div class="tb-sub" id="tbSub">HOSTEL · PUNE</div>
-      </div>
+      <div><div class="tb-title">EduNest</div><div class="tb-sub" id="tbSub">HOSTEL · PUNE</div></div>
     </div>
-    <div class="tb-right">
+    <div style="display:flex;align-items:center;gap:8px">
       <div class="user-chip"><div class="udot"></div><span id="userChip">-</span></div>
-      <button class="icon-btn" onclick="refreshAll()" title="Sync">🔄</button>
+      <button class="icon-btn" onclick="refreshAll()">🔄</button>
     </div>
   </div>
+  <div class="sync-bar"><div class="sdot" id="sdot"></div><span id="stext">Connecting...</span></div>
 
-  <div class="sync-bar">
-    <div class="sdot" id="sdot"></div>
-    <span id="stext">Connected to Google Sheets</span>
-  </div>
-
-  <div class="app-content" id="appContent">
-
-    <!-- DASHBOARD -->
+  <div class="app-content">
+    <!-- HOME -->
     <div class="page active" id="page-home">
-      <div class="abanner" id="dueBanner">
-        <div style="font-size:24px;flex-shrink:0">📅</div>
-        <div><h4>Monthly Rent Due by 5th</h4><p id="dueText">Reminders sent via WhatsApp automatically</p></div>
-      </div>
+      <div class="abanner"><div style="font-size:22px;flex-shrink:0">📅</div><div><div style="font-weight:700;font-size:13px">Monthly Rent Due by 5th</div><div id="dueText" style="font-size:11px;opacity:.9">Auto WA reminders active</div></div></div>
       <div class="stats-row">
         <div class="stat"><div class="slbl">Students</div><div class="sval" id="stTotal">—</div><div class="sico">👩‍🎓</div></div>
         <div class="stat sg"><div class="slbl">Collected</div><div class="sval" id="stColl">—</div><div class="sico">✅</div></div>
-        <div class="stat sr"><div class="slbl">Pending</div><div class="sval" id="stPend">—</div><div class="sico">⚠️</div></div>
-        <div class="stat so"><div class="slbl">Deposits</div><div class="sval" id="stDep">—</div><div class="sico">🔒</div></div>
+        <div class="stat sr"><div class="slbl">Rent Due</div><div class="sval" id="stRDue">—</div><div class="sico">🏠</div></div>
+        <div class="stat so"><div class="slbl">Deposit Due</div><div class="sval" id="stDDue">—</div><div class="sico">🔒</div></div>
       </div>
       <div class="sec-t">⚠️ Pending Dues</div>
       <div id="dashPending"></div>
-      <div class="sec-t" style="margin-top:6px">💳 Recent Payments</div>
+      <div class="sec-t" style="margin-top:4px">💳 Recent Payments</div>
       <div class="card"><div class="card-bd" id="dashRecent"></div></div>
     </div>
 
     <!-- STUDENTS -->
     <div class="page" id="page-students">
-      <div class="sec-t">👩‍🎓 Students <button class="btn btn-p btn-sm" onclick="openM('addStudentM')">+ Add</button></div>
-      <input class="sinp" placeholder="Search name, room, mobile..." oninput="filterStudents(this.value)" id="studSearch">
-      <div class="card"><div class="card-bd" id="studentList"></div></div>
+      <div class="sec-t">👩‍🎓 Students <button class="btn btn-p btn-sm" onclick="openM('addStudM')">+ Add</button></div>
+      <input class="sinp" placeholder="Search name, room, mobile..." oninput="filterStudents(this.value)">
+      <div id="studentList"></div>
     </div>
 
-    <!-- FEES -->
+    <!-- SUMMARY -->
     <div class="page" id="page-fees">
-      <div class="sec-t">💰 Fee Summary</div>
-      <!-- Summary filters -->
-      <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
-        <select id="feesFilter" onchange="renderFeesList(cachedStudents,cachedPayments)" style="flex:1;padding:9px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:13px;font-family:'DM Sans',sans-serif">
+      <div class="sec-t">📊 Fee Summary</div>
+      <div style="display:flex;gap:6px;margin-bottom:10px">
+        <select id="feesFilter" onchange="renderFeesPage()" style="flex:1;padding:9px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:12px;font-family:'DM Sans',sans-serif">
           <option value="all">All Students</option>
-          <option value="pending">Pending Only</option>
+          <option value="rent_due">Rent Pending</option>
+          <option value="dep_due">Deposit Pending</option>
           <option value="clear">Fully Clear</option>
         </select>
+        <select id="monthFilter" onchange="renderFeesPage()" style="flex:1;padding:9px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:12px;font-family:'DM Sans',sans-serif">
+          <option value="">All Months</option>
+        </select>
       </div>
-      <div id="feesList"></div>
+      <div id="feesPage"></div>
     </div>
 
-    <!-- PENDING -->
-    <div class="page" id="page-pending">
-      <div class="sec-t">⚠️ Dues <button class="btn btn-wa btn-sm" onclick="bulkWA()">📱 Bulk WA</button></div>
-      <div id="pendingList"></div>
+    <!-- DUES -->
+    <div class="page" id="page-dues">
+      <div class="sec-t">⚠️ Dues <button class="btn btn-wa btn-sm" onclick="sendBulkWA()">📱 Bulk WA</button></div>
+      <div id="duesList"></div>
     </div>
 
     <!-- MORE -->
     <div class="page" id="page-more">
       <div class="sec-t">⚙️ Settings</div>
-      <div class="card">
-        <div class="card-hd">👤 Account</div>
-        <div class="card-bd">
-          <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
-            <div style="width:48px;height:48px;border-radius:50%;background:var(--navy);display:flex;align-items:center;justify-content:center;font-size:22px;color:var(--gold)">👩‍💼</div>
-            <div>
-              <div style="font-weight:700;font-size:15px" id="settName">-</div>
-              <div id="settRole" class="chip cb" style="margin-top:3px">-</div>
-            </div>
-          </div>
-          <button class="btn btn-danger btn-block" onclick="doLogout()">🚪 Sign Out</button>
+      <div class="card"><div class="card-hd">👤 Account</div><div class="card-bd">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+          <div style="width:46px;height:46px;border-radius:50%;background:var(--navy);display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--gold)">👩‍💼</div>
+          <div><div style="font-weight:700;font-size:14px" id="settName">-</div><div style="font-size:11px;color:var(--muted)" id="settRole">-</div></div>
         </div>
-      </div>
-      <div class="card">
-        <div class="card-hd">🔐 Change Password</div>
-        <div class="card-bd">
-          <div class="fg"><label>Current Password</label><input type="password" id="cpOld" placeholder="Current password"></div>
-          <div class="fg"><label>New Password</label><input type="password" id="cpNew" placeholder="New password"></div>
-          <div class="fg"><label>Confirm New Password</label><input type="password" id="cpConf" placeholder="Confirm new password"></div>
-          <button class="btn btn-p btn-block" onclick="changePassword()">💾 Update Password</button>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-hd">🔔 Auto WhatsApp Notifications</div>
-        <div class="card-bd">
-          <div class="fg">
-            <label>Admin WhatsApp Number (with country code)</label>
-            <input type="tel" id="adminWaNum" placeholder="919876543210" oninput="localStorage.setItem('lma_admin_wa',this.value)">
-          </div>
-          <div style="background:#e8f5e9;border:1px solid #a5d6a7;border-radius:10px;padding:12px;font-size:12px;color:#1b5e20;margin-top:8px;line-height:1.8">
-            <strong>Auto notifications:</strong><br>
-            ✅ Student ko monthly rent reminder<br>
-            ✅ Admin ko pending dues summary<br>
-            ✅ Payment receive hone par admin ko notification
-          </div>
-          <button class="btn btn-wa btn-block" style="margin-top:12px" onclick="sendMonthlyToAll()">📱 Send Monthly Reminder to All Students</button>
-          <button class="btn btn-p btn-block" style="margin-top:8px" onclick="sendPendingSummaryToAdmin()">📊 Send Pending Summary to Admin</button>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-hd">📱 WhatsApp Templates</div>
-        <div class="card-bd">
-          <div class="fg"><label>Monthly Reminder</label>
-            <textarea id="waMonthly" rows="5">Dear {Name},
-
+        <button class="btn btn-danger btn-block" onclick="doLogout()">🚪 Sign Out</button>
+      </div></div>
+      <div class="card"><div class="card-hd">🔐 Change Password</div><div class="card-bd">
+        <div class="fg"><label>Current Password</label><input type="password" id="cpOld" placeholder="Current password"></div>
+        <div class="fg"><label>New Password</label><input type="password" id="cpNew" placeholder="New password"></div>
+        <div class="fg"><label>Confirm New Password</label><input type="password" id="cpConf" placeholder="Confirm"></div>
+        <button class="btn btn-p btn-block" onclick="changePassword()">💾 Update Password</button>
+      </div></div>
+      <div class="card"><div class="card-hd">🔔 Admin WhatsApp</div><div class="card-bd">
+        <div class="fg"><label>Admin WA Number (91XXXXXXXXXX)</label><input type="tel" id="adminWaNum" placeholder="919876543210" oninput="localStorage.setItem('lma_admin_wa',this.value)"></div>
+        <div class="ok-box">Payment hone par admin ko turant WA notification milega.</div>
+        <button class="btn btn-wa btn-block" style="margin-top:8px" onclick="sendMonthlyToAll()">📱 Send Monthly Reminder to All</button>
+        <button class="btn btn-p btn-block" style="margin-top:6px" onclick="sendPendingSummaryToAdmin()">📊 Send Pending Summary to Admin</button>
+      </div></div>
+      <div class="card"><div class="card-hd">📱 WA Templates</div><div class="card-bd">
+        <div class="fg"><label>Monthly Reminder</label><textarea id="waMonthly" rows="4">Dear {Name},
 🏠 *LMA EduNest Girls Hostel*
 Monthly rent of *₹{Amount}* is due by 5th.
 Room: {Room} | Bed: {Bed}
-
-Please pay on time. Thank you! 🙏</textarea></div>
-          <div class="fg"><label>Pending Dues</label>
-            <textarea id="waPending" rows="5">Dear {Name},
-
+Please pay on time. 🙏</textarea></div>
+        <div class="fg"><label>Pending Dues</label><textarea id="waPending" rows="5">Dear {Name},
 ⚠️ *LMA EduNest – Payment Due*
-Outstanding balance: *₹{Pending}*
+🏠 Rent pending: *₹{RentDue}*
+🔒 Deposit pending: *₹{DepDue}*
+💰 Total due: *₹{Total}*
 Room: {Room} | Bed: {Bed}
-
-Kindly clear dues immediately. 🙏</textarea></div>
-          <button class="btn btn-p btn-sm" onclick="saveTemplates()">💾 Save Templates</button>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-hd">📊 Google Sheets</div>
-        <div class="card-bd">
-          <div class="si-item">
-            <div><h4>🔄 Force Sync</h4><p>Reload all data from Google Sheets</p></div>
-            <button class="btn btn-p btn-sm" onclick="refreshAll()">Sync</button>
-          </div>
-          <div class="si-item">
-            <div><h4>🔗 Script URL</h4><p>Change the connected Apps Script</p></div>
-            <button class="btn btn-out btn-sm" onclick="changeScriptUrl()">Change</button>
-          </div>
-          <div class="si-item">
-            <div><h4>📋 Open Spreadsheet</h4><p>View raw data in Google Sheets</p></div>
-            <button class="btn btn-out btn-sm" onclick="openSheets()">Open</button>
-          </div>
-        </div>
-      </div>
-      <div style="text-align:center;padding:20px;color:var(--muted);font-size:11px">LMA EduNest v3.0 · Google Sheets Powered<br><span style="color:var(--gold)">♥</span> Girls Hostel · Pune</div>
+Kindly clear dues. 🙏</textarea></div>
+        <button class="btn btn-p btn-sm" onclick="saveTemplates()">💾 Save Templates</button>
+      </div></div>
+      <div class="card"><div class="card-hd">📊 Data</div><div class="card-bd">
+        <div class="si-item"><div><h4>🔄 Sync</h4><p>Reload from Google Sheets</p></div><button class="btn btn-p btn-sm" onclick="refreshAll()">Sync</button></div>
+        <div class="si-item"><div><h4>📤 Export</h4><p>Download JSON backup</p></div><button class="btn btn-out btn-sm" onclick="exportData()">Export</button></div>
+        <div class="si-item"><div><h4>🔗 Script URL</h4><p>Change Apps Script link</p></div><button class="btn btn-out btn-sm" onclick="changeScriptUrl()">Change</button></div>
+      </div></div>
     </div>
-
-  </div><!-- /app-content -->
+  </div>
 
   <div class="bottom-nav">
     <button class="bnav active" onclick="switchTab('home',this)"><div class="bni">🏠</div><div class="bnl">Home</div></button>
     <button class="bnav" onclick="switchTab('students',this)"><div class="bni">👩‍🎓</div><div class="bnl">Students</div></button>
     <button class="bnav" onclick="switchTab('fees',this)"><div class="bni">📊</div><div class="bnl">Summary</div></button>
-    <button class="bnav" onclick="switchTab('pending',this)"><div class="bni">⚠️</div><div class="bnl">Dues</div><div class="bnbadge" id="pendBadge" style="display:none">0</div></button>
+    <button class="bnav" onclick="switchTab('dues',this)"><div class="bni">⚠️</div><div class="bnl">Dues</div><div class="bnbadge" id="pendBadge" style="display:none">0</div></button>
     <button class="bnav" onclick="switchTab('more',this)"><div class="bni">⚙️</div><div class="bnl">More</div></button>
   </div>
 </div>
 
-<!-- ═══ MODALS ═══ -->
-
-<!-- ADD STUDENT -->
-<div class="mov" id="addStudentM">
-  <div class="msh">
-    <div class="mhandle"></div>
-    <div class="mmh"><h3>➕ Add New Student</h3></div>
-    <div class="mmb">
-      <div style="display:flex;gap:14px;margin-bottom:14px">
-        <div>
-          <div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;margin-bottom:5px">Photo</div>
-          <div class="pup" onclick="document.getElementById('sPhotoInp').click()">
-            <img id="sPhotoPreview" src="" style="display:none">
-            <span id="sPhotoPH" style="text-align:center;font-size:11px;color:var(--muted);padding:6px">📷<br>Upload</span>
-          </div>
-          <input type="file" id="sPhotoInp" accept="image/*" style="display:none" onchange="previewPhoto(this)">
+<!-- ADD STUDENT MODAL -->
+<div class="mov" id="addStudM"><div class="msh">
+  <div class="mhandle"></div>
+  <div class="mmh"><h3>➕ Add New Student</h3></div>
+  <div class="mmb">
+    <div style="display:flex;gap:12px;margin-bottom:12px">
+      <div>
+        <div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;margin-bottom:4px">Photo</div>
+        <div class="pup" onclick="document.getElementById('sPhotoInp').click()">
+          <img id="sPhotoPreview" src="" style="display:none">
+          <span id="sPhotoPH" style="text-align:center;font-size:10px;color:var(--muted);padding:4px">📷<br>Upload</span>
         </div>
-        <div style="flex:1;min-width:0">
-          <div class="fg"><label>Full Name *</label><input type="text" id="sName" placeholder="Student Name"></div>
-          <div class="fg"><label>Course / College</label><input type="text" id="sCourse" placeholder="e.g. B.Tech, SPPU"></div>
-        </div>
+        <input type="file" id="sPhotoInp" accept="image/*" style="display:none" onchange="previewPhoto(this)">
       </div>
-      <div class="fg2">
-        <div class="fg"><label>Room No *</label><input type="text" id="sRoom" placeholder="101"></div>
-        <div class="fg"><label>Bed No *</label><input type="text" id="sBed" placeholder="A"></div>
-        <div class="fg"><label>Student Mobile *</label><input type="tel" id="sMob" placeholder="98765 43210"></div>
-        <div class="fg"><label>Parent Mobile</label><input type="tel" id="sPMob" placeholder="98765 43210"></div>
-        <div class="fg"><label>Monthly Rent ₹ *</label><input type="number" id="sRent" placeholder="6000" oninput="calcBalance()"></div>
-        <div class="fg"><label>Security Deposit ₹</label><input type="number" id="sDep" placeholder="10000" oninput="calcBalance()"></div>
-        <div class="fg"><label>Joining Date *</label><input type="date" id="sJoin"></div>
-        <div class="fg"><label>Due Day</label><select id="sDueDay"><option value="5">5th</option><option value="1">1st</option><option value="10">10th</option></select></div>
+      <div style="flex:1;min-width:0">
+        <div class="fg"><label>Full Name *</label><input type="text" id="sName" placeholder="Student Full Name"></div>
+        <div class="fg"><label>Course / College</label><input type="text" id="sCourse" placeholder="e.g. B.Tech, SPPU"></div>
       </div>
-      <div class="fg"><label>Permanent Address</label><textarea id="sAddr" placeholder="Home address..."></textarea></div>
-
-      <div class="fg"><label>Notes / Remarks</label><input type="text" id="sNote" placeholder="Any remarks..."></div>
     </div>
-    <div class="mmf">
-      <button class="btn btn-out btn-sm" onclick="closeM('addStudentM')">Cancel</button>
-      <button class="btn btn-p" id="addStudBtn" onclick="addStudent()" style="flex:1;justify-content:center">✅ Save to Google Sheets</button>
+    <div class="fg2">
+      <div class="fg"><label>Room No *</label><input type="text" id="sRoom" placeholder="101"></div>
+      <div class="fg"><label>Bed No *</label><input type="text" id="sBed" placeholder="A"></div>
+      <div class="fg"><label>Student Mobile *</label><input type="tel" id="sMob" placeholder="98765 43210"></div>
+      <div class="fg"><label>Parent Mobile</label><input type="tel" id="sPMob" placeholder="98765 43210"></div>
+      <div class="fg"><label>Monthly Rent ₹ *</label><input type="number" id="sRent" placeholder="6000" oninput="updateBalBox()"></div>
+      <div class="fg"><label>Security Deposit ₹</label><input type="number" id="sDep" placeholder="10000" oninput="updateBalBox()"></div>
+      <div class="fg"><label>Joining Date *</label><input type="date" id="sJoin"></div>
+      <div class="fg"><label>Due Day</label><select id="sDueDay"><option value="5">5th</option><option value="1">1st</option><option value="10">10th</option></select></div>
     </div>
+    <div id="addBalBox" style="display:none;background:#e8f5e9;border:1px solid #a5d6a7;border-radius:10px;padding:10px 13px;font-size:12px;color:#1b5e20;margin-bottom:10px;line-height:1.7"></div>
+    <div class="fg"><label>Permanent Address</label><textarea id="sAddr" placeholder="Home address..."></textarea></div>
+    <div class="fg"><label>Notes</label><input type="text" id="sNote" placeholder="Any remarks..."></div>
   </div>
-</div>
-
-<!-- ADD PAYMENT -->
-<div class="mov" id="addPayM">
-  <div class="msh">
-    <div class="mhandle"></div>
-    <div class="mmh"><h3>💳 Record Payment</h3></div>
-    <div class="mmb">
-      <div class="fg"><label>Student *</label><select id="pStudId" onchange="showStudentBalance()"></select></div>
-      <div id="studentBalanceBox" style="display:none;background:#e8eaf6;border-radius:10px;padding:10px 14px;font-size:12px;margin-bottom:8px"></div>
-      <div class="fg">
-        <label>Payment Type *</label>
-        <select id="pType" onchange="showStudentBalance()">
-          <option value="rent">🏠 Rent Payment</option>
-          <option value="deposit">🔒 Security Deposit</option>
-          <option value="both">💰 Both (Rent + Deposit)</option>
-        </select>
-      </div>
-      <div class="fg2">
-        <div class="fg"><label>Month *</label><input type="month" id="pMonth"></div>
-        <div class="fg"><label>Amount ₹ *</label><input type="number" id="pAmt" placeholder="6000"></div>
-        <div class="fg"><label>Date *</label><input type="date" id="pDate"></div>
-        <div class="fg"><label>Mode</label><select id="pMode"><option>Cash</option><option>UPI / GPay</option><option>PhonePe</option><option>Bank Transfer</option><option>Cheque</option></select></div>
-      </div>
-      <div class="fg"><label>Reference / UTR No.</label><input type="text" id="pRef" placeholder="Transaction reference"></div>
-      <div class="fg"><label>Remarks</label><input type="text" id="pNote" placeholder="e.g. partial payment"></div>
-    </div>
-    <div class="mmf">
-      <button class="btn btn-out btn-sm" onclick="closeM('addPayM')">Cancel</button>
-      <button class="btn btn-g" id="addPayBtn" onclick="recordPayment()" style="flex:1;justify-content:center">✅ Record Payment</button>
-    </div>
+  <div class="mmf">
+    <button class="btn btn-out btn-sm" onclick="closeM('addStudM')">Cancel</button>
+    <button class="btn btn-p" id="addStudBtn" onclick="addStudent()" style="flex:1;justify-content:center">✅ Save Student</button>
   </div>
-</div>
+</div></div>
+
+<!-- PAY MODAL -->
+<div class="mov" id="payM"><div class="msh">
+  <div class="mhandle"></div>
+  <div class="mmh"><h3>💳 Record Payment</h3></div>
+  <div class="mmb">
+    <div id="payStudInfo" style="display:none;background:var(--navy);border-radius:10px;padding:10px 13px;margin-bottom:12px;color:white;font-size:13px"></div>
+    <div class="bal-info" id="payBalBox">
+      <div class="bal-row"><span style="color:var(--muted)">🏠 Rent Due</span><span id="bvRent" style="font-weight:700"></span></div>
+      <div class="bal-row"><span style="color:var(--muted)">🔒 Deposit Due</span><span id="bvDep" style="font-weight:700"></span></div>
+      <div class="bal-row tot"><span>💰 Total Due</span><span id="bvTotal"></span></div>
+    </div>
+    <div class="fg"><label>Payment Type *</label>
+      <select id="pType" onchange="updatePaySuggestion()">
+        <option value="rent">🏠 Rent Payment</option>
+        <option value="deposit">🔒 Security Deposit</option>
+        <option value="both">💰 Both (Rent + Deposit)</option>
+      </select></div>
+    <div class="fg2">
+      <div class="fg"><label>Month *</label><input type="month" id="pMonth"></div>
+      <div class="fg"><label>Amount Paid ₹ *</label><input type="number" id="pAmt" placeholder="Enter amount"><div id="pSug" style="font-size:10px;color:var(--green);margin-top:3px"></div></div>
+      <div class="fg"><label>Payment Date *</label><input type="date" id="pDate"></div>
+      <div class="fg"><label>Mode</label><select id="pMode"><option>Cash</option><option>UPI / GPay</option><option>PhonePe</option><option>Bank Transfer</option><option>Cheque</option></select></div>
+    </div>
+    <div class="fg"><label>Reference / UTR No.</label><input type="text" id="pRef" placeholder="Transaction reference (optional)"></div>
+    <div class="fg"><label>Remarks</label><input type="text" id="pNote" placeholder="e.g. partial payment..."></div>
+  </div>
+  <div class="mmf">
+    <button class="btn btn-out btn-sm" onclick="closeM('payM')">Cancel</button>
+    <button class="btn btn-g" id="payBtn" onclick="recordPayment()" style="flex:1;justify-content:center">✅ Record Payment</button>
+  </div>
+</div></div>
 
 <!-- VIEW STUDENT -->
-<div class="mov" id="viewStudM">
-  <div class="msh">
-    <div class="mhandle"></div>
-    <div class="mmh"><h3>👩‍🎓 Student Profile</h3></div>
-    <div class="mmb" id="viewStudBody"></div>
-    <div class="mmf" id="viewStudFoot"></div>
-  </div>
-</div>
+<div class="mov" id="viewStudM"><div class="msh">
+  <div class="mhandle"></div>
+  <div class="mmh"><h3>👩‍🎓 Student Profile</h3></div>
+  <div class="mmb" id="viewStudBody"></div>
+  <div class="mmf" id="viewStudFoot"></div>
+</div></div>
 
 <div class="toast" id="toast"></div>
 
 <script>
-// ══════════════════════════════════════════════════════════
-// CONFIG
-// ══════════════════════════════════════════════════════════
 let SCRIPT_URL = localStorage.getItem('lma_script_url') || 'https://script.google.com/macros/s/AKfycbzVg_8JWEYw-Zlln_keOblA55te05MmBouEYz0eM5GYwJ1bOwuKKou6qH49Rbop0rbwyw/exec';
 let currentUser = JSON.parse(sessionStorage.getItem('lma_user') || 'null');
-let cachedStudents = [];
-let cachedPayments = [];
+let CS = [], CP = [], activePaySid = null;
 
-// ══════════════════════════════════════════════════════════
-// API CALLS
-// ══════════════════════════════════════════════════════════
-async function api(payload) {
-  if (!SCRIPT_URL) throw new Error('No script URL configured');
-  const response = await fetch(SCRIPT_URL, {
-    method: 'POST',
-    body: JSON.stringify({ ...payload, token: currentUser?.token })
-  });
-  const data = await response.json();
-  if (!data.ok) throw new Error(data.error || 'API error');
-  return data;
-}
-
-// ══════════════════════════════════════════════════════════
-// SETUP
-// ══════════════════════════════════════════════════════════
-function saveScriptUrl() {
-  const url = document.getElementById('scriptUrlInput').value.trim();
-  if (!url.includes('script.google.com')) {
-    document.getElementById('setupErr').textContent = 'Please enter a valid Google Apps Script URL';
-    return;
-  }
-  SCRIPT_URL = url;
-  localStorage.setItem('lma_script_url', url);
-  document.getElementById('setupScreen').classList.remove('show');
-  document.getElementById('loginScreen').style.display = 'flex';
-  showToast('✅ Connected to Google Sheets!', 'tok');
-}
-
-function changeScriptUrl() {
-  const newUrl = prompt('Enter new Google Apps Script URL:', SCRIPT_URL);
-  if (newUrl && newUrl.includes('script.google.com')) {
-    SCRIPT_URL = newUrl;
-    localStorage.setItem('lma_script_url', newUrl);
-    showToast('✅ Script URL updated', 'tok');
-  }
-}
-
-function openSheets() {
-  window.open('https://sheets.google.com', '_blank');
-}
-
-// ══════════════════════════════════════════════════════════
-// INIT
-// ══════════════════════════════════════════════════════════
-function init() {
-  if (!SCRIPT_URL) {
-    document.getElementById('loginScreen').style.display = 'none';
-    document.getElementById('setupScreen').classList.add('show');
-    return;
-  }
-  if (currentUser) {
-    showApp();
-  } else {
-    document.getElementById('loginScreen').style.display = 'flex';
-  }
-
-  // Load saved WA templates
-  const waMon = localStorage.getItem('lma_wa_monthly');
-  const waPen = localStorage.getItem('lma_wa_pending');
-  if (waMon) document.getElementById('waMonthly').value = waMon;
-  if (waPen) document.getElementById('waPending').value = waPen;
-
-  // Set default dates
-  document.getElementById('sJoin').value = today();
-  document.getElementById('pDate').value = today();
-  document.getElementById('pMonth').value = thisMonth();
-
-  // Close modals on backdrop tap
-  document.querySelectorAll('.mov').forEach(m => {
-    m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); });
-  });
-
-  // Due day banner
-  const dom = new Date().getDate();
-  if (dom <= 5) document.getElementById('dueText').textContent = `⏰ Today is the ${dom}${dom===1?'st':dom===2?'nd':dom===3?'rd':'th'} — Send reminders now!`;
-}
-
-// ══════════════════════════════════════════════════════════
-// LOGIN / LOGOUT
-// ══════════════════════════════════════════════════════════
-// Hardcoded fallback users (in case Users sheet not set up yet)
-const HARDCODED_USERS = {
-  admin:    { name: 'Lokesh (Owner)', password: 'Admin@1234', role: 'admin' },
-  manager1: { name: 'Milind Bhujbal',    password: 'Mgr1@1234',  role: 'manager' },
-  manager2: { name: 'Anand Udavant',    password: 'Mgr2@1234',  role: 'manager' },
+const HU = {
+  admin:    { name:'Lokesh (Owner)',  password:'Admin@1234', role:'admin' },
+  manager1: { name:'Milind Bhujbal', password:'Mgr1@1234',  role:'manager' },
+  manager2: { name:'Anand Udavant',  password:'Mgr2@1234',  role:'manager' },
 };
 
-async function doLogin() {
-  const username = document.getElementById('loginUser').value;
-  const password = document.getElementById('loginPass').value;
-  const err      = document.getElementById('loginErr');
-
-  if (!username) { err.textContent = 'Please select a user'; return; }
-  if (!password) { err.textContent = 'Please enter your password'; return; }
-
-  const btn = document.getElementById('loginBtn');
-  btn.innerHTML = '<span class="loader"></span> Signing in...';
-  btn.disabled  = true;
-  err.textContent = '';
-
-  // Try Google Sheets login first
-  try {
-    const data = await api({ action: 'login', username, password });
-    currentUser = { ...data.user, token: data.token };
-    sessionStorage.setItem('lma_user', JSON.stringify(currentUser));
-    document.getElementById('loginScreen').classList.add('hide');
-    setTimeout(() => {
-      document.getElementById('loginScreen').style.display = 'none';
-      showApp();
-    }, 400);
-    return;
-  } catch(e) {
-    // Sheets login failed — try hardcoded fallback
-  }
-
-  // Fallback: hardcoded login
-  const hUser = HARDCODED_USERS[username];
-  if (hUser && hUser.password === password) {
-    const token = btoa(username + ':' + password + ':' + Date.now());
-    currentUser = { username, name: hUser.name, role: hUser.role, token };
-    sessionStorage.setItem('lma_user', JSON.stringify(currentUser));
-    document.getElementById('loginScreen').classList.add('hide');
-    setTimeout(() => {
-      document.getElementById('loginScreen').style.display = 'none';
-      showApp();
-    }, 400);
-  } else {
-    err.textContent = '❌ Incorrect password. Try again.';
-  }
-
-  btn.innerHTML = 'Sign In →';
-  btn.disabled  = false;
+async function api(p) {
+  const r = await fetch(SCRIPT_URL, {method:'POST', body:JSON.stringify({...p,token:currentUser?.token})});
+  const d = await r.json(); if(!d.ok) throw new Error(d.error||'API error'); return d;
 }
 
-function doLogout() {
-  if (!confirm('Sign out?')) return;
-  sessionStorage.removeItem('lma_user');
-  currentUser = null;
-  location.reload();
+function fmt(n){return '₹'+Number(n||0).toLocaleString('en-IN')}
+function today(){return new Date().toISOString().split('T')[0]}
+function thisMonth(){return new Date().toISOString().substr(0,7)}
+function showToast(m,t=''){const el=document.getElementById('toast');el.textContent=m;el.className='toast show '+t;setTimeout(()=>el.className='toast',3500)}
+function openM(id){document.getElementById(id).classList.add('open')}
+function closeM(id){document.getElementById(id).classList.remove('open')}
+function showLoading(m){document.getElementById('loadingText').textContent=m||'Loading...';document.getElementById('loadingOverlay').classList.add('show')}
+function hideLoading(){document.getElementById('loadingOverlay').classList.remove('show')}
+function setSyncStatus(s,t){const d=document.getElementById('sdot');document.getElementById('stext').textContent=t;d.className='sdot'+(s==='syncing'?' syncing':s==='err'?' err':'')}
+function switchTab(tab,el){
+  document.querySelectorAll('.bnav').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active'); document.getElementById('page-'+tab).classList.add('active');
+  if(tab==='fees')renderFeesPage(); if(tab==='dues')renderDuesList();
+}
+function previewPhoto(inp){const r=new FileReader();r.onload=e=>{const img=document.getElementById('sPhotoPreview');img.src=e.target.result;img.style.display='block';document.getElementById('sPhotoPH').style.display='none'};r.readAsDataURL(inp.files[0])}
+function fileToBase64(f){return new Promise((res,rej)=>{const r=new FileReader();r.onload=e=>res(e.target.result);r.onerror=rej;r.readAsDataURL(f)})}
+
+// FEE CALC
+function rentPaid(sid){return CP.filter(p=>p.studentId===sid&&(p.paymentType==='rent'||p.paymentType==='both'||!p.paymentType)).reduce((s,p)=>s+Number(p.amount||0),0)}
+function depositPaid(sid){return CP.filter(p=>p.studentId===sid&&p.paymentType==='deposit').reduce((s,p)=>s+Number(p.amount||0),0)}
+function totalPaid(sid){return CP.filter(p=>p.studentId===sid).reduce((s,p)=>s+Number(p.amount||0),0)}
+function expectedRent(s){const j=new Date(s.joinDate),n=new Date();return Math.max(1,(n.getFullYear()-j.getFullYear())*12+(n.getMonth()-j.getMonth())+1)*Number(s.rent||0)}
+function rentDue(s){return Math.max(0,expectedRent(s)-rentPaid(s.id))}
+function depositDue(s){return Math.max(0,Number(s.deposit||0)-depositPaid(s.id))}
+function totalDue(s){return rentDue(s)+depositDue(s)}
+
+// AUTH
+async function doLogin(){
+  const un=document.getElementById('loginUser').value, pw=document.getElementById('loginPass').value, err=document.getElementById('loginErr');
+  if(!un){err.textContent='Please select a user';return} if(!pw){err.textContent='Please enter password';return}
+  const btn=document.getElementById('loginBtn'); btn.innerHTML='<span class="loader"></span> Signing in...'; btn.disabled=true; err.textContent='';
+  try{const d=await api({action:'login',username:un,password:pw});currentUser={...d.user,token:d.token};sessionStorage.setItem('lma_user',JSON.stringify(currentUser));loginOk();return}catch(e){}
+  const hu=HU[un];
+  if(hu&&hu.password===pw){currentUser={username:un,name:hu.name,role:hu.role,token:btoa(un+':'+pw+':'+Date.now())};sessionStorage.setItem('lma_user',JSON.stringify(currentUser));loginOk();}
+  else{err.textContent='❌ Incorrect password';btn.innerHTML='Sign In →';btn.disabled=false}
+}
+function loginOk(){document.getElementById('loginScreen').classList.add('hide');setTimeout(()=>{document.getElementById('loginScreen').style.display='none';document.getElementById('appShell').classList.add('show');applyUser();refreshAll()},400)}
+function doLogout(){if(!confirm('Sign out?'))return;sessionStorage.removeItem('lma_user');currentUser=null;location.reload()}
+function applyUser(){
+  if(!currentUser)return;
+  document.getElementById('userChip').textContent=currentUser.name.split(' ')[0];
+  document.getElementById('tbSub').textContent=currentUser.name.toUpperCase()+' · HOSTEL';
+  document.getElementById('settName').textContent=currentUser.name;
+  document.getElementById('settRole').textContent=currentUser.role==='admin'?'Admin (Owner)':'Manager';
+  const wm=localStorage.getItem('lma_wa_monthly');if(wm)document.getElementById('waMonthly').value=wm;
+  const wp=localStorage.getItem('lma_wa_pending');if(wp)document.getElementById('waPending').value=wp;
+  const aw=localStorage.getItem('lma_admin_wa');if(aw)document.getElementById('adminWaNum').value=aw;
+}
+async function changePassword(){
+  const o=document.getElementById('cpOld').value,n=document.getElementById('cpNew').value,c=document.getElementById('cpConf').value;
+  if(n.length<4){showToast('Min 4 chars','terr');return}if(n!==c){showToast("Passwords don't match",'terr');return}
+  showLoading('Updating...');try{await api({action:'changePassword',oldPassword:o,newPassword:n});['cpOld','cpNew','cpConf'].forEach(id=>document.getElementById(id).value='');showToast('✅ Updated!','tok')}catch(e){showToast('❌ '+e.message,'terr')}finally{hideLoading()}
 }
 
-function showApp() {
-  document.getElementById('loginScreen').style.display   = 'none';
-  document.getElementById('appShell').classList.add('show');
-  document.getElementById('userChip').textContent        = currentUser.name.split(' ')[0];
-  document.getElementById('tbSub').textContent           = currentUser.name.toUpperCase() + ' · HOSTEL';
-  document.getElementById('settName').textContent        = currentUser.name;
-  document.getElementById('settRole').textContent        = currentUser.role === 'admin' ? 'Admin' : 'Manager';
-  refreshAll();
-}
-
-// ══════════════════════════════════════════════════════════
 // DATA
-// ══════════════════════════════════════════════════════════
-async function refreshAll() {
-  setSyncStatus('syncing', '🔄 Syncing with Google Sheets...');
-  showLoading('Loading data from Google Sheets...');
+async function refreshAll(){
+  setSyncStatus('syncing','🔄 Syncing with Google Sheets...');showLoading('Loading data...');
+  try{
+    const[sr,pr]=await Promise.all([api({action:'getStudents'}),api({action:'getPayments'})]);
+    CS=sr.students||[];CP=pr.payments||[];renderAll();
+    setSyncStatus('ok','✅ Synced · '+new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}));
+  }catch(e){setSyncStatus('err','❌ Sync failed');showToast('❌ '+e.message,'terr')}finally{hideLoading()}
+}
+function renderAll(){renderStats();renderStudentList(CS);renderDashPending();renderDashRecent();updateBadge();populateMonthFilter();if(document.getElementById('page-fees').classList.contains('active'))renderFeesPage();if(document.getElementById('page-dues').classList.contains('active'))renderDuesList()}
 
-  try {
-    const [studRes, payRes, statsRes] = await Promise.all([
-      api({ action: 'getStudents' }),
-      api({ action: 'getPayments' }),
-      api({ action: 'getStats' })
-    ]);
-
-    cachedStudents = studRes.students || [];
-    cachedPayments = payRes.payments  || [];
-
-    renderAll(statsRes.stats);
-    setSyncStatus('ok', '✅ Synced with Google Sheets · ' + new Date().toLocaleTimeString('en-IN', {hour:'2-digit',minute:'2-digit'}));
-    showToast('🔄 Data refreshed from Google Sheets', 'tok');
-  } catch(e) {
-    setSyncStatus('err', '❌ Sync failed — check connection');
-    showToast('❌ ' + e.message, 'terr');
-  } finally {
-    hideLoading();
-  }
+function renderStats(){
+  document.getElementById('stTotal').textContent=CS.length;
+  document.getElementById('stColl').textContent=fmt(CP.reduce((s,p)=>s+Number(p.amount||0),0));
+  document.getElementById('stRDue').textContent=fmt(CS.reduce((s,st)=>s+rentDue(st),0));
+  document.getElementById('stDDue').textContent=fmt(CS.reduce((s,st)=>s+depositDue(st),0));
 }
 
-function setSyncStatus(state, text) {
-  const dot = document.getElementById('sdot');
-  document.getElementById('stext').textContent = text;
-  dot.className = 'sdot' + (state === 'syncing' ? ' syncing' : state === 'err' ? ' err' : '');
+function avHtml(s){
+  if(s.photoUrl&&s.photoUrl.startsWith('http'))return`<div class="sav"><img src="${s.photoUrl}"></div>`;
+  const i=(s.name||'?').split(' ').map(n=>n[0]).join('').toUpperCase().substr(0,2);
+  return`<div class="sav" style="font-size:13px">${i}</div>`;
 }
 
-// ══════════════════════════════════════════════════════════
-// HELPERS
-// ══════════════════════════════════════════════════════════
-function uid() { return Date.now().toString(36) + Math.random().toString(36).substr(2,5); }
-function fmt(n) { return '₹' + Number(n||0).toLocaleString('en-IN'); }
-function today() { return new Date().toISOString().split('T')[0]; }
-function thisMonth() { return new Date().toISOString().substr(0,7); }
-
-function showToast(msg, type='') {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.className = 'toast show ' + type;
-  setTimeout(() => t.className = 'toast', 3500);
-}
-
-function openM(id) { document.getElementById(id).classList.add('open'); }
-function closeM(id) { document.getElementById(id).classList.remove('open'); }
-
-function showLoading(msg) {
-  document.getElementById('loadingText').textContent = msg;
-  document.getElementById('loadingOverlay').classList.add('show');
-}
-function hideLoading() { document.getElementById('loadingOverlay').classList.remove('show'); }
-
-function switchTab(tab, el) {
-  document.querySelectorAll('.bnav').forEach(b => b.classList.remove('active'));
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  el.classList.add('active');
-  document.getElementById('page-' + tab).classList.add('active');
-}
-
-function previewPhoto(inp) {
-  const file = inp.files[0]; if (!file) return;
-  const r = new FileReader();
-  r.onload = e => {
-    const img = document.getElementById('sPhotoPreview');
-    img.src = e.target.result; img.style.display = 'block';
-    document.getElementById('sPhotoPH').style.display = 'none';
-  };
-  r.readAsDataURL(file);
-}
-
-// ══════════════════════════════════════════════════════════
-// FEE LOGIC (local calc from cached data)
-// ══════════════════════════════════════════════════════════
-// ── RENT payments only ──
-function rentPaid(sid) {
-  return cachedPayments
-    .filter(p => p.studentId === sid && (p.paymentType === 'rent' || p.paymentType === 'both' || !p.paymentType))
-    .reduce((s,p) => s + Number(p.amount||0), 0);
-}
-
-// ── DEPOSIT payments only ──
-function depositPaid(sid) {
-  return cachedPayments
-    .filter(p => p.studentId === sid && p.paymentType === 'deposit')
-    .reduce((s,p) => s + Number(p.amount||0), 0);
-}
-
-// ── TOTAL paid (rent + deposit) ──
-function totalPaid(sid) {
-  return cachedPayments.filter(p => p.studentId === sid).reduce((s,p) => s + Number(p.amount||0), 0);
-}
-
-// ── EXPECTED rent so far ──
-function expectedAmt(s) {
-  const join = new Date(s.joinDate);
-  const now  = new Date();
-  const m    = Math.max(1, (now.getFullYear()-join.getFullYear())*12 + (now.getMonth()-join.getMonth()) + 1);
-  return m * Number(s.rent||0);
-}
-
-// ── RENT pending ──
-function rentPending(s) { return Math.max(0, expectedAmt(s) - rentPaid(s.id)); }
-
-// ── DEPOSIT pending ──
-function depositPending(s) { return Math.max(0, Number(s.deposit||0) - depositPaid(s.id)); }
-
-// ── TOTAL pending (rent + deposit) ──
-function pendingAmt(s) { return rentPending(s) + depositPending(s); }
-
-// ══════════════════════════════════════════════════════════
-// RENDER ALL
-// ══════════════════════════════════════════════════════════
-function renderAll(stats) {
-  renderStats(stats);
-  renderStudentList(cachedStudents, cachedPayments);
-  renderFeesList(cachedStudents, cachedPayments);
-  renderPendingList(cachedStudents, cachedPayments);
-  renderDashPending(cachedStudents, cachedPayments);
-  renderDashRecent(cachedStudents, cachedPayments);
-  updateBadge(cachedStudents, cachedPayments);
-  populatePayDrop(cachedStudents);
-}
-
-function renderStats(stats) {
-  if (stats) {
-    document.getElementById('stTotal').textContent = stats.totalStudents;
-    document.getElementById('stColl').textContent  = fmt(stats.totalCollected);
-    document.getElementById('stPend').textContent  = fmt(stats.totalPending);
-    document.getElementById('stDep').textContent   = fmt(stats.totalDeposits);
-  }
-}
-
-function avatarHtml(s) {
-  if (s.photoUrl && s.photoUrl.startsWith('http')) {
-    return `<div class="sav"><img src="${s.photoUrl}" alt="${s.name}" onerror="this.parentElement.innerHTML='${(s.name||'?').split(' ').map(n=>n[0]).join('').toUpperCase().substr(0,2)}'"></div>`;
-  }
-  const init = (s.name||'?').split(' ').map(n=>n[0]).join('').toUpperCase().substr(0,2);
-  return `<div class="sav" style="font-size:14px">${init}</div>`;
-}
-
-function renderStudentList(students, payments, filter='') {
-  const wrap = document.getElementById('studentList');
-  let list = students;
-  if (filter) { const f=filter.toLowerCase(); list=students.filter(s=>s.name.toLowerCase().includes(f)||s.mobile.includes(f)||s.room.includes(f)); }
-  if (!list.length) { wrap.innerHTML=`<div class="empty"><div class="ei">👩‍🎓</div><h3>${filter?'No results':'No students yet'}</h3><p>Tap + Add to get started</p></div>`; return; }
-  wrap.innerHTML = list.map(s => {
-    const paid = totalPaid(s.id), due = pendingAmt(s);
-    return `<div style="border-bottom:1px solid var(--border);padding:10px 0">
-      <div class="si" style="border:none;padding:0 0 8px 0" onclick="viewStudent('${s.id}')">
-        ${avatarHtml(s)}
-        <div class="sinfo">
-          <div class="sname">${s.name}</div>
-          <div class="sdet">Room ${s.room} · Bed ${s.bed} · 📱 ${s.mobile}</div>
+function renderStudentList(students,filter=''){
+  const wrap=document.getElementById('studentList');
+  let list=students;
+  if(filter){const f=filter.toLowerCase();list=students.filter(s=>s.name.toLowerCase().includes(f)||s.mobile.includes(f)||s.room.includes(f))}
+  if(!list.length){wrap.innerHTML=`<div class="empty"><div class="ei">👩‍🎓</div><h3>${filter?'No results':'No students yet'}</h3><p>Tap + Add Student to begin</p></div>`;return}
+  wrap.innerHTML=list.map(s=>{
+    const rP=rentPaid(s.id),dP=depositPaid(s.id),rD=rentDue(s),dD=depositDue(s),tD=totalDue(s);
+    return`<div class="s-card">
+      <div class="s-card-top" onclick="viewStudent('${s.id}')">
+        ${avHtml(s)}
+        <div style="flex:1;min-width:0">
+          <div class="s-name">${s.name}</div>
+          <div class="s-sub">Room ${s.room} · Bed ${s.bed} · ${s.mobile}</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:2px">Rent: ${fmt(s.rent)}/mo · Deposit: ${fmt(s.deposit)}</div>
         </div>
-        <div class="sright">
-          ${rentPending(s)>0?`<div class="sdue" style="font-size:10px">🏠 ${fmt(rentPending(s))}</div>`:'<div style="font-size:10px;color:var(--green)">🏠 ✓</div>'}
-          ${depositPending(s)>0?`<div class="sdue" style="font-size:10px">🔒 ${fmt(depositPending(s))}</div>`:'<div style="font-size:10px;color:var(--green)">🔒 ✓</div>'}
-          ${pendingAmt(s)>0?`<div style="font-size:12px;font-weight:800;color:var(--red)">₹${Math.round(pendingAmt(s)).toLocaleString('en-IN')}</div>`:'<div style="font-size:11px;color:var(--green);font-weight:700">✓ Clear</div>'}
+        <div style="text-align:right;flex-shrink:0">
+          ${tD>0?`<div style="font-size:13px;font-weight:800;color:var(--red)">${fmt(tD)}</div><div style="font-size:9px;color:var(--red)">Total Due</div>`:`<div style="font-size:12px;font-weight:700;color:var(--green)">✓ Clear</div>`}
         </div>
       </div>
-      <div style="display:flex;gap:6px;padding-left:58px">
-        <button class="btn btn-wa btn-sm" style="font-size:11px;padding:5px 10px" onclick="event.stopPropagation();quickPayType('${s.id}','rent')">🏠 Pay Rent</button>
-        <button class="btn btn-p btn-sm" style="font-size:11px;padding:5px 10px" onclick="event.stopPropagation();quickPayType('${s.id}','deposit')">🔒 Pay Deposit</button>
-        <button class="btn btn-g btn-sm" style="font-size:11px;padding:5px 10px" onclick="event.stopPropagation();viewStudent('${s.id}')">👁 View</button>
+      <div class="split-bar">
+        <div class="split-cell">
+          <div class="sc-lbl">🏠 Rent Paid</div>
+          <div class="sc-val" style="color:var(--green)">${fmt(rP)}</div>
+          ${rD>0?`<div class="sc-due" style="color:var(--red)">Due: ${fmt(rD)}</div>`:`<div class="sc-due" style="color:var(--green)">✓ Clear</div>`}
+        </div>
+        <div class="split-cell">
+          <div class="sc-lbl">🔒 Deposit Paid</div>
+          <div class="sc-val" style="color:var(--navy)">${fmt(dP)}</div>
+          ${dD>0?`<div class="sc-due" style="color:var(--red)">Due: ${fmt(dD)}</div>`:`<div class="sc-due" style="color:var(--green)">✓ Clear</div>`}
+        </div>
+        <div class="split-cell" style="background:${tD>0?'#fce4ec':'#e8f5e9'}">
+          <div class="sc-lbl">💰 Total Due</div>
+          <div class="sc-val" style="color:${tD>0?'var(--red)':'var(--green)'}">${fmt(tD)}</div>
+          <div class="sc-due" style="color:var(--muted)">Combined</div>
+        </div>
+      </div>
+      <div class="pay-actions">
+        <button class="btn btn-wa btn-sm" style="flex:1;justify-content:center" onclick="openPayModal('${s.id}','rent')">🏠 Pay Rent</button>
+        <button class="btn btn-p btn-sm" style="flex:1;justify-content:center" onclick="openPayModal('${s.id}','deposit')">🔒 Pay Deposit</button>
+        <button class="btn btn-out btn-sm" onclick="viewStudent('${s.id}')">📋 History</button>
       </div>
     </div>`;
   }).join('');
 }
 
-function renderFeesList(students, payments) {
-  const wrap = document.getElementById('feesList');
-  if (!wrap) return;
-  const filterEl = document.getElementById('feesFilter');
-  const filter = filterEl ? filterEl.value : 'all';
-  
-  let list = students;
-  if (filter === 'pending') list = students.filter(s => pendingAmt(s) > 0);
-  if (filter === 'clear')   list = students.filter(s => pendingAmt(s) === 0);
+function filterStudents(v){renderStudentList(CS,v)}
 
-  if (!list.length) {
-    wrap.innerHTML = `<div class="empty"><div class="ei">📊</div><h3>No students found</h3></div>`;
-    return;
-  }
-
-  // Total summary card
-  const totalRentDue    = students.reduce((s,st) => s + rentPending(st), 0);
-  const totalDepDue     = students.reduce((s,st) => s + depositPending(st), 0);
-  const totalCollected  = payments.reduce((s,p) => s + Number(p.amount||0), 0);
-
-  wrap.innerHTML = `
-    <div class="card" style="margin-bottom:14px">
-      <div class="card-hd">📊 Overall Summary</div>
-      <div class="card-bd" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;text-align:center">
-        <div style="background:#e8f5e9;border-radius:10px;padding:10px">
-          <div style="font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase">Total Collected</div>
-          <div style="font-weight:800;color:var(--green);font-size:16px;margin-top:3px">${fmt(totalCollected)}</div>
-        </div>
-        <div style="background:#fce4ec;border-radius:10px;padding:10px">
-          <div style="font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase">🏠 Rent Due</div>
-          <div style="font-weight:800;color:var(--red);font-size:16px;margin-top:3px">${fmt(totalRentDue)}</div>
-        </div>
-        <div style="background:#fce4ec;border-radius:10px;padding:10px">
-          <div style="font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase">🔒 Deposit Due</div>
-          <div style="font-weight:800;color:var(--red);font-size:16px;margin-top:3px">${fmt(totalDepDue)}</div>
-        </div>
-      </div>
-    </div>
-  ` + list.map(s => {
-    const rPaid = rentPaid(s.id);
-    const dPaid = depositPaid(s.id);
-    const rDue  = rentPending(s);
-    const dDue  = depositPending(s);
-    const tDue  = pendingAmt(s);
-    const sPays = payments.filter(p => p.studentId === s.id).sort((a,b) => new Date(b.date)-new Date(a.date));
-    const pct   = Number(s.rent) > 0 ? Math.min(100, Math.round(rPaid / Math.max(rPaid+rDue,1) * 100)) : 0;
-
-    return `<div class="card" style="margin-bottom:12px">
-      <div class="card-hd" style="padding:12px 14px">
-        <div style="display:flex;align-items:center;gap:10px">
-          ${avatarHtml(s)}
-          <div>
-            <div style="font-size:14px;font-weight:700;color:var(--navy)">${s.name}</div>
-            <div style="font-size:11px;color:var(--muted)">Room ${s.room} · Bed ${s.bed}</div>
-          </div>
-        </div>
-        <button class="btn btn-g btn-sm" onclick="quickPayType('${s.id}','rent')">+ Pay</button>
-      </div>
-      <div class="card-bd" style="padding:12px 14px">
-        <!-- Split balance row -->
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:10px;text-align:center;font-size:11px">
-          <div style="background:#e8f5e9;border-radius:8px;padding:8px">
-            <div style="color:var(--muted)">🏠 Rent Paid</div>
-            <div style="font-weight:700;color:var(--green)">${fmt(rPaid)}</div>
-            ${rDue>0?`<div style="color:var(--red);font-size:10px">Due: ${fmt(rDue)}</div>`:'<div style="color:var(--green);font-size:10px">✓ Clear</div>'}
-          </div>
-          <div style="background:#e8eaf6;border-radius:8px;padding:8px">
-            <div style="color:var(--muted)">🔒 Deposit Paid</div>
-            <div style="font-weight:700;color:var(--navy)">${fmt(dPaid)}</div>
-            ${dDue>0?`<div style="color:var(--red);font-size:10px">Due: ${fmt(dDue)}</div>`:'<div style="color:var(--green);font-size:10px">✓ Clear</div>'}
-          </div>
-          <div style="background:${tDue>0?'#fce4ec':'#e8f5e9'};border-radius:8px;padding:8px">
-            <div style="color:var(--muted)">💰 Total Due</div>
-            <div style="font-weight:800;color:${tDue>0?'var(--red)':'var(--green)'}">${fmt(tDue)}</div>
-            <div style="font-size:10px;color:var(--muted)">Combined</div>
-          </div>
-        </div>
-        <!-- Progress bar -->
-        <div style="margin-bottom:10px">
-          <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-bottom:3px">
-            <span>Rent Progress</span><span>${pct}%</span>
-          </div>
-          <div class="pw"><div class="pb ${pct<50?'pd':''}" style="width:${pct}%"></div></div>
-        </div>
-        <!-- Payment history -->
-        ${sPays.length ? `<div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Payment History</div>
-        <div style="max-height:160px;overflow-y:auto">
-          ${sPays.map(p=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);font-size:12px">
-            <div>
-              <span style="font-weight:600">${fmt(p.amount)}</span>
-              <span class="chip ${p.paymentType==='deposit'?'cb':p.paymentType==='both'?'c-o':'cg'}" style="font-size:9px;margin-left:4px">${p.paymentType==='deposit'?'🔒 Deposit':p.paymentType==='both'?'💰 Both':'🏠 Rent'}</span>
-            </div>
-            <div style="color:var(--muted)">${p.date} · ${p.mode}</div>
-          </div>`).join('')}
-        </div>` : `<div style="text-align:center;color:var(--muted);font-size:12px;padding:10px">No payments yet</div>`}
-      </div>
-    </div>`;
-  }).join('');
+function openPayModal(sid,type){
+  activePaySid=sid; const s=CS.find(st=>st.id===sid); if(!s)return;
+  const info=document.getElementById('payStudInfo');
+  info.style.display='block';
+  info.innerHTML=`<div style="display:flex;align-items:center;gap:8px">${avHtml(s)}<div><div style="font-weight:700">${s.name}</div><div style="font-size:11px;opacity:.7">Room ${s.room} · Bed ${s.bed} · Rent: ${fmt(s.rent)}/mo</div></div></div>`;
+  const rD=rentDue(s),dD=depositDue(s),tD=totalDue(s);
+  const bb=document.getElementById('payBalBox'); bb.style.display='block';
+  document.getElementById('bvRent').textContent=rD>0?fmt(rD):'✓ Clear'; document.getElementById('bvRent').style.color=rD>0?'var(--red)':'var(--green)';
+  document.getElementById('bvDep').textContent=dD>0?fmt(dD):'✓ Clear'; document.getElementById('bvDep').style.color=dD>0?'var(--red)':'var(--green)';
+  document.getElementById('bvTotal').textContent=tD>0?fmt(tD):'✓ All Clear'; document.getElementById('bvTotal').style.color=tD>0?'var(--red)':'var(--green)';
+  document.getElementById('pType').value=type||'rent';
+  document.getElementById('pDate').value=today(); document.getElementById('pMonth').value=thisMonth();
+  updatePaySuggestion(); openM('payM');
 }
 
-function renderPendingList(students, payments) {
-  const wrap = document.getElementById('pendingList');
-  const pending = students.filter(s=>pendingAmt(s)>0);
-  if (!pending.length) { wrap.innerHTML=`<div class="empty"><div class="ei">🎉</div><h3>All dues cleared!</h3></div>`; return; }
-  wrap.innerHTML = pending.map(s => {
-    const due = pendingAmt(s);
-    const rDue = rentPending(s);
-    const dDue = depositPending(s);
-    const wa  = waUrl(s, buildPendingMsg(s));
-    return `<div class="pend">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:4px">
-        <div><div class="pend-name">${s.name}</div><div class="pend-det">Room ${s.room} / Bed ${s.bed} · ${s.mobile}</div></div>
-        <div style="text-align:right">${rDue>0?`<div style="font-size:11px;color:var(--red)">🏠 Rent: ${fmt(rDue)}</div>`:''} ${dDue>0?`<div style="font-size:11px;color:var(--red)">🔒 Deposit: ${fmt(dDue)}</div>`:''}<div style="font-size:16px;font-weight:800;color:var(--red)">Total: ${fmt(due)}</div></div>
-      </div>
-      <div class="pend-acts">
-        <a href="${wa}" target="_blank"><button class="btn btn-wa btn-sm">📱 WhatsApp</button></a>
-        ${s.parentMobile?`<a href="${waUrl(s,buildPendingMsg(s),s.parentMobile)}" target="_blank"><button class="btn btn-sm btn-out">👪 Parent</button></a>`:''}
-        <button class="btn btn-g btn-sm" onclick="quickPay('${s.id}')">💳 Pay</button>
-      </div>
-    </div>`;
-  }).join('');
+function updatePaySuggestion(){
+  if(!activePaySid)return; const s=CS.find(st=>st.id===activePaySid); if(!s)return;
+  const pt=document.getElementById('pType').value, sug=document.getElementById('pSug'), amt=document.getElementById('pAmt');
+  if(pt==='rent'){const rd=rentDue(s);sug.textContent=rd>0?`Suggested: ${fmt(rd)}`:'Rent is clear';amt.placeholder=rd>0?rd:'Amount'}
+  else if(pt==='deposit'){const dd=depositDue(s);sug.textContent=dd>0?`Suggested: ${fmt(dd)}`:'Deposit is clear';amt.placeholder=dd>0?dd:'Amount'}
+  else{const td=totalDue(s);sug.textContent=td>0?`Total: ${fmt(td)}`:'All clear';amt.placeholder=td>0?td:'Amount'}
 }
 
-function renderDashPending(students, payments) {
-  const wrap = document.getElementById('dashPending');
-  const pending = students.filter(s=>pendingAmt(s)>0).slice(0,4);
-  if (!pending.length) { wrap.innerHTML=`<div style="text-align:center;padding:18px;color:var(--muted);font-size:13px">🎉 No pending dues!</div>`; return; }
-  wrap.innerHTML = pending.map(s => {
-    const due=pendingAmt(s);
-    return `<div class="pend">
-      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px">
-        <div><div class="pend-name">${s.name}</div><div class="pend-det">Room ${s.room} / Bed ${s.bed}</div></div>
-        <div style="display:flex;align-items:center;gap:8px">
-          <span style="font-weight:800;color:var(--red)">${fmt(due)}</span>
-          <a href="${waUrl(s,buildPendingMsg(s))}" target="_blank"><button class="btn btn-wa btn-sm">📱</button></a>
-          <button class="btn btn-g btn-sm" onclick="quickPay('${s.id}')">Pay</button>
-        </div>
-      </div>
-    </div>`;
-  }).join('');
+function updateBalBox(){
+  const rent=parseFloat(document.getElementById('sRent').value)||0, dep=parseFloat(document.getElementById('sDep').value)||0, box=document.getElementById('addBalBox');
+  if(rent>0||dep>0){box.style.display='block';box.innerHTML=`🏠 Monthly Rent: <strong>${fmt(rent)}</strong> (every month)<br>🔒 Security Deposit: <strong>${fmt(dep)}</strong> (one time)<br>💰 First month total: <strong>${fmt(rent+dep)}</strong>`}else{box.style.display='none'}
 }
 
-function renderDashRecent(students, payments) {
-  const wrap = document.getElementById('dashRecent');
-  const recent = [...payments].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,5);
-  if (!recent.length) { wrap.innerHTML=`<div class="empty" style="padding:20px"><div class="ei">💳</div><p>No payments yet</p></div>`; return; }
-  wrap.innerHTML = `<div class="ptl">` + recent.map(p=>{
-    const s=students.find(st=>st.id===p.studentId);
-    return `<div class="pti"><div class="ptamt">${fmt(p.amount)}</div><div style="font-weight:600;font-size:13px">${s?.name||p.studentName||'?'}</div><div class="ptinf">${p.date} · ${p.month} · ${p.mode}${p.recordedBy?' · by '+p.recordedBy:''}</div></div>`;
-  }).join('') + `</div>`;
+async function addStudent(){
+  const name=document.getElementById('sName').value.trim(),room=document.getElementById('sRoom').value.trim(),bed=document.getElementById('sBed').value.trim(),mobile=document.getElementById('sMob').value.trim(),rent=parseFloat(document.getElementById('sRent').value)||0,joinDate=document.getElementById('sJoin').value;
+  if(!name||!room||!bed||!mobile||!rent||!joinDate){showToast('⚠️ Fill all required fields','terr');return}
+  const btn=document.getElementById('addStudBtn'); btn.innerHTML='<span class="loader"></span> Saving...'; btn.disabled=true; showLoading('Saving student...');
+  try{
+    let photoUrl='',photoFileId='';
+    const pf=document.getElementById('sPhotoInp').files[0];
+    if(pf){showLoading('Uploading photo...');const b64=await fileToBase64(pf);const pr=await api({action:'uploadPhoto',base64Data:b64.split(',')[1],fileName:`${name.replace(/\s+/g,'_')}_${Date.now()}.jpg`,mimeType:pf.type});photoUrl=pr.url;photoFileId=pr.fileId}
+    await api({action:'addStudent',addedBy:currentUser.name,student:{name,room,bed,mobile,parentMobile:document.getElementById('sPMob').value.trim(),rent,deposit:parseFloat(document.getElementById('sDep').value)||0,joinDate,dueDay:parseInt(document.getElementById('sDueDay').value)||5,course:document.getElementById('sCourse').value.trim(),address:document.getElementById('sAddr').value.trim(),notes:document.getElementById('sNote').value.trim(),photoUrl,photoFileId}});
+    closeM('addStudM'); resetStudForm(); await refreshAll(); showToast('✅ Student added!','tok');
+  }catch(e){showToast('❌ '+e.message,'terr')}finally{btn.innerHTML='✅ Save Student';btn.disabled=false;hideLoading()}
 }
 
-function updateBadge(students) {
-  const n=students.filter(s=>pendingAmt(s)>0).length;
-  const b=document.getElementById('pendBadge');
-  b.textContent=n; b.style.display=n>0?'flex':'none';
+function resetStudForm(){['sName','sRoom','sBed','sMob','sPMob','sRent','sDep','sJoin','sCourse','sAddr','sNote'].forEach(id=>{const e=document.getElementById(id);if(e)e.value=''});document.getElementById('sPhotoPreview').style.display='none';document.getElementById('sPhotoPH').style.display='block';document.getElementById('sPhotoInp').value='';document.getElementById('addBalBox').style.display='none'}
+
+async function recordPayment(){
+  if(!activePaySid){showToast('No student selected','terr');return}
+  const amount=parseFloat(document.getElementById('pAmt').value)||0,month=document.getElementById('pMonth').value,date=document.getElementById('pDate').value,pType=document.getElementById('pType').value;
+  if(!amount||!month||!date){showToast('⚠️ Fill required fields','terr');return}
+  const btn=document.getElementById('payBtn'); btn.innerHTML='<span class="loader"></span> Saving...'; btn.disabled=true; showLoading('Recording payment...');
+  try{
+    await api({action:'addPayment',recordedBy:currentUser.name,payment:{studentId:activePaySid,amount,month,date,mode:document.getElementById('pMode').value,paymentType:pType,ref:document.getElementById('pRef').value.trim(),note:document.getElementById('pNote').value.trim()}});
+    const s=CS.find(st=>st.id===activePaySid); if(s)notifyAdmin(s.name,amount,s.room,s.bed,pType);
+    closeM('payM'); ['pAmt','pRef','pNote'].forEach(id=>document.getElementById(id).value=''); await refreshAll(); showToast('✅ Payment recorded!','tok');
+  }catch(e){showToast('❌ '+e.message,'terr')}finally{btn.innerHTML='✅ Record Payment';btn.disabled=false;hideLoading()}
 }
 
-function populatePayDrop(students) {
-  const sel=document.getElementById('pStudId');
-  if(!sel) return;
-  const curr=sel.value;
-  sel.innerHTML=students.map(s=>`<option value="${s.id}">${s.name} — Room ${s.room}</option>`).join('');
-  if(curr) sel.value=curr;
-}
-
-function filterStudents(val) { renderStudentList(cachedStudents, cachedPayments, val); }
-
-// ══════════════════════════════════════════════════════════
-// ADD STUDENT
-// ══════════════════════════════════════════════════════════
-async function addStudent() {
-  const name=document.getElementById('sName').value.trim();
-  const room=document.getElementById('sRoom').value.trim();
-  const bed=document.getElementById('sBed').value.trim();
-  const mobile=document.getElementById('sMob').value.trim();
-  const rent=parseFloat(document.getElementById('sRent').value)||0;
-  const joinDate=document.getElementById('sJoin').value;
-
-  if (!name||!room||!bed||!mobile||!rent||!joinDate) { showToast('⚠️ Fill all required fields','terr'); return; }
-
-  const btn=document.getElementById('addStudBtn');
-  btn.innerHTML='<span class="loader"></span> Saving to Sheets...';
-  btn.disabled=true;
-  showLoading('Uploading student data to Google Sheets...');
-
-  try {
-    // Upload photo first if selected
-    let photoUrl='', photoFileId='';
-    const photoFile=document.getElementById('sPhotoInp').files[0];
-    if (photoFile) {
-      showLoading('Uploading photo to Google Drive...');
-      const base64=await fileToBase64(photoFile);
-      const photoRes=await api({ action:'uploadPhoto', base64Data:base64.split(',')[1], fileName:`${name.replace(/\s+/g,'_')}_${Date.now()}.jpg`, mimeType:photoFile.type });
-      photoUrl=photoRes.url; photoFileId=photoRes.fileId;
-    }
-
-    await api({
-      action:'addStudent',
-      addedBy: currentUser.name,
-      student:{
-        name, room, bed, mobile,
-        parentMobile:document.getElementById('sPMob').value.trim(),
-        rent, deposit:parseFloat(document.getElementById('sDep').value)||0,
-        joinDate, dueDay:parseInt(document.getElementById('sDueDay').value)||5,
-        course:document.getElementById('sCourse').value.trim(),
-        address:document.getElementById('sAddr').value.trim(),
-        notes:document.getElementById('sNote').value.trim(),
-
-        photoUrl, photoFileId
-      }
-    });
-
-    closeM('addStudentM');
-    resetStudForm();
-    await refreshAll();
-    showToast('✅ Student saved to Google Sheets!','tok');
-  } catch(e) {
-    showToast('❌ '+e.message,'terr');
-  } finally {
-    btn.innerHTML='✅ Save to Google Sheets';
-    btn.disabled=false;
-    hideLoading();
-  }
-}
-
-function resetStudForm() {
-  ['sName','sRoom','sBed','sMob','sPMob','sRent','sDep','sJoin','sCourse','sAddr','sNote'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
-  document.getElementById('sPhotoPreview').style.display='none';
-  document.getElementById('sPhotoPH').style.display='block';
-  document.getElementById('sPhotoInp').value='';
-}
-
-function fileToBase64(file) {
-  return new Promise((res,rej)=>{const r=new FileReader();r.onload=e=>res(e.target.result);r.onerror=rej;r.readAsDataURL(file);});
-}
-
-// ══════════════════════════════════════════════════════════
-// RECORD PAYMENT
-// ══════════════════════════════════════════════════════════
-async function recordPayment() {
-  const sid=document.getElementById('pStudId').value;
-  const amount=parseFloat(document.getElementById('pAmt').value)||0;
-  const month=document.getElementById('pMonth').value;
-  const date=document.getElementById('pDate').value;
-  const mode=document.getElementById('pMode').value;
-
-  if (!sid||!amount||!month||!date) { showToast('⚠️ Fill required fields','terr'); return; }
-
-  const btn=document.getElementById('addPayBtn');
-  btn.innerHTML='<span class="loader"></span> Saving...';
-  btn.disabled=true;
-  showLoading('Saving payment to Google Sheets...');
-
-  try {
-    await api({ action:'addPayment', recordedBy:currentUser.name, payment:{studentId:sid,amount,month,date,mode,paymentType:document.getElementById('pType').value,ref:document.getElementById('pRef').value.trim(),note:document.getElementById('pNote').value.trim()} });
-    // Notify admin about payment
-    const paidSt = cachedStudents.find(st=>st.id===sid);
-    if(paidSt) notifyAdminPayment(paidSt.name, amount, paidSt.room, paidSt.bed);
-    closeM('addPayM');
-    ['pAmt','pRef','pNote'].forEach(id=>document.getElementById(id).value='');
-    await refreshAll();
-    showToast('✅ Payment saved to Google Sheets!','tok');
-  } catch(e) {
-    showToast('❌ '+e.message,'terr');
-  } finally {
-    btn.innerHTML='✅ Record Payment';
-    btn.disabled=false;
-    hideLoading();
-  }
-}
-
-function quickPayType(sid, type) {
-  openM('addPayM');
-  setTimeout(() => {
-    document.getElementById('pStudId').value = sid;
-    document.getElementById('pType').value = type || 'rent';
-    showStudentBalance();
-  }, 60);
-  document.getElementById('pDate').value = today();
-  document.getElementById('pMonth').value = thisMonth();
-}
-
-function quickPay(sid) {
-  const sel=document.getElementById('pStudId');
-  openM('addPayM');
-  setTimeout(()=>{sel.value=sid;},60);
-  document.getElementById('pDate').value=today();
-  document.getElementById('pMonth').value=thisMonth();
-}
-
-// ══════════════════════════════════════════════════════════
-// VIEW STUDENT
-// ══════════════════════════════════════════════════════════
-async function viewStudent(id) {
-  const s=cachedStudents.find(st=>st.id===id); if(!s) return;
-  const paid=totalPaid(id), expected=expectedAmt(s), pending=Math.max(0,expected-paid);
-  const pct=expected>0?Math.min(100,Math.round(paid/expected*100)):0;
-  const sPays=cachedPayments.filter(p=>p.studentId===id).sort((a,b)=>new Date(b.date)-new Date(a.date));
+function viewStudent(id){
+  const s=CS.find(st=>st.id===id);if(!s)return;
+  const rP=rentPaid(id),dP=depositPaid(id),rD=rentDue(s),dD=depositDue(s),tD=totalDue(s);
+  const sPays=CP.filter(p=>p.studentId===id).sort((a,b)=>new Date(b.date)-new Date(a.date));
+  const byMonth={};
+  sPays.forEach(p=>{if(!byMonth[p.month])byMonth[p.month]=[];byMonth[p.month].push(p)});
 
   document.getElementById('viewStudBody').innerHTML=`
-    <div class="phd">
-      <div class="ppic">${s.photoUrl&&s.photoUrl.startsWith('http')?`<img src="${s.photoUrl}" alt="${s.name}">`:'👩'}</div>
+    <div style="background:linear-gradient(135deg,var(--navy-d),var(--navy-l));border-radius:14px;padding:16px;color:white;display:flex;gap:12px;margin-bottom:12px">
+      <div style="width:68px;height:76px;border-radius:10px;border:3px solid var(--gold);overflow:hidden;flex-shrink:0;background:var(--navy-l);display:flex;align-items:center;justify-content:center;font-size:26px">
+        ${s.photoUrl&&s.photoUrl.startsWith('http')?`<img src="${s.photoUrl}" style="width:100%;height:100%;object-fit:cover">`:'👩'}
+      </div>
       <div>
-        <div class="pnam">${s.name}</div>
-        <div class="pdet">📍 Room ${s.room} · Bed ${s.bed}</div>
-        <div class="pdet">📚 ${s.course||'N/A'}</div>
-        <div class="pdet">📱 ${s.mobile}</div>
-        ${s.parentMobile?`<div class="pdet">👪 ${s.parentMobile}</div>`:''}
-        <div class="pdet">📅 Joined: ${s.joinDate}</div>
-        ${s.photoUrl?`<div style="margin-top:4px"><a href="${s.photoUrl}" target="_blank" style="color:var(--gold-l);font-size:11px">📷 View full photo →</a></div>`:''}
+        <div style="font-family:'Playfair Display',serif;font-size:18px;color:var(--gold-l)">${s.name}</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.7)">📍 Room ${s.room} · Bed ${s.bed}</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.7)">📱 ${s.mobile}${s.parentMobile?' · 👪 '+s.parentMobile:''}</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.7)">📅 Joined: ${s.joinDate}</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.7)">🏠 ${fmt(s.rent)}/mo · 🔒 Deposit: ${fmt(s.deposit)}</div>
       </div>
     </div>
-    ${s.address?`<div style="background:var(--gold-p);border:1.5px solid var(--gold);border-radius:10px;padding:10px 12px;font-size:12px;margin-bottom:12px;color:var(--navy)">📍 <strong>Address:</strong> ${s.address}</div>`:''}
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
-      <div class="stat sg" style="margin:0"><div class="slbl">Total Paid</div><div class="sval" style="font-size:18px">${fmt(totalPaid(id))}</div></div>
-      <div class="stat ${pendingAmt(s)>0?'sr':''}" style="margin:0;border-left-color:${pendingAmt(s)>0?'var(--red)':'var(--green)'}"><div class="slbl">Total Due</div><div class="sval" style="font-size:18px;color:${pendingAmt(s)>0?'var(--red)':'var(--green)'}">${pendingAmt(s)>0?fmt(pendingAmt(s)):'₹0'}</div></div>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px">
-      <div style="background:#e8f5e9;border-radius:10px;padding:10px;text-align:center">
-        <div style="font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase">🏠 Rent Paid</div>
-        <div style="font-weight:700;color:var(--green);font-size:14px;margin-top:3px">${fmt(rentPaid(id))}</div>
-        ${rentPending(s)>0?`<div style="font-size:10px;color:var(--red);margin-top:2px">Due: ${fmt(rentPending(s))}</div>`:'<div style="font-size:10px;color:var(--green);margin-top:2px">✓ Clear</div>'}
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px;text-align:center;font-size:11px">
+      <div style="background:#e8f5e9;border-radius:10px;padding:10px">
+        <div style="color:var(--muted);font-size:9px;text-transform:uppercase;font-weight:600">🏠 Rent Paid</div>
+        <div style="font-weight:800;color:var(--green);font-size:15px;margin-top:2px">${fmt(rP)}</div>
+        ${rD>0?`<div style="color:var(--red);font-size:10px">Due: ${fmt(rD)}</div>`:`<div style="color:var(--green);font-size:10px">✓ Clear</div>`}
       </div>
-      <div style="background:#e8eaf6;border-radius:10px;padding:10px;text-align:center">
-        <div style="font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase">🔒 Deposit Paid</div>
-        <div style="font-weight:700;color:var(--navy);font-size:14px;margin-top:3px">${fmt(depositPaid(id))}</div>
-        ${depositPending(s)>0?`<div style="font-size:10px;color:var(--red);margin-top:2px">Due: ${fmt(depositPending(s))}</div>`:'<div style="font-size:10px;color:var(--green);margin-top:2px">✓ Clear</div>'}
+      <div style="background:#e8eaf6;border-radius:10px;padding:10px">
+        <div style="color:var(--muted);font-size:9px;text-transform:uppercase;font-weight:600">🔒 Deposit Paid</div>
+        <div style="font-weight:800;color:var(--navy);font-size:15px;margin-top:2px">${fmt(dP)}</div>
+        ${dD>0?`<div style="color:var(--red);font-size:10px">Due: ${fmt(dD)}</div>`:`<div style="color:var(--green);font-size:10px">✓ Clear</div>`}
       </div>
-      <div style="background:${pendingAmt(s)>0?'#fce4ec':'#e8f5e9'};border-radius:10px;padding:10px;text-align:center">
-        <div style="font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase">💰 Total Due</div>
-        <div style="font-weight:800;color:${pendingAmt(s)>0?'var(--red)':'var(--green)'};font-size:14px;margin-top:3px">${fmt(pendingAmt(s))}</div>
-        <div style="font-size:10px;color:var(--muted);margin-top:2px">Rent+Deposit</div>
+      <div style="background:${tD>0?'#fce4ec':'#e8f5e9'};border-radius:10px;padding:10px">
+        <div style="color:var(--muted);font-size:9px;text-transform:uppercase;font-weight:600">💰 Total Due</div>
+        <div style="font-weight:800;color:${tD>0?'var(--red)':'var(--green)'};font-size:15px;margin-top:2px">${fmt(tD)}</div>
+        <div style="color:var(--muted);font-size:10px">Combined</div>
       </div>
     </div>
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;font-size:11px;text-align:center">
-      <div style="background:var(--gold-p);border-radius:9px;padding:8px"><div style="color:var(--muted)">Rent/mo</div><div style="font-weight:700;color:var(--navy)">${fmt(s.rent)}</div></div>
-      <div style="background:#e8eaf6;border-radius:9px;padding:8px"><div style="color:var(--muted)">Agreed Deposit</div><div style="font-weight:700;color:var(--navy)">${fmt(s.deposit)}</div></div>
-      <div style="background:#e8f5e9;border-radius:9px;padding:8px"><div style="color:var(--muted)">Rent Progress</div><div style="font-weight:700;color:var(--green)">${pct}%</div></div>
-    </div>
-    <div style="margin-bottom:16px"><div class="pw"><div class="pb ${pct<50?'pd':''}" style="width:${pct}%"></div></div></div>
-    <div style="font-weight:700;color:var(--navy);font-size:14px;margin-bottom:10px">Payment History</div>
-    ${sPays.length?`<div class="ptl">`+sPays.map(p=>`<div class="pti"><div class="ptamt">${fmt(p.amount)}</div><div style="font-weight:600;font-size:13px">${p.month}</div><div class="ptinf">${p.date} · ${p.mode}${p.ref?' · '+p.ref:''}${p.recordedBy?' · by '+p.recordedBy:''}</div>${p.note?`<div style="font-size:11px;color:var(--muted);font-style:italic">${p.note}</div>`:''}</div>`).join('')+`</div>`:`<p style="color:var(--muted);font-size:13px">No payments yet.</p>`}
+    <div style="font-weight:700;color:var(--navy);font-size:13px;margin-bottom:8px">📅 Month-wise Payment History</div>
+    ${Object.keys(byMonth).length?Object.entries(byMonth).sort((a,b)=>b[0].localeCompare(a[0])).map(([month,pays])=>{
+      const mt=pays.reduce((s,p)=>s+Number(p.amount||0),0);
+      return`<div style="background:white;border:1px solid var(--border);border-radius:10px;margin-bottom:8px;overflow:hidden">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:#f5f7ff;border-bottom:1px solid var(--border)">
+          <div style="font-weight:700;color:var(--navy);font-size:13px">${month}</div>
+          <div style="font-weight:700;color:var(--green)">${fmt(mt)}</div>
+        </div>
+        ${pays.map(p=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 12px;border-bottom:1px solid var(--border);font-size:12px">
+          <div><span class="${p.paymentType==='deposit'?'ptb-dep':p.paymentType==='both'?'ptb-both':'ptb-rent'}">${p.paymentType==='deposit'?'🔒 Deposit':p.paymentType==='both'?'💰 Both':'🏠 Rent'}</span><span style="font-weight:700;color:var(--green);margin-left:6px">${fmt(p.amount)}</span></div>
+          <div style="text-align:right"><div style="color:var(--muted);font-size:10px">${p.date}</div><div style="color:var(--muted);font-size:10px">${p.mode}${p.recordedBy?' · '+p.recordedBy:''}</div></div>
+        </div>`).join('')}
+      </div>`;
+    }).join(''):`<div style="text-align:center;color:var(--muted);font-size:13px;padding:16px">No payments yet.<br>Use <strong>Pay Rent</strong> or <strong>Pay Deposit</strong> buttons below.</div>`}
   `;
-
   document.getElementById('viewStudFoot').innerHTML=`
-    <a href="${waUrl(s,buildMonthlyMsg(s))}" target="_blank"><button class="btn btn-wa btn-sm">📱 WA Student</button></a>
-    ${s.parentMobile?`<a href="${waUrl(s,buildMonthlyMsg(s),s.parentMobile)}" target="_blank"><button class="btn btn-sm btn-out">👪 WA Parent</button></a>`:''}
-    <button class="btn btn-g btn-sm" onclick="closeM('viewStudM');quickPayType('${id}','rent')">🏠 Pay Rent</button>
-    <button class="btn btn-p btn-sm" onclick="closeM('viewStudM');quickPayType('${id}','deposit')">🔒 Pay Deposit</button>
-    ${currentUser?.role==='admin'?`<button class="btn btn-danger btn-sm" onclick="deleteStudent('${id}')">🗑</button>`:''}
+    <button class="btn btn-wa btn-sm" onclick="closeM('viewStudM');openPayModal('${id}','rent')">🏠 Pay Rent</button>
+    <button class="btn btn-p btn-sm" onclick="closeM('viewStudM');openPayModal('${id}','deposit')">🔒 Pay Deposit</button>
+    <a href="https://wa.me/${(s.mobile||'').replace(/\D/g,'')}?text=${encodeURIComponent(buildMonthlyMsg(s))}" target="_blank"><button class="btn btn-wa btn-sm">📱 WA</button></a>
+    ${currentUser?.role==='admin'?`<button class="btn btn-danger btn-sm" onclick="delStudent('${id}')">🗑</button>`:''}
     <button class="btn btn-out btn-sm" onclick="closeM('viewStudM')">Close</button>
   `;
   openM('viewStudM');
 }
 
-async function deleteStudent(id) {
-  if (currentUser?.role !== 'admin') { showToast('❌ Admin only','terr'); return; }
-  const s=cachedStudents.find(st=>st.id===id);
-  if (!confirm(`Remove ${s?.name}? This cannot be undone.`)) return;
-  showLoading('Removing student...');
-  try {
-    await api({ action:'deleteStudent', id });
-    closeM('viewStudM');
-    await refreshAll();
-    showToast('Student removed','terr');
-  } catch(e) { showToast('❌ '+e.message,'terr'); }
-  finally { hideLoading(); }
+async function delStudent(id){
+  const s=CS.find(st=>st.id===id);if(!confirm(`Remove ${s?.name}?`))return;
+  showLoading('Removing...');try{await api({action:'deleteStudent',id});closeM('viewStudM');await refreshAll();showToast('Removed','terr')}catch(e){showToast('❌ '+e.message,'terr')}finally{hideLoading()}
 }
 
-// ══════════════════════════════════════════════════════════
-// WA MESSAGES
-// ══════════════════════════════════════════════════════════
-function buildMonthlyMsg(s) {
-  return (document.getElementById('waMonthly').value||'Dear {Name}, monthly rent ₹{Amount} due. Room: {Room}, Bed: {Bed}.')
-    .replace(/{Name}/g,s.name).replace(/{Amount}/g,s.rent).replace(/{Room}/g,s.room).replace(/{Bed}/g,s.bed);
-}
-function buildPendingMsg(s) {
-  return (document.getElementById('waPending').value||'Dear {Name}, pending due ₹{Pending}. Room: {Room}, Bed: {Bed}.')
-    .replace(/{Name}/g,s.name).replace(/{Pending}/g,Math.round(pendingAmt(s))).replace(/{Room}/g,s.room).replace(/{Bed}/g,s.bed);
-}
-function waUrl(s, msg, mobile) {
-  const num=(mobile||s.mobile).replace(/\D/g,'');
-  return `https://wa.me/${num.startsWith('91')?num:'91'+num}?text=${encodeURIComponent(msg)}`;
-}
-function bulkWA() {
-  const pending=cachedStudents.filter(s=>pendingAmt(s)>0);
-  if (!pending.length) { showToast('🎉 No pending dues!','tok'); return; }
-  window.open(waUrl(pending[0],buildPendingMsg(pending[0])),'_blank');
-  showToast(`📱 Sending to ${pending.length} student(s)...`,'');
-}
-function saveTemplates() {
-  localStorage.setItem('lma_wa_monthly',document.getElementById('waMonthly').value);
-  localStorage.setItem('lma_wa_pending',document.getElementById('waPending').value);
-  showToast('✅ Templates saved!','tok');
+function populateMonthFilter(){
+  const sel=document.getElementById('monthFilter');if(!sel)return;
+  const months=[...new Set(CP.map(p=>p.month))].sort().reverse();const curr=sel.value;
+  sel.innerHTML='<option value="">All Months</option>'+months.map(m=>`<option value="${m}">${m}</option>`).join('');if(curr)sel.value=curr;
 }
 
-// ══════════════════════════════════════════════════════════
-// CHANGE PASSWORD
-// ══════════════════════════════════════════════════════════
-async function changePassword() {
-  const oldP=document.getElementById('cpOld').value;
-  const newP=document.getElementById('cpNew').value;
-  const confP=document.getElementById('cpConf').value;
-  if (newP.length<4) { showToast('❌ Min 4 characters','terr'); return; }
-  if (newP!==confP) { showToast('❌ Passwords don\'t match','terr'); return; }
-  showLoading('Updating password in Google Sheets...');
-  try {
-    await api({ action:'changePassword', oldPassword:oldP, newPassword:newP });
-    ['cpOld','cpNew','cpConf'].forEach(id=>document.getElementById(id).value='');
-    showToast('✅ Password updated!','tok');
-  } catch(e) { showToast('❌ '+e.message,'terr'); }
-  finally { hideLoading(); }
-}
-
-// ══════════════════════════════════════════════════════════
-// SERVICE WORKER
-// ══════════════════════════════════════════════════════════
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./sw.js').catch(()=>{});
-}
-
-
-// ── SHOW STUDENT BALANCE IN PAYMENT MODAL ──
-function showStudentBalance() {
-  const sid = document.getElementById('pStudId').value;
-  const pType = document.getElementById('pType').value;
-  const box = document.getElementById('studentBalanceBox');
-  if (!sid || !box) return;
-  const s = cachedStudents.find(st => st.id === sid);
-  if (!s) return;
-  const rPaid = rentPaid(sid);
-  const dPaid = depositPaid(sid);
-  const rDue  = rentPending(s);
-  const dDue  = depositPending(s);
-  const tDue  = pendingAmt(s);
-  box.style.display = 'block';
-  box.innerHTML = `
-    <div style="font-weight:700;color:var(--navy);margin-bottom:6px">💰 ${s.name} — Balance Summary</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;font-size:11px;text-align:center">
-      <div style="background:white;border-radius:8px;padding:7px">
-        <div style="color:var(--muted)">🏠 Rent Due</div>
-        <div style="font-weight:700;color:${rDue>0?'var(--red)':'var(--green)'}">${fmt(rDue)}</div>
+function renderFeesPage(){
+  const wrap=document.getElementById('feesPage');
+  const filter=document.getElementById('feesFilter')?.value||'all', monthF=document.getElementById('monthFilter')?.value||'';
+  let list=CS;
+  if(filter==='rent_due')list=CS.filter(s=>rentDue(s)>0);
+  if(filter==='dep_due')list=CS.filter(s=>depositDue(s)>0);
+  if(filter==='clear')list=CS.filter(s=>totalDue(s)===0);
+  const fPays=monthF?CP.filter(p=>p.month===monthF):CP;
+  if(!list.length){wrap.innerHTML=`<div class="empty"><div class="ei">📊</div><h3>No students</h3></div>`;return}
+  const tc=fPays.reduce((s,p)=>s+Number(p.amount||0),0),trd=CS.reduce((s,st)=>s+rentDue(st),0),tdd=CS.reduce((s,st)=>s+depositDue(st),0);
+  wrap.innerHTML=`<div class="card"><div class="card-hd">📊 Summary${monthF?' — '+monthF:''}</div><div class="card-bd" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;text-align:center">
+    <div style="background:#e8f5e9;border-radius:10px;padding:10px"><div style="font-size:9px;color:var(--muted);text-transform:uppercase;font-weight:600">Collected</div><div style="font-weight:800;color:var(--green);font-size:16px;margin-top:2px">${fmt(tc)}</div></div>
+    <div style="background:#fce4ec;border-radius:10px;padding:10px"><div style="font-size:9px;color:var(--muted);text-transform:uppercase;font-weight:600">🏠 Rent Due</div><div style="font-weight:800;color:var(--red);font-size:16px;margin-top:2px">${fmt(trd)}</div></div>
+    <div style="background:#fce4ec;border-radius:10px;padding:10px"><div style="font-size:9px;color:var(--muted);text-transform:uppercase;font-weight:600">🔒 Dep Due</div><div style="font-weight:800;color:var(--red);font-size:16px;margin-top:2px">${fmt(tdd)}</div></div>
+  </div></div>`+list.map(s=>{
+    const rP=rentPaid(s.id),dP=depositPaid(s.id),rD=rentDue(s),dD=depositDue(s),tD=totalDue(s);
+    const sPays=(monthF?CP.filter(p=>p.studentId===s.id&&p.month===monthF):CP.filter(p=>p.studentId===s.id)).sort((a,b)=>new Date(b.date)-new Date(a.date));
+    return`<div class="card"><div class="card-hd"><div style="display:flex;align-items:center;gap:8px">${avHtml(s)}<div><div>${s.name}</div><div style="font-size:10px;color:var(--muted);font-weight:400">Room ${s.room} · ${fmt(s.rent)}/mo</div></div></div><button class="btn btn-g btn-sm" onclick="openPayModal('${s.id}','rent')">+ Pay</button></div>
+    <div class="card-bd" style="padding:10px 12px">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;text-align:center;font-size:11px;margin-bottom:10px">
+        <div style="background:#e8f5e9;border-radius:8px;padding:7px"><div style="color:var(--muted);font-size:9px">🏠 Rent Paid</div><div style="font-weight:700;color:var(--green)">${fmt(rP)}</div>${rD>0?`<div style="color:var(--red);font-size:9px">Due: ${fmt(rD)}</div>`:`<div style="color:var(--green);font-size:9px">✓</div>`}</div>
+        <div style="background:#e8eaf6;border-radius:8px;padding:7px"><div style="color:var(--muted);font-size:9px">🔒 Dep Paid</div><div style="font-weight:700;color:var(--navy)">${fmt(dP)}</div>${dD>0?`<div style="color:var(--red);font-size:9px">Due: ${fmt(dD)}</div>`:`<div style="color:var(--green);font-size:9px">✓</div>`}</div>
+        <div style="background:${tD>0?'#fce4ec':'#e8f5e9'};border-radius:8px;padding:7px"><div style="color:var(--muted);font-size:9px">💰 Total Due</div><div style="font-weight:800;color:${tD>0?'var(--red)':'var(--green)'}">${fmt(tD)}</div></div>
       </div>
-      <div style="background:white;border-radius:8px;padding:7px">
-        <div style="color:var(--muted)">🔒 Deposit Due</div>
-        <div style="font-weight:700;color:${dDue>0?'var(--red)':'var(--green)'}">${fmt(dDue)}</div>
+      ${sPays.length?`<div style="font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;margin-bottom:5px">Payments${monthF?' ('+monthF+')':''}</div>${sPays.map(p=>`<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);font-size:11px"><div><span class="${p.paymentType==='deposit'?'ptb-dep':p.paymentType==='both'?'ptb-both':'ptb-rent'}" style="font-size:9px">${p.paymentType==='deposit'?'🔒':p.paymentType==='both'?'💰':'🏠'}</span> <span style="font-weight:700;color:var(--green)">${fmt(p.amount)}</span></div><div style="color:var(--muted);font-size:10px">${p.date} · ${p.mode}</div></div>`).join('')}`:`<div style="text-align:center;color:var(--muted);font-size:11px;padding:6px">No payments${monthF?' for '+monthF:''}</div>`}
+    </div></div>`;
+  }).join('');
+}
+
+function renderDuesList(){
+  const wrap=document.getElementById('duesList');
+  const pending=CS.filter(s=>totalDue(s)>0);
+  if(!pending.length){wrap.innerHTML=`<div class="empty"><div class="ei">🎉</div><h3>All dues cleared!</h3></div>`;return}
+  wrap.innerHTML=pending.map(s=>{
+    const rD=rentDue(s),dD=depositDue(s),tD=totalDue(s);
+    return`<div class="pend">
+      <div style="display:flex;justify-content:space-between">
+        <div><div class="pend-name">${s.name}</div><div class="pend-det">Room ${s.room} · Bed ${s.bed} · ${s.mobile}</div>${rD>0?`<div style="font-size:11px;color:var(--red);margin-top:2px">🏠 Rent: ${fmt(rD)}</div>`:''}${dD>0?`<div style="font-size:11px;color:var(--red)">🔒 Deposit: ${fmt(dD)}</div>`:''}</div>
+        <div style="text-align:right"><div style="font-size:16px;font-weight:800;color:var(--red)">${fmt(tD)}</div><div style="font-size:9px;color:var(--muted)">Total Due</div></div>
       </div>
-      <div style="background:white;border-radius:8px;padding:7px">
-        <div style="color:var(--muted)">💰 Total Due</div>
-        <div style="font-weight:800;color:${tDue>0?'var(--red)':'var(--green)'}">${fmt(tDue)}</div>
+      <div class="pend-acts">
+        <a href="https://wa.me/${(s.mobile||'').replace(/\D/g,'')}?text=${encodeURIComponent(buildPendingMsg(s))}" target="_blank"><button class="btn btn-wa btn-sm">📱 WA</button></a>
+        ${s.parentMobile?`<a href="https://wa.me/${s.parentMobile.replace(/\D/g,'')}?text=${encodeURIComponent(buildPendingMsg(s))}" target="_blank"><button class="btn btn-sm btn-out">👪 Parent</button></a>`:''}
+        <button class="btn btn-wa btn-sm" onclick="openPayModal('${s.id}','rent')">🏠 Pay Rent</button>
+        ${dD>0?`<button class="btn btn-p btn-sm" onclick="openPayModal('${s.id}','deposit')">🔒 Pay Dep</button>`:''}
       </div>
-    </div>
-  `;
-  // Auto fill suggested amount
-  const amtEl = document.getElementById('pAmt');
-  if (pType === 'rent' && rDue > 0) amtEl.placeholder = 'Suggested: ' + rDue;
-  else if (pType === 'deposit' && dDue > 0) amtEl.placeholder = 'Suggested: ' + dDue;
-  else if (pType === 'both') amtEl.placeholder = 'Suggested: ' + tDue;
+    </div>`;
+  }).join('');
 }
 
-// ── BALANCE CALCULATOR ──
-function calcBalance() {
-  const rent = parseFloat(document.getElementById('sRent').value) || 0;
-  const dep  = parseFloat(document.getElementById('sDep').value) || 0;
-  const total = rent + dep;
-  let box = document.getElementById('balanceBox');
-  if (!box) {
-    box = document.createElement('div');
-    box.id = 'balanceBox';
-    box.style.cssText = 'background:#e8f5e9;border:1px solid #a5d6a7;border-radius:10px;padding:10px 14px;font-size:13px;color:#1b5e20;margin:8px 0';
-    const depEl = document.getElementById('sDep');
-    if (depEl) depEl.closest('.fg').parentElement.after(box);
-  }
-  box.innerHTML = '<strong>Total Amount from Student: ₹' + total.toLocaleString('en-IN') + '</strong>' +
-    '&nbsp;&nbsp;(Rent ₹' + rent.toLocaleString('en-IN') + ' + Deposit ₹' + dep.toLocaleString('en-IN') + ')';
+function renderDashPending(){
+  const wrap=document.getElementById('dashPending');
+  const p=CS.filter(s=>totalDue(s)>0).slice(0,4);
+  if(!p.length){wrap.innerHTML=`<div style="text-align:center;padding:14px;color:var(--muted);font-size:13px">🎉 No pending dues!</div>`;return}
+  wrap.innerHTML=p.map(s=>`<div class="pend" style="margin-bottom:8px"><div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px"><div><div class="pend-name">${s.name}</div><div class="pend-det">Room ${s.room} · ${fmt(rentDue(s))} rent + ${fmt(depositDue(s))} dep</div></div><div style="display:flex;align-items:center;gap:6px"><span style="font-weight:800;color:var(--red)">${fmt(totalDue(s))}</span><a href="https://wa.me/${(s.mobile||'').replace(/\D/g,'')}?text=${encodeURIComponent(buildPendingMsg(s))}" target="_blank"><button class="btn btn-wa btn-sm">📱</button></a><button class="btn btn-g btn-sm" onclick="openPayModal('${s.id}','rent')">Pay</button></div></div></div>`).join('');
 }
 
-// ── SEND MONTHLY REMINDER TO ALL STUDENTS ──
-function sendMonthlyToAll() {
-  if (!cachedStudents.length) { showToast('No students added yet','terr'); return; }
-  cachedStudents.forEach((s, i) => {
-    setTimeout(() => {
-      const msg = buildMonthlyMsg(s);
-      const num = s.mobile.replace(/\D/g,'');
-      window.open('https://wa.me/' + (num.startsWith('91') ? num : '91'+num) + '?text=' + encodeURIComponent(msg), '_blank');
-    }, i * 2000);
-  });
-  showToast('Opening WhatsApp for ' + cachedStudents.length + ' students...','tok');
+function renderDashRecent(){
+  const wrap=document.getElementById('dashRecent');
+  const r=[...CP].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,5);
+  if(!r.length){wrap.innerHTML=`<div class="empty" style="padding:14px"><div class="ei">💳</div><p>No payments yet</p></div>`;return}
+  wrap.innerHTML=r.map(p=>{
+    const s=CS.find(st=>st.id===p.studentId);
+    return`<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);font-size:12px"><div style="display:flex;align-items:center;gap:7px">${s?avHtml(s):'<div class="sav">?</div>'}<div><div style="font-weight:600">${s?.name||p.studentName||'?'}</div><div style="color:var(--muted);font-size:10px">${p.date} · ${p.month} · <span class="${p.paymentType==='deposit'?'ptb-dep':p.paymentType==='both'?'ptb-both':'ptb-rent'}" style="font-size:9px">${p.paymentType==='deposit'?'🔒':p.paymentType==='both'?'💰':'🏠'}</span></div></div></div><div style="font-weight:700;color:var(--green)">${fmt(p.amount)}</div></div>`;
+  }).join('');
 }
 
-// ── SEND PENDING SUMMARY TO ADMIN ──
-function sendPendingSummaryToAdmin() {
-  const adminNum = localStorage.getItem('lma_admin_wa') || '';
-  if (!adminNum) { showToast('Admin WA number set karo first (More tab)','terr'); return; }
-  const pending = cachedStudents.filter(s => pendingAmt(s) > 0);
-  if (!pending.length) { showToast('No pending dues!','tok'); return; }
-  let msg = '*LMA EduNest Girls Hostel*\n';
-  msg += '\u26a0️ *Pending Dues Summary*\n';
-  msg += new Date().toLocaleDateString('en-IN') + '\n\n';
-  let total = 0;
-  pending.forEach((s, i) => {
-    const due = pendingAmt(s);
-    total += due;
-    msg += (i+1) + '. *' + s.name + '*\n';
-    msg += '   Room: ' + s.room + ' | Bed: ' + s.bed + '\n';
-    msg += '   Pending: \u20b9' + Math.round(due).toLocaleString('en-IN') + '\n\n';
-  });
-  msg += '\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n';
-  msg += '*Total Pending: \u20b9' + Math.round(total).toLocaleString('en-IN') + '*\n';
-  msg += 'Students with dues: ' + pending.length;
-  const num = adminNum.replace(/\D/g,'');
-  window.open('https://wa.me/' + (num.startsWith('91') ? num : '91'+num) + '?text=' + encodeURIComponent(msg), '_blank');
-  showToast('Sending pending summary to Admin...','tok');
+function updateBadge(){const n=CS.filter(s=>totalDue(s)>0).length;const b=document.getElementById('pendBadge');b.textContent=n;b.style.display=n>0?'flex':'none'}
+
+function buildMonthlyMsg(s){return(document.getElementById('waMonthly').value||'Dear {Name}, monthly rent ₹{Amount} due. Room:{Room} Bed:{Bed}.').replace(/{Name}/g,s.name).replace(/{Amount}/g,s.rent).replace(/{Room}/g,s.room).replace(/{Bed}/g,s.bed)}
+function buildPendingMsg(s){return(document.getElementById('waPending').value||'Dear {Name}, pending: Rent ₹{RentDue}, Deposit ₹{DepDue}. Total ₹{Total}.').replace(/{Name}/g,s.name).replace(/{RentDue}/g,Math.round(rentDue(s))).replace(/{DepDue}/g,Math.round(depositDue(s))).replace(/{Total}/g,Math.round(totalDue(s))).replace(/{Room}/g,s.room).replace(/{Bed}/g,s.bed)}
+function sendMonthlyToAll(){if(!CS.length){showToast('No students','terr');return}CS.forEach((s,i)=>setTimeout(()=>window.open(`https://wa.me/${(s.mobile||'').replace(/\D/g,'')}?text=${encodeURIComponent(buildMonthlyMsg(s))}`,'_blank'),i*2000));showToast(`📱 Sending to ${CS.length} students`,'tok')}
+function sendPendingSummaryToAdmin(){
+  const an=localStorage.getItem('lma_admin_wa')||'';if(!an){showToast('Set admin WA number in Settings','terr');return}
+  const p=CS.filter(s=>totalDue(s)>0);if(!p.length){showToast('No pending dues!','tok');return}
+  let msg='*LMA EduNest Girls Hostel*\n⚠️ *Pending Dues Summary*\n'+new Date().toLocaleDateString('en-IN')+'\n\n';
+  let t=0;p.forEach((s,i)=>{const td=totalDue(s);t+=td;msg+=(i+1)+'. *'+s.name+'*\nRoom: '+s.room+' | Bed: '+s.bed+'\n🏠 Rent: ₹'+Math.round(rentDue(s)).toLocaleString('en-IN')+' | 🔒 Dep: ₹'+Math.round(depositDue(s)).toLocaleString('en-IN')+'\nTotal: ₹'+Math.round(td).toLocaleString('en-IN')+'\n\n'});
+  msg+='──────────────\n*Total: ₹'+Math.round(t).toLocaleString('en-IN')+'* | Students: '+p.length;
+  const num=an.replace(/\D/g,'');window.open(`https://wa.me/${num.startsWith('91')?num:'91'+num}?text=${encodeURIComponent(msg)}`,'_blank');showToast('📊 Summary sent','tok');
 }
-
-// ── NOTIFY ADMIN ON PAYMENT RECEIVED ──
-function notifyAdminPayment(studentName, amount, room, bed) {
-  const adminNum = localStorage.getItem('lma_admin_wa') || '';
-  if (!adminNum) return;
-  const msg = '*LMA EduNest* \u2705\n\nPayment Received!\n\nStudent: *' + studentName + '*\nRoom: ' + room + ' | Bed: ' + bed + '\nAmount: *\u20b9' + Number(amount).toLocaleString('en-IN') + '*\nDate: ' + new Date().toLocaleDateString('en-IN') + '\nTime: ' + new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
-  const num = adminNum.replace(/\D/g,'');
-  setTimeout(() => window.open('https://wa.me/' + (num.startsWith('91') ? num : '91'+num) + '?text=' + encodeURIComponent(msg), '_blank'), 1000);
+function sendBulkWA(){const p=CS.filter(s=>totalDue(s)>0);if(!p.length){showToast('No pending dues!','tok');return}p.forEach((s,i)=>setTimeout(()=>window.open(`https://wa.me/${(s.mobile||'').replace(/\D/g,'')}?text=${encodeURIComponent(buildPendingMsg(s))}`,'_blank'),i*2000));showToast(`📱 Sending to ${p.length} students`,'')}
+function notifyAdmin(name,amount,room,bed,pt){
+  const an=localStorage.getItem('lma_admin_wa')||'';if(!an)return;
+  const msg='*LMA EduNest* ✅\n\nPayment Received!\n\nStudent: *'+name+'*\nRoom: '+room+' | Bed: '+bed+'\nType: '+(pt==='deposit'?'🔒 Deposit':pt==='both'?'💰 Both':'🏠 Rent')+'\nAmount: *₹'+Number(amount).toLocaleString('en-IN')+'*\nDate: '+new Date().toLocaleDateString('en-IN')+'\nBy: '+currentUser.name;
+  const num=an.replace(/\D/g,'');setTimeout(()=>window.open(`https://wa.me/${num.startsWith('91')?num:'91'+num}?text=${encodeURIComponent(msg)}`,'_blank'),1500);
 }
+function saveTemplates(){localStorage.setItem('lma_wa_monthly',document.getElementById('waMonthly').value);localStorage.setItem('lma_wa_pending',document.getElementById('waPending').value);showToast('✅ Saved!','tok')}
+function changeScriptUrl(){const u=prompt('Enter new Script URL:',SCRIPT_URL);if(u&&u.includes('script.google.com')){SCRIPT_URL=u;localStorage.setItem('lma_script_url',u);showToast('✅ Updated','tok')}}
+function exportData(){const blob=new Blob([JSON.stringify({students:CS,payments:CP},null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='LMA_EduNest_'+today()+'.json';a.click();URL.revokeObjectURL(url);showToast('📤 Exported!','tok')}
 
-// ── LOAD ADMIN WA NUMBER ──
-setTimeout(() => {
-  const savedAdminWa = localStorage.getItem('lma_admin_wa');
-  if (savedAdminWa) { const el = document.getElementById('adminWaNum'); if(el) el.value = savedAdminWa; }
-}, 500);
-
-init();
+// INIT
+document.getElementById('sJoin').value=today();
+document.getElementById('pDate').value=today();
+document.getElementById('pMonth').value=thisMonth();
+document.querySelectorAll('.mov').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open')}));
+const dom=new Date().getDate();if(dom<=5)document.getElementById('dueText').textContent=`⏰ Today is ${dom}${dom===1?'st':dom===2?'nd':dom===3?'rd':'th'} — Send reminders!`;
+if(currentUser){document.getElementById('loginScreen').style.display='none';document.getElementById('appShell').classList.add('show');applyUser();refreshAll()}
+if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});
 </script>
 </body>
 </html>
