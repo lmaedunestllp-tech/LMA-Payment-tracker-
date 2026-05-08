@@ -239,8 +239,10 @@ html,body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text
         <button class="btn btn-p btn-block" onclick="changePassword()">💾 Update Password</button>
       </div></div>
       <div class="card"><div class="card-hd">🔔 Admin WhatsApp</div><div class="card-bd">
-        <div class="fg"><label>Admin WA Number (91XXXXXXXXXX)</label><input type="tel" id="adminWaNum" placeholder="919876543210" oninput="localStorage.setItem('lma_admin_wa',this.value)"></div>
-        <div class="ok-box">Payment hone par admin ko turant WA notification milega.</div>
+        <div class="fg"><label>👑 Lokesh WA Number (91XXXXXXXXXX)</label><input type="tel" id="adminWaNum" placeholder="919876543210" oninput="localStorage.setItem('lma_admin_wa',this.value)"></div>
+        <div class="fg"><label>👤 Milind Bhujbal WA Number</label><input type="tel" id="admin2WaNum" placeholder="919876543210" oninput="localStorage.setItem('lma_admin2_wa',this.value)"></div>
+        <div class="fg"><label>👤 Anand Udavant WA Number</label><input type="tel" id="admin3WaNum" placeholder="919876543210" oninput="localStorage.setItem('lma_admin3_wa',this.value)"></div>
+        <div class="ok-box">Student ko WA jaane ke saath teeno admins ko bhi same message milega. Sirf ek baar number save karo.</div>
         <button class="btn btn-wa btn-block" style="margin-top:8px" onclick="sendMonthlyToAll()">📱 Send Monthly Reminder to All</button>
         <button class="btn btn-p btn-block" style="margin-top:6px" onclick="sendPendingSummaryToAdmin()">📊 Send Pending Summary to Admin</button>
       </div></div>
@@ -355,6 +357,34 @@ Kindly clear dues. 🙏</textarea></div>
   <div class="mmf" id="viewStudFoot"></div>
 </div></div>
 
+<!-- EDIT STUDENT MODAL -->
+<div class="mov" id="editStudM"><div class="msh">
+  <div class="mhandle"></div>
+  <div class="mmh"><h3>✏️ Edit Student Details</h3></div>
+  <div class="mmb">
+    <input type="hidden" id="editStudId">
+    <div class="fg2">
+      <div class="fg"><label>Full Name *</label><input type="text" id="eName" placeholder="Student Name"></div>
+      <div class="fg"><label>Course / College</label><input type="text" id="eCourse" placeholder="e.g. B.Tech"></div>
+      <div class="fg"><label>Room No *</label><input type="text" id="eRoom" placeholder="101"></div>
+      <div class="fg"><label>Bed No *</label><input type="text" id="eBed" placeholder="A"></div>
+      <div class="fg"><label>Student Mobile *</label><input type="tel" id="eMob" placeholder="98765 43210"></div>
+      <div class="fg"><label>Parent Mobile</label><input type="tel" id="ePMob" placeholder="98765 43210"></div>
+      <div class="fg"><label>Monthly Rent ₹ *</label><input type="number" id="eRent" placeholder="4000" oninput="updateEditBalBox()"></div>
+      <div class="fg"><label>Security Deposit ₹</label><input type="number" id="eDep" placeholder="10000" oninput="updateEditBalBox()"></div>
+      <div class="fg"><label>Joining Date</label><input type="date" id="eJoin"></div>
+      <div class="fg"><label>Due Day</label><select id="eDueDay"><option value="5">5th</option><option value="1">1st</option><option value="10">10th</option></select></div>
+    </div>
+    <div id="editBalBox" style="display:none;background:#e8f5e9;border:1px solid #a5d6a7;border-radius:10px;padding:10px 13px;font-size:12px;color:#1b5e20;margin-bottom:10px;line-height:1.7"></div>
+    <div class="fg"><label>Permanent Address</label><textarea id="eAddr" placeholder="Home address..."></textarea></div>
+    <div class="fg"><label>Notes</label><input type="text" id="eNote" placeholder="Any remarks..."></div>
+  </div>
+  <div class="mmf">
+    <button class="btn btn-out btn-sm" onclick="closeM('editStudM')">Cancel</button>
+    <button class="btn btn-g" id="editStudBtn" onclick="saveEditStudent()" style="flex:1;justify-content:center">💾 Save Changes</button>
+  </div>
+</div></div>
+
 <!-- FORGOT PASSWORD MODAL -->
 <div class="mov" id="forgotM"><div class="msh">
   <div class="mhandle"></div>
@@ -458,6 +488,8 @@ function applyUser(){
   const wm=localStorage.getItem('lma_wa_monthly');if(wm)document.getElementById('waMonthly').value=wm;
   const wp=localStorage.getItem('lma_wa_pending');if(wp)document.getElementById('waPending').value=wp;
   const aw=localStorage.getItem('lma_admin_wa');if(aw)document.getElementById('adminWaNum').value=aw;
+  const aw2=localStorage.getItem('lma_admin2_wa');if(aw2&&document.getElementById('admin2WaNum'))document.getElementById('admin2WaNum').value=aw2;
+  const aw3=localStorage.getItem('lma_admin3_wa');if(aw3&&document.getElementById('admin3WaNum'))document.getElementById('admin3WaNum').value=aw3;
 }
 async function changePassword(){
   const o=document.getElementById('cpOld').value,n=document.getElementById('cpNew').value,c=document.getElementById('cpConf').value;
@@ -534,7 +566,7 @@ function renderStudentList(students,filter=''){
         <button class="btn btn-wa btn-sm" style="flex:1;justify-content:center" onclick="openPayModal('${s.id}','rent')">🏠 Pay Rent</button>
         <button class="btn btn-p btn-sm" style="flex:1;justify-content:center" onclick="openPayModal('${s.id}','deposit')">🔒 Pay Deposit</button>
         <button class="btn btn-out btn-sm" onclick="viewStudent('${s.id}')">📋 History</button>
-        <a href="https://wa.me/${(s.mobile||'').replace(/\D/g,'')}?text=${encodeURIComponent(buildPendingMsg(s))}" target="_blank"><button class="btn btn-wa btn-sm" title="Send WA reminder">📱</button></a>
+        <button class="btn btn-wa btn-sm" title="Send WA to Student + Admins" onclick="event.stopPropagation();sendStudentMsgToAll(CS.find(st=>st.id==='${s.id}'))">📱</button>
       </div>
     </div>`;
   }).join('');
@@ -579,7 +611,11 @@ async function addStudent(){
     const pf=document.getElementById('sPhotoInp').files[0];
     if(pf){showLoading('Uploading photo...');const b64=await fileToBase64(pf);const pr=await api({action:'uploadPhoto',base64Data:b64.split(',')[1],fileName:`${name.replace(/\s+/g,'_')}_${Date.now()}.jpg`,mimeType:pf.type});photoUrl=pr.url;photoFileId=pr.fileId}
     await api({action:'addStudent',addedBy:currentUser.name,student:{name,room,bed,mobile,parentMobile:document.getElementById('sPMob').value.trim(),rent,deposit:parseFloat(document.getElementById('sDep').value)||0,joinDate,dueDay:parseInt(document.getElementById('sDueDay').value)||5,course:document.getElementById('sCourse').value.trim(),address:document.getElementById('sAddr').value.trim(),notes:document.getElementById('sNote').value.trim(),photoUrl,photoFileId}});
-    closeM('addStudM'); resetStudForm(); await refreshAll(); showToast('✅ Student added!','tok');
+    closeM('addStudM'); resetStudForm(); await refreshAll();
+    // Send info WA to student + all 3 admins
+    const newS = CS.find(st=>st.name===name&&st.room===room);
+    if(newS) setTimeout(()=>sendStudentMsgToAll(newS), 800);
+    showToast('✅ Student added! WA opening for all...','tok');
   }catch(e){showToast('❌ '+e.message,'terr')}finally{btn.innerHTML='✅ Save Student';btn.disabled=false;hideLoading()}
 }
 
@@ -662,12 +698,72 @@ function viewStudent(id){
   document.getElementById('viewStudFoot').innerHTML=`
     <button class="btn btn-wa btn-sm" onclick="closeM('viewStudM');openPayModal('${id}','rent')">🏠 Pay Rent</button>
     <button class="btn btn-p btn-sm" onclick="closeM('viewStudM');openPayModal('${id}','deposit')">🔒 Pay Deposit</button>
-    <a href="https://wa.me/${(s.mobile||'').replace(/\D/g,'')}?text=${encodeURIComponent(buildMonthlyMsg(s))}" target="_blank"><button class="btn btn-wa btn-sm">📱 Monthly</button></a>
-    ${totalDue(s)>0?`<a href="https://wa.me/${(s.mobile||'').replace(/\D/g,'')}?text=${encodeURIComponent(buildPendingMsg(s))}" target="_blank"><button class="btn btn-danger btn-sm">⚠️ Dues WA</button></a>`:''}
+    <button class="btn btn-g btn-sm" onclick="openEditStudent('${id}')">✏️ Edit</button>
+    <button class="btn btn-wa btn-sm" onclick="sendStudentMsgToAll(CS.find(st=>st.id==='${id}'))">📱 Send to All</button>
     ${currentUser?.role==='admin'?`<button class="btn btn-danger btn-sm" onclick="delStudent('${id}')">🗑</button>`:''}
     <button class="btn btn-out btn-sm" onclick="closeM('viewStudM')">Close</button>
   `;
   openM('viewStudM');
+}
+
+function updateEditBalBox() {
+  const rent = parseFloat(document.getElementById('eRent').value)||0;
+  const dep  = parseFloat(document.getElementById('eDep').value)||0;
+  const box  = document.getElementById('editBalBox');
+  if(rent>0||dep>0){
+    box.style.display='block';
+    box.innerHTML=`🏠 Monthly Rent: <strong>₹${rent.toLocaleString('en-IN')}</strong>/mo<br>🔒 Security Deposit: <strong>₹${dep.toLocaleString('en-IN')}</strong> (one time)<br>💰 First month total: <strong>₹${(rent+dep).toLocaleString('en-IN')}</strong>`;
+  } else { box.style.display='none'; }
+}
+
+function openEditStudent(id) {
+  const s = CS.find(st=>st.id===id); if(!s) return;
+  document.getElementById('editStudId').value = id;
+  document.getElementById('eName').value = s.name||'';
+  document.getElementById('eCourse').value = s.course||'';
+  document.getElementById('eRoom').value = s.room||'';
+  document.getElementById('eBed').value = s.bed||'';
+  document.getElementById('eMob').value = s.mobile||'';
+  document.getElementById('ePMob').value = s.parentMobile||'';
+  document.getElementById('eRent').value = s.rent||'';
+  document.getElementById('eDep').value = s.deposit||'';
+  document.getElementById('eJoin').value = s.joinDate||'';
+  document.getElementById('eDueDay').value = s.dueDay||5;
+  document.getElementById('eAddr').value = s.address||'';
+  document.getElementById('eNote').value = s.notes||'';
+  updateEditBalBox();
+  closeM('viewStudM');
+  openM('editStudM');
+}
+
+async function saveEditStudent() {
+  const id   = document.getElementById('editStudId').value;
+  const name = document.getElementById('eName').value.trim();
+  const room = document.getElementById('eRoom').value.trim();
+  const bed  = document.getElementById('eBed').value.trim();
+  const mobile = document.getElementById('eMob').value.trim();
+  const rent = parseFloat(document.getElementById('eRent').value)||0;
+  if(!name||!room||!bed||!mobile||!rent){showToast('⚠️ Fill required fields','terr');return;}
+
+  const btn = document.getElementById('editStudBtn');
+  btn.innerHTML='<span class="loader"></span> Saving...'; btn.disabled=true;
+  showLoading('Updating student details...');
+  try {
+    await api({action:'updateStudent', student:{
+      id, name, room, bed, mobile,
+      parentMobile: document.getElementById('ePMob').value.trim(),
+      rent, deposit: parseFloat(document.getElementById('eDep').value)||0,
+      joinDate: document.getElementById('eJoin').value,
+      dueDay: parseInt(document.getElementById('eDueDay').value)||5,
+      course: document.getElementById('eCourse').value.trim(),
+      address: document.getElementById('eAddr').value.trim(),
+      notes: document.getElementById('eNote').value.trim(),
+    }});
+    closeM('editStudM');
+    await refreshAll();
+    showToast('✅ Student updated!','tok');
+  } catch(e) { showToast('❌ '+e.message,'terr'); }
+  finally { btn.innerHTML='💾 Save Changes'; btn.disabled=false; hideLoading(); }
 }
 
 async function delPaymentFromSummary(payId) {
@@ -792,6 +888,80 @@ async function triggerRemindersNow() {
   }
 }
 
+// Student info + room + payment status message (sent directly to student)
+function buildStudentInfoMsg(s) {
+  const rD = rentDue(s), dD = depositDue(s), tD = totalDue(s);
+  const rP = rentPaid(s.id), dP = depositPaid(s.id);
+  let msg = `Dear ${s.name},
+
+🏠 *LMA EduNest Girls Hostel, Pune*
+
+`;
+  msg += `📋 *Your Hostel Details:*
+`;
+  msg += `🏠 Room No: *${s.room}*
+`;
+  msg += `🛏 Bed No: *${s.bed}*
+`;
+  msg += `📅 Joining Date: ${s.joinDate}
+
+`;
+  msg += `💰 *Payment Details:*
+`;
+  msg += `🏠 Monthly Rent: *₹${Number(s.rent).toLocaleString('en-IN')}*
+`;
+  msg += `🔒 Security Deposit: *₹${Number(s.deposit).toLocaleString('en-IN')}*
+
+`;
+  msg += `📊 *Current Status:*
+`;
+  msg += `✅ Rent Paid: ₹${rP.toLocaleString('en-IN')}
+`;
+  msg += `✅ Deposit Paid: ₹${dP.toLocaleString('en-IN')}
+`;
+  if(tD > 0) {
+    msg += `
+⚠️ *Pending Balance:*
+`;
+    if(rD > 0) msg += `🏠 Rent Due: *₹${Math.round(rD).toLocaleString('en-IN')}*
+`;
+    if(dD > 0) msg += `🔒 Deposit Due: *₹${Math.round(dD).toLocaleString('en-IN')}*
+`;
+    msg += `💰 Total Due: *₹${Math.round(tD).toLocaleString('en-IN')}*
+`;
+    msg += `
+Kindly clear your dues at the earliest. 🙏`;
+  }
+  msg += `
+
+📞 For any queries contact: LMA EduNest Office`;
+  return msg;
+}
+
+// Welcome message for new student
+function buildWelcomeMsg(s) {
+  return buildStudentInfoMsg(s);
+}
+
+function sendDuesMsgToAll(s) {
+  if(!s) return;
+  const msg = buildStudentInfoMsg(s); // uses full info msg with pending details
+  const allNumbers = [];
+  
+  const sNum = (s.mobile||'').replace(/\D/g,'');
+  if(sNum) allNumbers.push(sNum.startsWith('91')?sNum:'91'+sNum);
+  
+  getAdminNumbers().forEach(num=>{
+    const waNum=num.startsWith('91')?num:'91'+num;
+    if(!allNumbers.includes(waNum)) allNumbers.push(waNum);
+  });
+  
+  allNumbers.forEach((num,i)=>{
+    setTimeout(()=>window.open(`https://wa.me/${num}?text=${encodeURIComponent(msg)}`,'_blank'),i*2000);
+  });
+  showToast(`📱 Sending dues reminder to ${allNumbers.length} contacts`,'tok');
+}
+
 function sendMonthlyToAll(){if(!CS.length){showToast('No students','terr');return}CS.forEach((s,i)=>setTimeout(()=>window.open(`https://wa.me/${(s.mobile||'').replace(/\D/g,'')}?text=${encodeURIComponent(buildMonthlyMsg(s))}`,'_blank'),i*2000));showToast(`📱 Sending to ${CS.length} students`,'tok')}
 function sendPendingSummaryToAdmin(){
   const an=localStorage.getItem('lma_admin_wa')||'';if(!an){showToast('Set admin WA number in Settings','terr');return}
@@ -802,10 +972,52 @@ function sendPendingSummaryToAdmin(){
   const num=an.replace(/\D/g,'');window.open(`https://wa.me/${num.startsWith('91')?num:'91'+num}?text=${encodeURIComponent(msg)}`,'_blank');showToast('📊 Summary sent','tok');
 }
 function sendBulkWA(){const p=CS.filter(s=>totalDue(s)>0);if(!p.length){showToast('No pending dues!','tok');return}p.forEach((s,i)=>setTimeout(()=>window.open(`https://wa.me/${(s.mobile||'').replace(/\D/g,'')}?text=${encodeURIComponent(buildPendingMsg(s))}`,'_blank'),i*2000));showToast(`📱 Sending to ${p.length} students`,'')}
+function getAdminNumbers() {
+  const nums = [];
+  ['lma_admin_wa','lma_admin2_wa','lma_admin3_wa'].forEach(key => {
+    const n = localStorage.getItem(key)||'';
+    if(n) nums.push(n.replace(/\D/g,''));
+  });
+  return [...new Set(nums)].filter(n=>n.length>=10);
+}
+
 function notifyAdmin(name,amount,room,bed,pt){
-  const an=localStorage.getItem('lma_admin_wa')||'';if(!an)return;
-  const msg='*LMA EduNest* ✅\n\nPayment Received!\n\nStudent: *'+name+'*\nRoom: '+room+' | Bed: '+bed+'\nType: '+(pt==='deposit'?'🔒 Deposit':pt==='both'?'💰 Both':'🏠 Rent')+'\nAmount: *₹'+Number(amount).toLocaleString('en-IN')+'*\nDate: '+new Date().toLocaleDateString('en-IN')+'\nBy: '+currentUser.name;
-  const num=an.replace(/\D/g,'');setTimeout(()=>window.open(`https://wa.me/${num.startsWith('91')?num:'91'+num}?text=${encodeURIComponent(msg)}`,'_blank'),1500);
+  const admins = getAdminNumbers();
+  if(!admins.length) return;
+  const msg='*LMA EduNest* ✅\n\nPayment Received!\n\nStudent: *'+name+'*\nRoom: '+room+' | Bed: '+bed+'\nType: '+(pt==='deposit'?'🔒 Deposit':pt==='both'?'💰 Both':'🏠 Rent')+'\nAmount: *₹'+Number(amount).toLocaleString('en-IN')+'*\nDate: '+new Date().toLocaleDateString('en-IN')+'\nRecorded by: '+currentUser.name;
+  admins.forEach((num,i)=>{
+    const waNum=num.startsWith('91')?num:'91'+num;
+    setTimeout(()=>window.open(`https://wa.me/${waNum}?text=${encodeURIComponent(msg)}`,'_blank'),(i+1)*1500);
+  });
+}
+
+// Send student info message to student + all 3 admins
+function sendStudentMsgToAll(s) {
+  const msg = buildStudentInfoMsg(s);
+  const allNumbers = [];
+  
+  // Student first
+  const sNum = (s.mobile||'').replace(/\D/g,'');
+  if(sNum) allNumbers.push(sNum.startsWith('91')?sNum:'91'+sNum);
+  
+  // Parent if available
+  if(s.parentMobile) {
+    const pNum = s.parentMobile.replace(/\D/g,'');
+    if(pNum) allNumbers.push(pNum.startsWith('91')?pNum:'91'+pNum);
+  }
+  
+  // All 3 admins
+  getAdminNumbers().forEach(num=>{
+    const waNum=num.startsWith('91')?num:'91'+num;
+    if(!allNumbers.includes(waNum)) allNumbers.push(waNum);
+  });
+  
+  // Open WA for each one with delay
+  allNumbers.forEach((num,i)=>{
+    setTimeout(()=>window.open(`https://wa.me/${num}?text=${encodeURIComponent(msg)}`,'_blank'),i*2000);
+  });
+  
+  showToast(`📱 Opening WA for ${allNumbers.length} contacts...`,'tok');
 }
 function saveTemplates(){localStorage.setItem('lma_wa_monthly',document.getElementById('waMonthly').value);localStorage.setItem('lma_wa_pending',document.getElementById('waPending').value);showToast('✅ Saved!','tok')}
 function changeScriptUrl(){const u=prompt('Enter new Script URL:',SCRIPT_URL);if(u&&u.includes('script.google.com')){SCRIPT_URL=u;localStorage.setItem('lma_script_url',u);showToast('✅ Updated','tok')}}
