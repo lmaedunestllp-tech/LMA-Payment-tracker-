@@ -475,7 +475,7 @@ Kindly clear dues. 🙏</textarea></div>
     </div>
     <div class="fg">
       <label>Rooms Configuration</label>
-      <textarea id="roomConfigInput" rows="4" placeholder="Room 1: Bed A, Bed B, Bed C, Bed D&#10;Room 2: Bed A, Bed B, Bed C, Bed D&#10;..."></textarea>
+      <textarea id="roomConfigInput" rows="4" placeholder="Room 1: Bed A, Bed B&#10;Room 2: Bed A, Bed B&#10;..."></textarea>
       <div style="font-size:10px;color:var(--muted);margin-top:3px">Each line: Room name: Bed names (comma separated)</div>
     </div>
     <button class="btn btn-p btn-block" style="margin-top:4px" onclick="saveBedsConfig()">💾 Save Configuration</button>
@@ -559,8 +559,7 @@ function generateDefaultRooms(numRooms, bedsPerRoom) {
 
 function autoGenerateRooms() {
   const config = generateDefaultRooms(9, 4);
-  const lines = Object.entries(config).map(([room, beds]) => `${room}: ${beds.join(', ')}`).join('
-');
+  const lines = Object.entries(config).map(([room, beds]) => room + ': ' + beds.join(', ')).join('\n');
   document.getElementById('roomConfigInput').value = lines;
   document.getElementById('totalBedsInput').value = '36';
 }
@@ -571,8 +570,7 @@ function saveBedsConfig() {
   
   let rooms = {};
   if (configText) {
-    configText.split('
-').forEach(line => {
+    configText.split('\n').forEach(line => {
       const parts = line.split(':');
       if (parts.length >= 2) {
         const roomName = parts[0].trim();
@@ -1355,7 +1353,7 @@ function showForgotPassword() {
 // Load beds config textarea on init
 setTimeout(() => {
   const cfg = getBedsConfig();
-  const lines = Object.entries(cfg).map(([room,beds])=>`${room}: ${beds.join(', ')}`).join('\n');
+  const lines = Object.entries(cfg).map(([room,beds])=> room + ': ' + beds.join(', ')).join('\n');
   const el = document.getElementById('roomConfigInput');
   if(el && !el.value) el.value = lines;
   const tb = document.getElementById('totalBedsInput');
