@@ -802,8 +802,15 @@ function hideLoading() { document.getElementById('loadingOverlay').classList.rem
 function switchTab(tab, el) {
   document.querySelectorAll('.bnav').forEach(b => b.classList.remove('active'));
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  el.classList.add('active');
-  document.getElementById('page-' + tab).classList.add('active');
+  if(el) el.classList.add('active');
+  const pg = document.getElementById('page-' + tab);
+  if(pg) pg.classList.add('active');
+  // Show pw-home when home tab
+  if(tab === 'home') {
+    document.querySelectorAll('.page-wrap').forEach(p => p.classList.remove('active'));
+    const pw = document.getElementById('pw-home');
+    if(pw) pw.classList.add('active');
+  }
 }
 
 function previewPhoto(inp) {
@@ -1186,6 +1193,39 @@ async function changePassword() {
   finally { hideLoading(); }
 }
 
+// ══ SIDEBAR NAVIGATION ══
+function switchPage(page, el) {
+  document.querySelectorAll('.sb-item').forEach(b => b.classList.remove('active'));
+  if(el) el.classList.add('active');
+  const tabMap = {home:'home',students:'students',fees:'fees',beds:'beds',pending:'dues',more:'more'};
+  const tab = tabMap[page] || page;
+  document.querySelectorAll('.bnav').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  const pg = document.getElementById('page-' + tab);
+  if(pg) pg.classList.add('active');
+  document.querySelectorAll('.page-wrap').forEach(p => p.classList.remove('active'));
+  const pw = document.getElementById('pw-' + page);
+  if(pw) pw.classList.add('active');
+  closeMobSidebar();
+  if(tab==='fees') renderFeesPage();
+  if(tab==='dues') renderDuesList();
+  if(tab==='beds') renderBedGrid();
+}
+
+function toggleMobSidebar() {
+  document.getElementById('sidebar').classList.toggle('mob-open');
+  document.getElementById('mobOverlay').classList.toggle('show');
+}
+function closeMobSidebar() {
+  const sb=document.getElementById('sidebar'); if(sb) sb.classList.remove('mob-open');
+  const ov=document.getElementById('mobOverlay'); if(ov) ov.classList.remove('show');
+}
+function checkMobile() {
+  const mbn=document.getElementById('mobileBottomNav');
+  if(mbn) mbn.style.display=window.innerWidth<=700?'flex':'none';
+}
+window.addEventListener('resize', checkMobile);
+
 // ══════════════════════════════════════════════════════════
 // SERVICE WORKER
 // ══════════════════════════════════════════════════════════
@@ -1194,6 +1234,7 @@ if ('serviceWorker' in navigator) {
 }
 
 init();
+setTimeout(checkMobile, 100);
 </script>
 </body>
 </html>
