@@ -140,7 +140,7 @@ html,body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text
 <!-- LOGIN -->
 <div id="loginScreen">
   <div class="l-logo">🏠</div>
-  <div class="l-brand">LMA EduNest</div>
+  <div class="l-brand">LMA EduNest LLP</div>
   <div class="l-sub">Girls Hostel · Pune</div>
   <div class="l-card">
     <h3>🔐 Sign in to continue</h3>
@@ -166,7 +166,7 @@ html,body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text
   <div class="topbar">
     <div class="tb-left">
       <div class="tb-logo">🏠</div>
-      <div><div class="tb-title">EduNest</div><div class="tb-sub" id="tbSub">HOSTEL · PUNE</div></div>
+      <div><div class="tb-title" style="font-size:13px;line-height:1.1">LMA EduNest LLP</div><div class="tb-sub" id="tbSub">HOSTEL · PUNE</div></div>
     </div>
     <div style="display:flex;align-items:center;gap:8px">
       <div class="user-chip"><div class="udot"></div><span id="userChip">-</span></div>
@@ -216,6 +216,47 @@ html,body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text
       <div id="feesPage"></div>
     </div>
 
+    <!-- BEDS -->
+    <div class="page" id="page-beds">
+      <div class="sec-t" style="margin-bottom:6px">🛏️ Room & Bed Status
+        <button class="btn btn-p btn-sm" onclick="openM('bedsSettingM')">⚙️ Setup</button>
+      </div>
+
+      <!-- Summary bar -->
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px">
+        <div style="background:#1a237e;border-radius:var(--r);padding:14px;text-align:center;color:white">
+          <div style="font-size:10px;opacity:.7;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Total Beds</div>
+          <div style="font-size:28px;font-weight:800" id="bedTotal">36</div>
+        </div>
+        <div style="background:#c62828;border-radius:var(--r);padding:14px;text-align:center;color:white">
+          <div style="font-size:10px;opacity:.7;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Occupied</div>
+          <div style="font-size:28px;font-weight:800" id="bedOccupied">0</div>
+        </div>
+        <div style="background:#2e7d32;border-radius:var(--r);padding:14px;text-align:center;color:white">
+          <div style="font-size:10px;opacity:.7;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Vacant</div>
+          <div style="font-size:28px;font-weight:800" id="bedVacant">36</div>
+        </div>
+      </div>
+
+      <!-- Occupancy bar -->
+      <div style="background:white;border-radius:var(--r);padding:14px;margin-bottom:14px;box-shadow:var(--shadow)">
+        <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:6px">
+          <span>Occupancy Rate</span><span id="bedPct">0%</span>
+        </div>
+        <div style="background:#e8eaf6;border-radius:20px;height:10px;overflow:hidden">
+          <div id="bedPctBar" style="height:100%;background:linear-gradient(90deg,#c8973a,#e8b84b);border-radius:20px;transition:width .5s;width:0%"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:11px">
+          <span style="color:var(--red)">🔴 Occupied</span>
+          <span style="color:var(--green)">🟢 Vacant</span>
+        </div>
+      </div>
+
+      <!-- Room-wise grid -->
+      <div class="sec-t" style="font-size:14px;margin-bottom:8px">Room-wise View</div>
+      <div id="roomBedGrid"></div>
+    </div>
+
     <!-- DUES -->
     <div class="page" id="page-dues">
       <div class="sec-t">⚠️ Dues <button class="btn btn-wa btn-sm" onclick="sendBulkWA()">📱 Bulk WA</button></div>
@@ -263,7 +304,8 @@ Kindly clear dues. 🙏</textarea></div>
       </div></div>
       <div class="card"><div class="card-hd">📊 Data</div><div class="card-bd">
         <div class="si-item"><div><h4>🔄 Sync</h4><p>Reload from Google Sheets</p></div><button class="btn btn-p btn-sm" onclick="refreshAll()">Sync</button></div>
-        <div class="si-item"><div><h4>📤 Export</h4><p>Download JSON backup</p></div><button class="btn btn-out btn-sm" onclick="exportData()">Export</button></div>
+        <div class="si-item"><div><h4>📊 Export to Excel</h4><p>Download all data as Excel file</p></div><button class="btn btn-g btn-sm" onclick="exportExcel()">Excel</button></div>
+        <div class="si-item"><div><h4>📤 Export JSON</h4><p>Download JSON backup</p></div><button class="btn btn-out btn-sm" onclick="exportData()">JSON</button></div>
         <div class="si-item"><div><h4>🔗 Script URL</h4><p>Change Apps Script link</p></div><button class="btn btn-out btn-sm" onclick="changeScriptUrl()">Change</button></div>
       </div></div>
     </div>
@@ -273,6 +315,7 @@ Kindly clear dues. 🙏</textarea></div>
     <button class="bnav active" onclick="switchTab('home',this)"><div class="bni">🏠</div><div class="bnl">Home</div></button>
     <button class="bnav" onclick="switchTab('students',this)"><div class="bni">👩‍🎓</div><div class="bnl">Students</div></button>
     <button class="bnav" onclick="switchTab('fees',this)"><div class="bni">📊</div><div class="bnl">Summary</div></button>
+    <button class="bnav" onclick="switchTab('beds',this)"><div class="bni">🛏️</div><div class="bnl">Beds</div></button>
     <button class="bnav" onclick="switchTab('dues',this)"><div class="bni">⚠️</div><div class="bnl">Dues</div><div class="bnbadge" id="pendBadge" style="display:none">0</div></button>
     <button class="bnav" onclick="switchTab('more',this)"><div class="bni">⚙️</div><div class="bnl">More</div></button>
   </div>
@@ -309,7 +352,42 @@ Kindly clear dues. 🙏</textarea></div>
     </div>
     <div id="addBalBox" style="display:none;background:#e8f5e9;border:1px solid #a5d6a7;border-radius:10px;padding:10px 13px;font-size:12px;color:#1b5e20;margin-bottom:10px;line-height:1.7"></div>
     <div class="fg"><label>Permanent Address</label><textarea id="sAddr" placeholder="Home address..."></textarea></div>
-    <div class="fg"><label>Notes</label><input type="text" id="sNote" placeholder="Any remarks..."></div>
+    
+    <div style="background:#e8eaf6;border-radius:12px;padding:14px;margin-bottom:12px">
+      <div style="font-size:12px;font-weight:700;color:#1a237e;margin-bottom:10px">📎 Documents (uploaded to Google Drive)</div>
+      <div class="fg2">
+        <div class="fg">
+          <label>Student Aadhar Card</label>
+          <input type="file" id="sDocAadhar" accept="image/*,.pdf" style="font-size:12px">
+        </div>
+        <div class="fg">
+          <label>Student PAN Card</label>
+          <input type="file" id="sDocPan" accept="image/*,.pdf" style="font-size:12px">
+        </div>
+        <div class="fg">
+          <label>Parent Aadhar Card</label>
+          <input type="file" id="sDocParentAadhar" accept="image/*,.pdf" style="font-size:12px">
+        </div>
+        <div class="fg">
+          <label>Parent PAN Card</label>
+          <input type="file" id="sDocParentPan" accept="image/*,.pdf" style="font-size:12px">
+        </div>
+      </div>
+      <div style="font-size:10px;color:#6b7299;margin-top:4px">📁 All docs saved in Google Drive under student's name folder</div>
+    </div>
+    
+    <div class="fg">
+      <label>Notes / Remarks</label>
+      <input type="text" id="sNote" placeholder="e.g. Vegetarian, AC room, late joiner, reference by...">
+      <div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:5px">
+        <span onclick="document.getElementById('sNote').value='Vegetarian'" style="background:#e8f5e9;color:#2e7d32;padding:3px 9px;border-radius:20px;font-size:10px;cursor:pointer;font-weight:600">🥗 Veg</span>
+        <span onclick="document.getElementById('sNote').value='Non-Vegetarian'" style="background:#fce4ec;color:#c62828;padding:3px 9px;border-radius:20px;font-size:10px;cursor:pointer;font-weight:600">🍗 Non-Veg</span>
+        <span onclick="document.getElementById('sNote').value='AC Room allotted'" style="background:#e8eaf6;color:#1a237e;padding:3px 9px;border-radius:20px;font-size:10px;cursor:pointer;font-weight:600">❄️ AC</span>
+        <span onclick="document.getElementById('sNote').value='Reference: '" style="background:#fff8e1;color:#e65100;padding:3px 9px;border-radius:20px;font-size:10px;cursor:pointer;font-weight:600">👥 Reference</span>
+        <span onclick="document.getElementById('sNote').value='Early morning batch'" style="background:#f3e5f5;color:#6a1b9a;padding:3px 9px;border-radius:20px;font-size:10px;cursor:pointer;font-weight:600">⏰ Early Batch</span>
+        <span onclick="document.getElementById('sNote').value='Night shift student'" style="background:#e0f2f1;color:#00695c;padding:3px 9px;border-radius:20px;font-size:10px;cursor:pointer;font-weight:600">🌙 Night Shift</span>
+      </div>
+    </div>
   </div>
   <div class="mmf">
     <button class="btn btn-out btn-sm" onclick="closeM('addStudM')">Cancel</button>
@@ -385,6 +463,29 @@ Kindly clear dues. 🙏</textarea></div>
   </div>
 </div></div>
 
+<!-- BEDS SETUP MODAL -->
+<div class="mov" id="bedsSettingM"><div class="msh">
+  <div class="mhandle"></div>
+  <div class="mmh"><h3>⚙️ Room & Bed Setup</h3></div>
+  <div class="mmb">
+    <div class="ok-box" style="margin-bottom:14px">Set your total beds and room configuration. This helps track occupancy.</div>
+    <div class="fg">
+      <label>Total Beds in Hostel</label>
+      <input type="number" id="totalBedsInput" placeholder="36" value="36" min="1" max="200">
+    </div>
+    <div class="fg">
+      <label>Rooms Configuration</label>
+      <textarea id="roomConfigInput" rows="4" placeholder="Room 1: Bed A, Bed B, Bed C, Bed D&#10;Room 2: Bed A, Bed B, Bed C, Bed D&#10;..."></textarea>
+      <div style="font-size:10px;color:var(--muted);margin-top:3px">Each line: Room name: Bed names (comma separated)</div>
+    </div>
+    <button class="btn btn-p btn-block" style="margin-top:4px" onclick="saveBedsConfig()">💾 Save Configuration</button>
+    <button class="btn btn-out btn-block" style="margin-top:6px" onclick="autoGenerateRooms()">⚡ Auto Generate (9 Rooms × 4 Beds)</button>
+  </div>
+  <div class="mmf">
+    <button class="btn btn-out btn-sm" onclick="closeM('bedsSettingM')">Close</button>
+  </div>
+</div></div>
+
 <!-- FORGOT PASSWORD MODAL -->
 <div class="mov" id="forgotM"><div class="msh">
   <div class="mhandle"></div>
@@ -437,11 +538,143 @@ function closeM(id){document.getElementById(id).classList.remove('open')}
 function showLoading(m){document.getElementById('loadingText').textContent=m||'Loading...';document.getElementById('loadingOverlay').classList.add('show')}
 function hideLoading(){document.getElementById('loadingOverlay').classList.remove('show')}
 function setSyncStatus(s,t){const d=document.getElementById('sdot');document.getElementById('stext').textContent=t;d.className='sdot'+(s==='syncing'?' syncing':s==='err'?' err':'')}
+// ══════════════════════════════════════════
+// BEDS & ROOMS
+// ══════════════════════════════════════════
+function getBedsConfig() {
+  const saved = localStorage.getItem('lma_beds_config');
+  if (saved) return JSON.parse(saved);
+  // Default: 9 rooms x 4 beds = 36 beds
+  return generateDefaultRooms(9, 4);
+}
+
+function generateDefaultRooms(numRooms, bedsPerRoom) {
+  const bedNames = ['A','B','C','D','E','F'];
+  const rooms = {};
+  for (let r = 1; r <= numRooms; r++) {
+    rooms['Room ' + r] = bedNames.slice(0, bedsPerRoom);
+  }
+  return rooms;
+}
+
+function autoGenerateRooms() {
+  const config = generateDefaultRooms(9, 4);
+  const lines = Object.entries(config).map(([room, beds]) => `${room}: ${beds.join(', ')}`).join('
+');
+  document.getElementById('roomConfigInput').value = lines;
+  document.getElementById('totalBedsInput').value = '36';
+}
+
+function saveBedsConfig() {
+  const totalBeds = parseInt(document.getElementById('totalBedsInput').value) || 36;
+  const configText = document.getElementById('roomConfigInput').value.trim();
+  
+  let rooms = {};
+  if (configText) {
+    configText.split('
+').forEach(line => {
+      const parts = line.split(':');
+      if (parts.length >= 2) {
+        const roomName = parts[0].trim();
+        const beds = parts[1].split(',').map(b => b.trim()).filter(b => b);
+        if (roomName && beds.length) rooms[roomName] = beds;
+      }
+    });
+  }
+  
+  localStorage.setItem('lma_beds_config', JSON.stringify(rooms));
+  localStorage.setItem('lma_total_beds', totalBeds);
+  closeM('bedsSettingM');
+  renderBedGrid();
+  showToast('✅ Room configuration saved!', 'tok');
+}
+
+function renderBedGrid() {
+  const wrap = document.getElementById('roomBedGrid');
+  if (!wrap) return;
+  
+  const config = getBedsConfig();
+  const totalBeds = parseInt(localStorage.getItem('lma_total_beds')) || 36;
+  
+  // Build occupied map from students
+  const occupiedMap = {}; // key: "Room X-BedY" → student
+  CS.forEach(s => {
+    const key = `${s.room}-${s.bed}`;
+    occupiedMap[key] = s;
+  });
+  
+  const occupied = CS.length;
+  const vacant = totalBeds - occupied;
+  const pct = totalBeds > 0 ? Math.round(occupied / totalBeds * 100) : 0;
+  
+  // Update stats
+  document.getElementById('bedTotal').textContent = totalBeds;
+  document.getElementById('bedOccupied').textContent = occupied;
+  document.getElementById('bedVacant').textContent = Math.max(0, vacant);
+  document.getElementById('bedPct').textContent = pct + '%';
+  document.getElementById('bedPctBar').style.width = pct + '%';
+  document.getElementById('bedPctBar').style.background = pct > 80 
+    ? 'linear-gradient(90deg,#c62828,#ef9a9a)' 
+    : 'linear-gradient(90deg,#c8973a,#e8b84b)';
+  
+  if (!Object.keys(config).length) {
+    wrap.innerHTML = `<div class="empty"><div class="ei">🛏️</div><h3>No room config set</h3><p>Tap ⚙️ Setup to configure your rooms and beds</p></div>`;
+    return;
+  }
+  
+  wrap.innerHTML = Object.entries(config).map(([room, beds]) => {
+    const bedHtml = beds.map(bed => {
+      const key = `${room}-${bed}`;
+      // Also check numeric room variations
+      const roomNum = room.replace('Room ','');
+      const key2 = `${roomNum}-${bed}`;
+      const student = occupiedMap[key] || occupiedMap[key2];
+      const isOccupied = !!student;
+      
+      return `<div style="
+        background:${isOccupied ? '#fce4ec' : '#e8f5e9'};
+        border:2px solid ${isOccupied ? '#c62828' : '#2e7d32'};
+        border-radius:10px;padding:8px;text-align:center;
+        cursor:${isOccupied?'pointer':'default'};
+        transition:all .2s;
+      " ${isOccupied ? `onclick="viewStudent('${student.id}')"` : ''} title="${isOccupied ? student.name : 'Vacant'}">
+        <div style="font-size:16px">${isOccupied ? '🔴' : '🟢'}</div>
+        <div style="font-size:11px;font-weight:700;color:${isOccupied?'var(--red)':'var(--green)'}">Bed ${bed}</div>
+        ${isOccupied 
+          ? `<div style="font-size:9px;color:var(--red);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:70px">${student.name.split(' ')[0]}</div>` 
+          : `<div style="font-size:9px;color:var(--green);margin-top:2px">Vacant</div>`}
+      </div>`;
+    }).join('');
+    
+    const roomOccupied = beds.filter(bed => {
+      const roomNum = room.replace('Room ','');
+      return occupiedMap[`${room}-${bed}`] || occupiedMap[`${roomNum}-${bed}`];
+    }).length;
+    
+    return `<div class="card" style="margin-bottom:10px">
+      <div class="card-hd">
+        ${room}
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:11px;color:var(--muted)">${roomOccupied}/${beds.length} occupied</span>
+          <div style="background:#e8eaf6;border-radius:20px;width:60px;height:6px;overflow:hidden">
+            <div style="height:100%;background:${roomOccupied===beds.length?'var(--red)':'var(--gold)'};border-radius:20px;width:${Math.round(roomOccupied/beds.length*100)}%"></div>
+          </div>
+        </div>
+      </div>
+      <div class="card-bd" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+        ${bedHtml}
+      </div>
+    </div>`;
+  }).join('');
+}
+
 function switchTab(tab,el){
   document.querySelectorAll('.bnav').forEach(b=>b.classList.remove('active'));
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   el.classList.add('active'); document.getElementById('page-'+tab).classList.add('active');
-  if(tab==='fees')renderFeesPage(); if(tab==='dues')renderDuesList();
+  if(tab==='fees')renderFeesPage(); 
+  if(tab==='dues')renderDuesList();
+  if(tab==='beds')renderBedGrid();
 }
 function previewPhoto(inp){const r=new FileReader();r.onload=e=>{const img=document.getElementById('sPhotoPreview');img.src=e.target.result;img.style.display='block';document.getElementById('sPhotoPH').style.display='none'};r.readAsDataURL(inp.files[0])}
 function fileToBase64(f){return new Promise((res,rej)=>{const r=new FileReader();r.onload=e=>res(e.target.result);r.onerror=rej;r.readAsDataURL(f)})}
@@ -511,7 +744,7 @@ async function refreshAll(){
     setSyncStatus('ok','✅ Synced · '+new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}));
   }catch(e){setSyncStatus('err','❌ Sync failed');showToast('❌ '+e.message,'terr')}finally{hideLoading()}
 }
-function renderAll(){renderStats();renderStudentList(CS);renderDashPending();renderDashRecent();updateBadge();populateMonthFilter();if(document.getElementById('page-fees').classList.contains('active'))renderFeesPage();if(document.getElementById('page-dues').classList.contains('active'))renderDuesList()}
+function renderAll(){renderStats();renderStudentList(CS);renderDashPending();renderDashRecent();updateBadge();populateMonthFilter();if(document.getElementById('page-fees').classList.contains('active'))renderFeesPage();if(document.getElementById('page-dues').classList.contains('active'))renderDuesList();if(document.getElementById('page-beds').classList.contains('active'))renderBedGrid();}
 
 function renderStats(){
   document.getElementById('stTotal').textContent=CS.length;
@@ -609,8 +842,29 @@ async function addStudent(){
   try{
     let photoUrl='',photoFileId='';
     const pf=document.getElementById('sPhotoInp').files[0];
-    if(pf){showLoading('Uploading photo...');const b64=await fileToBase64(pf);const pr=await api({action:'uploadPhoto',base64Data:b64.split(',')[1],fileName:`${name.replace(/\s+/g,'_')}_${Date.now()}.jpg`,mimeType:pf.type});photoUrl=pr.url;photoFileId=pr.fileId}
-    await api({action:'addStudent',addedBy:currentUser.name,student:{name,room,bed,mobile,parentMobile:document.getElementById('sPMob').value.trim(),rent,deposit:parseFloat(document.getElementById('sDep').value)||0,joinDate,dueDay:parseInt(document.getElementById('sDueDay').value)||5,course:document.getElementById('sCourse').value.trim(),address:document.getElementById('sAddr').value.trim(),notes:document.getElementById('sNote').value.trim(),photoUrl,photoFileId}});
+    if(pf){showLoading('Uploading photo to Drive...');const b64=await fileToBase64(pf);const pr=await api({action:'uploadPhoto',base64Data:b64.split(',')[1],fileName:`${name.replace(/\s+/g,'_')}_Photo_${Date.now()}.jpg`,mimeType:pf.type,folderName:`LMA_EduNest_${name.replace(/\s+/g,'_')}`});photoUrl=pr.url;photoFileId=pr.fileId}
+    
+    // Upload documents to student's Drive folder
+    const docFields = [
+      {id:'sDocAadhar', label:'Aadhar'},
+      {id:'sDocPan', label:'PAN'},
+      {id:'sDocParentAadhar', label:'Parent_Aadhar'},
+      {id:'sDocParentPan', label:'Parent_PAN'}
+    ];
+    const docLinks = {};
+    for(const doc of docFields) {
+      const f = document.getElementById(doc.id)?.files[0];
+      if(f) {
+        showLoading(`Uploading ${doc.label}...`);
+        const b64 = await fileToBase64(f);
+        const ext = f.name.split('.').pop();
+        const dr = await api({action:'uploadPhoto',base64Data:b64.split(',')[1],fileName:`${name.replace(/\s+/g,'_')}_${doc.label}_${Date.now()}.${ext}`,mimeType:f.type,folderName:`LMA_EduNest_${name.replace(/\s+/g,'_')}`});
+        docLinks[doc.label] = dr.url;
+      }
+    }
+    const docsNote = Object.keys(docLinks).length > 0 ? ' | Docs: '+Object.keys(docLinks).join(', ') : '';
+    
+    await api({action:'addStudent',addedBy:currentUser.name,student:{name,room,bed,mobile,parentMobile:document.getElementById('sPMob').value.trim(),rent,deposit:parseFloat(document.getElementById('sDep').value)||0,joinDate,dueDay:parseInt(document.getElementById('sDueDay').value)||5,course:document.getElementById('sCourse').value.trim(),address:document.getElementById('sAddr').value.trim(),notes:(document.getElementById('sNote').value.trim()+docsNote).trim(),photoUrl,photoFileId}});
     closeM('addStudM'); resetStudForm(); await refreshAll();
     // Send info WA to student + all 3 admins
     const newS = CS.find(st=>st.name===name&&st.room===room);
@@ -1021,6 +1275,52 @@ function sendStudentMsgToAll(s) {
 }
 function saveTemplates(){localStorage.setItem('lma_wa_monthly',document.getElementById('waMonthly').value);localStorage.setItem('lma_wa_pending',document.getElementById('waPending').value);showToast('✅ Saved!','tok')}
 function changeScriptUrl(){const u=prompt('Enter new Script URL:',SCRIPT_URL);if(u&&u.includes('script.google.com')){SCRIPT_URL=u;localStorage.setItem('lma_script_url',u);showToast('✅ Updated','tok')}}
+function exportExcel() {
+  if (!CS.length) { showToast('No data to export','terr'); return; }
+  
+  // Build CSV content (opens in Excel)
+  const headers = ['Sr No','Student Name','Room No','Bed No','Mobile','Parent Mobile','Monthly Rent','Security Deposit','Joining Date','Rent Paid','Deposit Paid','Rent Due','Deposit Due','Total Due','Status','Course','Address','Notes'];
+  
+  const rows = CS.map((s, i) => {
+    const rP = rentPaid(s.id), dP = depositPaid(s.id);
+    const rD = rentDue(s), dD = depositDue(s), tD = totalDue(s);
+    return [
+      i+1, s.name, s.room, s.bed, s.mobile, s.parentMobile||'',
+      s.rent, s.deposit, s.joinDate,
+      rP, dP, Math.round(rD), Math.round(dD), Math.round(tD),
+      tD===0?'Clear':'Pending',
+      s.course||'', s.address||'', s.notes||''
+    ].map(v => `"${(v||'').toString().replace(/"/g,'""')}"`).join(',');
+  });
+
+  // Payment sheet
+  const pHeaders = ['Sr No','Student Name','Room','Month','Amount','Payment Type','Date','Mode','Reference','Recorded By'];
+  const pRows = CP.map((p,i) => {
+    const s = CS.find(st=>st.id===p.studentId);
+    return [
+      i+1, s?.name||p.studentName||'', s?.room||p.room||'',
+      p.month, p.amount, p.paymentType||'rent',
+      p.date, p.mode, p.ref||'', p.recordedBy||''
+    ].map(v => `"${(v||'').toString().replace(/"/g,'""')}"`).join(',');
+  });
+
+  const csv = 'LMA EduNest - Student Data\n' + 
+    headers.map(h=>`"${h}"`).join(',') + '\n' + 
+    rows.join('\n') + 
+    '\n\n\nPayment Records\n' +
+    pHeaders.map(h=>`"${h}"`).join(',') + '\n' +
+    pRows.join('\n');
+
+  const blob = new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'LMA_EduNest_Data_'+today()+'.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('📊 Excel file downloaded!','tok');
+}
+
 function exportData(){const blob=new Blob([JSON.stringify({students:CS,payments:CP},null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='LMA_EduNest_'+today()+'.json';a.click();URL.revokeObjectURL(url);showToast('📤 Exported!','tok')}
 
 // INIT
@@ -1028,6 +1328,18 @@ function showForgotPassword() {
   document.getElementById('loginScreen').style.display = 'none';
   openM('forgotM');
 }
+
+// Load beds config textarea on init
+setTimeout(() => {
+  const cfg = getBedsConfig();
+  const lines = Object.entries(cfg).map(([room,beds])=>`${room}: ${beds.join(', ')}`).join('\n');
+  const el = document.getElementById('roomConfigInput');
+  if(el && !el.value) el.value = lines;
+  const tb = document.getElementById('totalBedsInput');
+  if(tb) tb.value = localStorage.getItem('lma_total_beds')||'36';
+}, 1000);
+
+
 
 document.getElementById('sJoin').value=today();
 document.getElementById('pDate').value=today();
