@@ -702,13 +702,45 @@ function totalDue(s){return rentDue(s)+depositDue(s)}
 
 // AUTH
 async function doLogin(){
-  const un=document.getElementById('loginUser').value, pw=document.getElementById('loginPass').value, err=document.getElementById('loginErr');
-  if(!un){err.textContent='Please select a user';return} if(!pw){err.textContent='Please enter password';return}
-  const btn=document.getElementById('loginBtn'); btn.innerHTML='<span class="loader"></span> Signing in...'; btn.disabled=true; err.textContent='';
-  try{const d=await api({action:'login',username:un,password:pw});currentUser={...d.user,token:d.token};sessionStorage.setItem('lma_user',JSON.stringify(currentUser));loginOk();return}catch(e){}
+  const un=document.getElementById('loginUser').value;
+  const pw=document.getElementById('loginPass').value;
+  const err=document.getElementById('loginErr');
+  if(!un){err.textContent='Please select a user';return}
+  if(!pw){err.textContent='Please enter password';return}
+  const btn=document.getElementById('loginBtn');
+  btn.innerHTML='<span class="loader"></span> Signing in...';
+  btn.disabled=true;
+  err.textContent='';
+
+  // STEP 1: Try hardcoded login first (instant, no network needed)
   const hu=HU[un];
-  if(hu&&hu.password===pw){currentUser={username:un,name:hu.name,role:hu.role,token:btoa(un+':'+pw+':'+Date.now())};sessionStorage.setItem('lma_user',JSON.stringify(currentUser));loginOk();}
-  else{err.textContent='❌ Incorrect password';btn.innerHTML='Sign In →';btn.disabled=false}
+  if(hu && hu.password===pw){
+    currentUser={username:un,name:hu.name,role:hu.role,token:btoa(un+':'+pw+':'+Date.now())};
+    sessionStorage.setItem('lma_user',JSON.stringify(currentUser));
+    loginOk();
+    // Try to also verify with Google Sheets in background
+    try{ api({action:'login',username:un,password:pw}).then(d=>{
+      if(d.token){ currentUser.token=d.token; sessionStorage.setItem('lma_user',JSON.stringify(currentUser)); }
+    }).catch(()=>{}); }catch(e){}
+    return;
+  }
+
+  // STEP 2: Try Google Sheets login (if password was changed)
+  try{
+    const d=await Promise.race([
+      api({action:'login',username:un,password:pw}),
+      new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),8000))
+    ]);
+    currentUser={...d.user,token:d.token};
+    sessionStorage.setItem('lma_user',JSON.stringify(currentUser));
+    loginOk();
+    return;
+  }catch(e){}
+
+  // STEP 3: Wrong password
+  err.textContent='❌ Incorrect password. Try again.';
+  btn.innerHTML='Sign In →';
+  btn.disabled=false;
 }
 function loginOk(){document.getElementById('loginScreen').classList.add('hide');setTimeout(()=>{document.getElementById('loginScreen').style.display='none';document.getElementById('appShell').classList.add('show');applyUser();refreshAll()},400)}
 function doLogout(){if(!confirm('Sign out?'))return;sessionStorage.removeItem('lma_user');currentUser=null;location.reload()}
