@@ -169,6 +169,12 @@ html,body{font-family:"DM Sans",sans-serif;background:var(--bg);color:var(--t);h
     <div class="lf"><label>Select User</label>
       <select id="lu"><option value="">-- Select --</option><option value="admin">Lokesh (Owner)</option><option value="manager1">Milind Bhujbal</option><option value="manager2">Anand Udavant</option></select></div>
     <div class="lf"><label>Password</label><input type="password" id="lp" placeholder="Enter password" onkeydown="if(event.key==='Enter')login()"></div>
+    <div class="lf"><label>Select Hostel / Branch</label>
+      <select id="lbranch" onchange="localStorage.setItem('lma_branch',this.value)">
+        <option value="LMA EduNest LLP - Pune">🏠 LMA EduNest LLP - Pune (Main)</option>
+        <option value="Branch 2">🏠 Branch 2 (Coming Soon)</option>
+        <option value="Branch 3">🏠 Branch 3 (Coming Soon)</option>
+      </select></div>
     <button class="lbtn" onclick="login()">Sign In →</button>
     <div class="lerr" id="le"></div>
     <div style="text-align:center;margin-top:12px"><span style="color:rgba(255,255,255,.5);font-size:12px">Forgot? </span><span onclick="openM('fM')" style="color:var(--gl);font-size:12px;cursor:pointer;text-decoration:underline">View defaults</span></div>
@@ -180,7 +186,7 @@ html,body{font-family:"DM Sans",sans-serif;background:var(--bg);color:var(--t);h
   <div class="tb">
     <button class="hbtn" onclick="toggleSB()"><span></span><span></span><span></span></button>
     <div class="tl">🏠</div>
-    <div style="flex:1"><div class="tn">LMA EduNest LLP</div><div class="ts">GIRLS HOSTEL · PUNE</div></div>
+    <div style="flex:1"><div class="tn" id="branchName">LMA EduNest LLP</div><div class="ts" id="branchSub">GIRLS HOSTEL · PUNE</div></div>
     <div class="td" id="hd"></div>
     <div class="uch"><div class="udt"></div><span id="uc">-</span></div>
     <button class="ibtn" onclick="refreshAll()">🔄</button>
@@ -241,11 +247,16 @@ html,body{font-family:"DM Sans",sans-serif;background:var(--bg);color:var(--t);h
       <div class="sec" id="sec-b">
         <div class="ph"><div><div class="pbc">Home / <span>Rooms & Beds</span></div><div class="pt">🛏️ Rooms & Beds</div></div><button class="btn bp bsm" onclick="openM('bm')">⚙️ Configure</button></div>
         <div class="bds">
-          <div class="bdc c7"><div class="bdl">Total Beds</div><div class="bdv" id="bt">36</div></div>
+          <div class="bdc c7"><div class="bdl">Total Beds</div><div class="bdv" id="bt">30</div></div>
           <div class="bdc c4"><div class="bdl">Occupied</div><div class="bdv" id="bo2">0</div></div>
-          <div class="bdc c3"><div class="bdl">Vacant</div><div class="bdv" id="bv2">36</div></div>
+          <div class="bdc c3"><div class="bdl">Vacant</div><div class="bdv" id="bv2">30</div></div>
         </div>
-        <div class="card" style="margin-bottom:14px"><div class="cbd"><div style="display:flex;justify-content:space-between;font-size:12px;color:var(--m);margin-bottom:5px"><span>Occupancy</span><span id="bpct">0%</span></div><div style="background:#e8eaf6;border-radius:20px;height:8px;overflow:hidden"><div id="bbar" style="height:100%;background:linear-gradient(90deg,var(--g),var(--gl));border-radius:20px;width:0%;transition:width .5s"></div></div></div></div>
+        <div class="card" style="margin-bottom:14px"><div class="cbd">
+          <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--m);margin-bottom:5px"><span>Occupancy Rate</span><span id="bpct">0%</span></div>
+          <div style="background:#e8eaf6;border-radius:20px;height:8px;overflow:hidden"><div id="bbar" style="height:100%;background:linear-gradient(90deg,var(--g),var(--gl));border-radius:20px;width:0%;transition:width .5s"></div></div>
+          <div style="display:flex;gap:16px;margin-top:8px;font-size:11px"><span>🔴 Occupied</span><span>🟢 Vacant</span></div>
+        </div></div>
+        <div class="card" style="margin-bottom:12px"><div class="chd">🗺️ Bed Map — Movie Ticket Style</div><div class="cbd" id="btmap"></div></div>
         <div id="bg2"></div>
       </div>
       <!-- DUES -->
@@ -359,9 +370,18 @@ html,body{font-family:"DM Sans",sans-serif;background:var(--bg);color:var(--t);h
   <div class="mhd"></div><div class="mmh"><h3>✏️ Edit Student</h3></div>
   <div class="mmb">
     <input type="hidden" id="eid">
+    <div style="display:flex;gap:12px;margin-bottom:12px">
+      <div>
+        <div style="font-size:11px;font-weight:600;color:var(--m);text-transform:uppercase;margin-bottom:4px">Photo</div>
+        <div class="pu" onclick="document.getElementById('eph').click()"><img id="epv" src="" style="display:none"><span id="epp" style="text-align:center;font-size:10px;color:var(--m);padding:4px">📷<br>Change</span></div>
+        <input type="file" id="eph" accept="image/*" style="display:none" onchange="prvEPh(this)">
+      </div>
+      <div style="flex:1;min-width:0">
+        <div class="fg"><label>Full Name *</label><input type="text" id="en"></div>
+        <div class="fg"><label>Course</label><input type="text" id="ec"></div>
+      </div>
+    </div>
     <div class="fg2">
-      <div class="fg"><label>Full Name *</label><input type="text" id="en"></div>
-      <div class="fg"><label>Course</label><input type="text" id="ec"></div>
       <div class="fg"><label>Room *</label><input type="text" id="er"></div>
       <div class="fg"><label>Bed *</label><input type="text" id="eb"></div>
       <div class="fg"><label>Mobile *</label><input type="tel" id="emob"></div>
@@ -497,6 +517,10 @@ function applyUser() {
   g('wm').textContent='Welcome, '+CU.name.split(' ')[0]+' 👋';
   g('hd').textContent=new Date().toLocaleDateString('en-IN',{weekday:'short',day:'2-digit',month:'short',year:'numeric'});
   g('dd').textContent='Today: '+new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'long',year:'numeric'});
+  const br=localStorage.getItem('lma_branch')||'LMA EduNest LLP - Pune';
+  const bn=g('branchName'); if(bn) bn.textContent=br.split(' - ')[0]||'LMA EduNest LLP';
+  const bs=g('branchSub'); if(bs) bs.textContent=(br.split(' - ')[1]||'Girls Hostel').toUpperCase();
+  const lb=g('lbranch'); if(lb) lb.value=br;
   const w1=localStorage.getItem('lma_w1'); if(w1&&g('wa1'))g('wa1').value=w1;
   const w2=localStorage.getItem('lma_w2'); if(w2&&g('wa2'))g('wa2').value=w2;
   const w3=localStorage.getItem('lma_w3'); if(w3&&g('wa3'))g('wa3').value=w3;
@@ -519,7 +543,11 @@ async function refreshAll() {
   try {
     const [sr,pr]=await Promise.all([API({action:'getStudents'}),API({action:'getPayments'})]);
     SS=sr.students||[];
-    PP=(pr.payments||[]).map(p=>({...p,paymentType:(p.paymentType||'rent').toString().trim().toLowerCase()||'rent'}));
+    PP=(pr.payments||[]).map(p=>{
+      const pt=(p.paymentType||'').toString().trim().toLowerCase();
+      // Normalize: if explicitly 'deposit', keep it; otherwise default to 'rent'
+      return {...p, paymentType: pt==='deposit'?'deposit': pt==='both'?'both':'rent'};
+    });
     renderAll();
     g('sbsy').textContent='✅ Synced '+new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
     showT('✅ Data loaded!','tok');
@@ -718,8 +746,26 @@ function viewS(id){
 
 // EDIT
 function updEBal(){const r=parseFloat(g('ernt').value)||0,d=parseFloat(g('edep').value)||0,b=g('ebal');if(r>0||d>0){b.style.display='block';b.innerHTML=`🏠 ${F(r)}/mo · 🔒 ${F(d)}`;}else{b.style.display='none';}}
-function openEdit(id){const s=SS.find(x=>x.id===id);if(!s)return;g('eid').value=id;g('en').value=s.name||'';g('ec').value=s.course||'';g('er').value=s.room||'';g('eb').value=s.bed||'';g('emob').value=s.mobile||'';g('epm').value=s.parentMobile||'';g('ernt').value=s.rent||'';g('edep').value=s.deposit||'';g('ejd').value=s.joinDate||'';g('edd').value=s.dueDay||5;g('eadr').value=s.address||'';g('ent').value=s.notes||'';updEBal();closeM('vm');openM('em');}
-async function saveEdit(){const id=g('eid').value,name=g('en').value.trim(),room=g('er').value.trim(),bed=g('eb').value.trim(),mobile=g('emob').value.trim(),rent=parseFloat(g('ernt').value)||0;if(!name||!room||!bed||!mobile||!rent){showT('⚠️ Fill required fields','terr');return;}const btn=g('esb');btn.innerHTML='<span class="ld"></span>';btn.disabled=true;showL('Updating...');try{await API({action:'updateStudent',student:{id,name,room,bed,mobile,parentMobile:g('epm').value.trim(),rent,deposit:parseFloat(g('edep').value)||0,joinDate:g('ejd').value,dueDay:parseInt(g('edd').value)||5,course:g('ec').value.trim(),address:g('eadr').value.trim(),notes:g('ent').value.trim()}});closeM('em');await refreshAll();showT('✅ Updated!','tok');}catch(e){showT('❌ '+e.message,'terr');}finally{btn.innerHTML='💾 Save Changes';btn.disabled=false;hideL();}}
+function prvEPh(inp){const r=new FileReader();r.onload=e=>{g('epv').src=e.target.result;g('epv').style.display='block';g('epp').style.display='none'};r.readAsDataURL(inp.files[0]);}
+
+function openEdit(id){const s=SS.find(x=>x.id===id);if(!s)return;
+  g('eid').value=id;g('en').value=s.name||'';
+  // Show existing photo
+  if(s.photoUrl&&s.photoUrl.startsWith('http')){g('epv').src=s.photoUrl;g('epv').style.display='block';g('epp').style.display='none';}
+  else{g('epv').style.display='none';g('epp').style.display='block';}g('ec').value=s.course||'';g('er').value=s.room||'';g('eb').value=s.bed||'';g('emob').value=s.mobile||'';g('epm').value=s.parentMobile||'';g('ernt').value=s.rent||'';g('edep').value=s.deposit||'';g('ejd').value=s.joinDate||'';g('edd').value=s.dueDay||5;g('eadr').value=s.address||'';g('ent').value=s.notes||'';updEBal();closeM('vm');openM('em');}
+async function saveEdit(){
+  const id=g('eid').value,name=g('en').value.trim(),room=g('er').value.trim(),bed=g('eb').value.trim(),mobile=g('emob').value.trim(),rent=parseFloat(g('ernt').value)||0;
+  if(!name||!room||!bed||!mobile||!rent){showT('⚠️ Fill required fields','terr');return;}
+  const btn=g('esb');btn.innerHTML='<span class="ld"></span>';btn.disabled=true;showL('Updating...');
+  try{
+    let photoUrl='',photoFileId='';
+    const pf=g('eph')?.files[0];
+    if(pf){showL('Uploading photo...');const b64=await f2b64(pf);const pr=await API({action:'uploadPhoto',base64Data:b64.split(',')[1],fileName:name.replace(/\s+/g,'_')+'_Photo.jpg',mimeType:pf.type,folderName:'LMA_'+name.replace(/\s+/g,'_')});photoUrl=pr.url;photoFileId=pr.fileId;}
+    const s=SS.find(x=>x.id===id);
+    await API({action:'updateStudent',student:{id,name,room,bed,mobile,parentMobile:g('epm').value.trim(),rent,deposit:parseFloat(g('edep').value)||0,joinDate:g('ejd').value,dueDay:parseInt(g('edd').value)||5,course:g('ec').value.trim(),address:g('eadr').value.trim(),notes:g('ent').value.trim(),photoUrl:photoUrl||(s?.photoUrl||''),photoFileId:photoFileId||(s?.photoFileId||'')}});
+    closeM('em');await refreshAll();showT('✅ Updated!','tok');
+  }catch(e){showT('❌ '+e.message,'terr');}finally{btn.innerHTML='💾 Save Changes';btn.disabled=false;hideL();}
+}
 
 // DELETE
 async function delS(id){const s=SS.find(x=>x.id===id);if(!confirm('Remove '+s?.name+'?'))return;showL('Removing...');try{await API({action:'deleteStudent',id});closeM('vm');await refreshAll();showT('Removed','terr');}catch(e){showT('❌ '+e.message,'terr');}finally{hideL();}}
@@ -775,7 +821,39 @@ function renderBeds(){
   g('bt').textContent=tb;g('bo2').textContent=occ;g('bv2').textContent=vac;
   g('bpct').textContent=pct+'%';g('bbar').style.width=pct+'%';
   const wrap=g('bg2');
-  if(!Object.keys(c).length){wrap.innerHTML=`<div class="emp"><div class="ei">🛏️</div><h3>No config</h3><p>Click Configure</p></div>`;return;}
+  // Movie ticket style bed map
+  const mapWrap=g('btmap');
+  if(mapWrap){
+    const defaultRooms={
+      'Room 1 (1-6)':[1,2,3,4,5,6],
+      'Room 2 (7-12)':[7,8,9,10,11,12],
+      'Room 3 (13-18)':[13,14,15,16,17,18],
+      'Room 4 (19-24)':[19,20,21,22,23,24],
+      'Room 5 Hall (25-30)':[25,26,27,28,29,30]
+    };
+    // Build occupied map by bed number
+    const bedOccMap={};
+    SS.forEach(s=>{const bn=parseInt(s.bed);if(!isNaN(bn))bedOccMap[bn]=s;});
+    let mapHtml='<div style="display:flex;flex-direction:column;gap:12px">';
+    Object.entries(defaultRooms).forEach(([rname,beds])=>{
+      mapHtml+=`<div><div style="font-weight:700;color:var(--n);font-size:13px;margin-bottom:6px;padding-bottom:4px;border-bottom:2px solid var(--g)">${rname}</div>`;
+      mapHtml+='<div style="display:flex;flex-wrap:wrap;gap:6px">';
+      beds.forEach(bn=>{
+        const st=bedOccMap[bn];
+        const isO=!!st;
+        mapHtml+=`<div onclick="${isO?`viewS('${st?.id}')`:'void(0)'}" style="width:52px;height:52px;border-radius:8px;border:2px solid ${isO?'#c62828':'#2e7d32'};background:${isO?'#fce4ec':'#e8f5e9'};display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:${isO?'pointer':'default'};transition:transform .1s" ${isO?'title="'+st?.name+'"':''} onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
+          <div style="font-size:9px;font-weight:700;color:${isO?'#c62828':'#2e7d32'}">${isO?'🔴':'🟢'}</div>
+          <div style="font-size:11px;font-weight:700;color:${isO?'#c62828':'#2e7d32'}">${bn}</div>
+          ${isO?`<div style="font-size:8px;color:#c62828;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:46px;text-align:center">${st?.name?.split(' ')[0]||''}</div>`:'<div style="font-size:8px;color:#2e7d32">Free</div>'}
+        </div>`;
+      });
+      mapHtml+='</div></div>';
+    });
+    mapHtml+='</div>';
+    mapHtml+='<div style="display:flex;gap:16px;margin-top:12px;font-size:11px;padding:8px;background:#f5f5f5;border-radius:8px"><span>🔴 Occupied — click to view student</span><span>🟢 Vacant — available</span></div>';
+    mapWrap.innerHTML=mapHtml;
+  }
+  if(!Object.keys(c).length){wrap.innerHTML='';return;}
   wrap.innerHTML=Object.entries(c).map(([room,beds])=>{
     const bh=beds.map(bed=>{const k1=room+'-'+bed;const k2=room.replace('Room ','')+'-'+bed;const st=om[k1]||om[k2];const isO=!!st;
       return`<div style="background:${isO?'#fce4ec':'#e8f5e9'};border:2px solid ${isO?'#c62828':'#2e7d32'};border-radius:10px;padding:8px;text-align:center;cursor:${isO?'pointer':'default'}" ${isO?`onclick="viewS('${st.id}')"`:''}><div style="font-size:14px">${isO?'🔴':'🟢'}</div><div style="font-size:11px;font-weight:700;color:${isO?'var(--r)':'var(--gr)'}">Bed ${bed}</div>${isO?`<div style="font-size:9px;color:var(--r);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:70px">${st.name.split(' ')[0]}</div>`:`<div style="font-size:9px;color:var(--gr)">Vacant</div>`}</div>`;
