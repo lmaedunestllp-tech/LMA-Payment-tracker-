@@ -631,9 +631,6 @@ async function doLogin() {
   if (!username) { err.textContent = 'Please select a user'; return; }
   if (!password) { err.textContent = 'Please enter your password'; return; }
 
-  const btn = document.getElementById('loginBtn');
-  btn.innerHTML = '<span class="loader"></span> Signing in...';
-  btn.disabled  = true;
   err.textContent = '';
 
   try {
@@ -1171,6 +1168,23 @@ document.querySelectorAll('.mov').forEach(m=>m.addEventListener('click',e=>{if(e
 setTimeout(()=>{const cfg=getBedsConfig();const el=document.getElementById('roomConfigInput');if(el&&!el.value)el.value=Object.entries(cfg).map(([r,b])=>r+': '+b.join(', ')).join('\n');const tb=document.getElementById('totalBedsInput');if(tb)tb.value=localStorage.getItem('lma_total_beds')||'36';},500);
 if(currentUser){document.getElementById('loginScreen').classList.add('hide');document.getElementById('appShell').classList.add('show');applyUser();refreshAll();}
 if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});
+
+function getBedsConfig(){
+  const s=localStorage.getItem('lma_beds_config');
+  if(s) return JSON.parse(s);
+  return generateDefaultRooms(9,4);
+}
+function generateDefaultRooms(n,b){
+  const beds=['A','B','C','D','E','F'];
+  const rooms={};
+  for(let r=1;r<=n;r++) rooms['Room '+r]=beds.slice(0,b);
+  return rooms;
+}
+function autoGenerateRooms(){
+  const cfg=generateDefaultRooms(9,4);
+  document.getElementById('roomConfigInput').value=Object.entries(cfg).map(([r,b])=>r+': '+b.join(', ')).join('\n');
+  document.getElementById('totalBedsInput').value='36';
+}
 </script>
 </body>
 </html>
