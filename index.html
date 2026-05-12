@@ -949,7 +949,7 @@ async function addStudent() {
       }
     });
 
-    closeM('addStudentM');
+    closeM('addStudM');
     resetStudForm();
     await refreshAll();
     showToast('✅ Student saved to Google Sheets!','tok');
@@ -963,10 +963,11 @@ async function addStudent() {
 }
 
 function resetStudForm() {
-  ['sName','sRoom','sBed','sMob','sPMob','sRent','sDep','sJoin','sCourse','sAddr','sNote'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
-  document.getElementById('sPhotoPreview').style.display='none';
-  document.getElementById('sPhotoPH').style.display='block';
-  document.getElementById('sPhotoInp').value='';
+  ['sName','sRoom','sBed','sMob','sPMob','sRent','sDep','sJoin','sCourse','sAddr','sNote','sDocAadhar','sDocPan','sDocParentAadhar','sDocParentPan'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
+  const prev=document.getElementById('sPhotoPreview'); if(prev) prev.style.display='none';
+  const ph=document.getElementById('sPhotoPH'); if(ph) ph.style.display='block';
+  const pi=document.getElementById('sPhotoInp'); if(pi) pi.value='';
+  const ab=document.getElementById('addBalBox'); if(ab) ab.style.display='none';
 }
 
 function fileToBase64(file) {
