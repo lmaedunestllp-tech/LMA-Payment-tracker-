@@ -539,6 +539,7 @@ function closeSB() {
 let SCRIPT_URL = localStorage.getItem('lma_script_url') || 'https://script.google.com/macros/s/AKfycbyB7fnpoMHjiSHjqijkx2nZQ7Alvznf--sOFF-MPkeugsmnmgcImpVCvKrLvTn3lwQsdQ/exec';
 let currentUser = JSON.parse(sessionStorage.getItem('lma_user') || 'null');
 let cachedStudents = [];
+let CS = [], CP = []; // aliases
 let cachedPayments = [];
 
 // ══════════════════════════════════════════════════════════
@@ -682,7 +683,10 @@ async function refreshAll() {
     ]);
 
     cachedStudents = studRes.students || [];
-    cachedPayments = payRes.payments  || [];
+    cachedPayments = (payRes.payments || []).map(p=>({...p, paymentType:(p.paymentType||'rent').toString().trim().toLowerCase()||'rent'}));
+    // Sync aliases
+    CS = cachedStudents;
+    CP = cachedPayments;
 
     renderAll(statsRes.stats);
     setSyncStatus('ok', '✅ Synced with Google Sheets · ' + new Date().toLocaleTimeString('en-IN', {hour:'2-digit',minute:'2-digit'}));
@@ -1186,6 +1190,27 @@ function autoGenerateRooms(){
   document.getElementById('roomConfigInput').value=Object.entries(cfg).map(([r,b])=>r+': '+b.join(', ')).join('\n');
   document.getElementById('totalBedsInput').value='36';
 }
+
+// ══ Fee calculation aliases for new features ══
+function rentPaid(sid) {
+  return (cachedPayments||[]).filter(p => {
+    if(p.studentId !== sid) return false;
+    const pt = (p.paymentType||'rent').toString().trim().toLowerCase();
+    return pt === 'rent' || pt === 'both' || pt === '' || pt === 'undefined';
+  }).reduce((s,p) => s + Number(p.amount||0), 0);
+}
+function depositPaid(sid) {
+  return (cachedPayments||[]).filter(p => p.studentId === sid && (p.paymentType||'').toString().trim().toLowerCase() === 'deposit')
+    .reduce((s,p) => s + Number(p.amount||0), 0);
+}
+function expectedRent(s) {
+  const j = new Date(s.joinDate), n = new Date();
+  return Math.max(1,(n.getFullYear()-j.getFullYear())*12+(n.getMonth()-j.getMonth())+1)*Number(s.rent||0);
+}
+function rentDue(s) { return Math.max(0, expectedRent(s) - rentPaid(s.id)); }
+function depositDue(s) { return Math.max(0, Number(s.deposit||0) - depositPaid(s.id)); }
+function totalDue(s) { return rentDue(s) + depositDue(s); }
+
 </script>
 </body>
 </html>
