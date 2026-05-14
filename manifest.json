@@ -1,7 +1,7 @@
 {
-  "name": "LMA EduNest LLP - Girls Hostel",
-  "short_name": "EduNest",
-  "description": "LMA EduNest Girls Hostel Management System",
+  "name": "LMA Payment Tracker",
+  "short_name": "LMA Tracker",
+  "description": "LMA EduNest Girls Hostel Payment Management System",
   "start_url": "/LMA-Payment-tracker-/",
   "scope": "/LMA-Payment-tracker-/",
   "display": "standalone",
