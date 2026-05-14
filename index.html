@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#1a237e">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
 <title>LMA EduNest LLP</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -550,9 +552,13 @@ async function refreshAll() {
     SS=sr.students||[];
     PP=(pr.payments||[]).map(p=>{
       const pt=(p.paymentType||'').toString().trim().toLowerCase();
-      // Normalize: if explicitly 'deposit', keep it; otherwise default to 'rent'
       return {...p, paymentType: pt==='deposit'?'deposit': pt==='both'?'both':'rent'};
     });
+    // Fetch beds config from Sheets for cross-session sync
+    try {
+      const bcRes = await API({action:'getSetting', key:'beds_config'});
+      if(bcRes.value) applyBedsFromSheet(JSON.parse(bcRes.value));
+    } catch(e) {}
     renderAll();
     g('sbsy').textContent='✅ Synced '+new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
     showT('✅ Data loaded!','tok');
@@ -816,9 +822,37 @@ function renderDues(){
 
 // BEDS
 function getBeds(){const s=localStorage.getItem('lma_bc');if(s)return JSON.parse(s);return genRooms(9,4);}
+function applyBedsFromSheet(config){
+  // Called after sync - updates localStorage from Sheets data
+  if(config && config.rooms){
+    localStorage.setItem('lma_bc', JSON.stringify(config.rooms));
+    localStorage.setItem('lma_tb', config.totalBeds||36);
+    // Update config inputs
+    const el=g('rci');
+    if(el) el.value=Object.entries(config.rooms).map(([r,b])=>r+': '+b.join(', ')).join('\n');
+    const tb=g('tbi'); if(tb) tb.value=config.totalBeds||36;
+  }
+}
 function genRooms(n,b){const beds=['A','B','C','D','E','F'];const r={};for(let i=1;i<=n;i++)r['Room '+i]=beds.slice(0,b);return r;}
 function autoGen(){const c=genRooms(9,4);g('rci').value=Object.entries(c).map(([r,b])=>r+': '+b.join(', ')).join('\n');g('tbi').value='36';}
-function saveBeds(){const t=parseInt(g('tbi').value)||36;const txt=g('rci').value.trim();let r={};if(txt){txt.split('\n').forEach(line=>{const p=line.split(':');if(p.length>=2){const rn=p[0].trim();const b=p[1].split(',').map(x=>x.trim()).filter(x=>x);if(rn&&b.length)r[rn]=b;}});}localStorage.setItem('lma_bc',JSON.stringify(r));localStorage.setItem('lma_tb',t);closeM('bm');renderBeds();showT('✅ Saved!','tok');}
+async function saveBeds(){
+  const t=parseInt(g('tbi').value)||36;
+  const txt=g('rci').value.trim();
+  let r={};
+  if(txt){txt.split('\n').forEach(line=>{const p=line.split(':');if(p.length>=2){const rn=p[0].trim();const b=p[1].split(',').map(x=>x.trim()).filter(x=>x);if(rn&&b.length)r[rn]=b;}});}
+  // Save to localStorage (for instant use)
+  localStorage.setItem('lma_bc',JSON.stringify(r));
+  localStorage.setItem('lma_tb',t);
+  // Save to Google Sheets (for sync across sessions)
+  try {
+    await API({action:'saveSetting', key:'beds_config', value:JSON.stringify({rooms:r, totalBeds:t})});
+    showT('✅ Saved & synced to all sessions!','tok');
+  } catch(e) {
+    showT('✅ Saved locally (sync failed)','tok');
+  }
+  closeM('bm');
+  renderBeds();
+}
 function renderBeds(){
   const c=getBeds();const tb=parseInt(localStorage.getItem('lma_tb'))||36;
   const om={};SS.forEach(s=>{om[s.room+'-'+s.bed]=s;});
