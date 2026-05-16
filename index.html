@@ -557,7 +557,11 @@ const toggleSB = () => { g('sb').classList.toggle('open'); g('ov').classList.tog
 const closeSB = () => { g('sb').classList.remove('open'); g('ov').classList.remove('show'); };
 
 // FEE CALC
-const rPaid = sid => PP.filter(p=>{if(p.studentId!==sid)return false;const pt=(p.paymentType||'rent').toLowerCase();return pt==='rent'||pt==='both'||pt===''}).reduce((s,p)=>s+Number(p.amount||0),0);
+const rPaid = sid => PP.filter(p=>{
+  if(p.studentId!==sid) return false;
+  const pt=(p.paymentType||'rent').toString().trim().toLowerCase();
+  return pt==='rent'||pt===''||pt==='undefined';
+}).reduce((s,p)=>s+Number(p.amount||0),0);
 const dPaid = sid => PP.filter(p=>p.studentId===sid&&(p.paymentType||'').toLowerCase()==='deposit').reduce((s,p)=>s+Number(p.amount||0),0);
 const tPaid = sid => PP.filter(p=>p.studentId===sid).reduce((s,p)=>s+Number(p.amount||0),0);
 const expR = s => { const j=new Date(s.joinDate),n=new Date(); return Math.max(1,(n.getFullYear()-j.getFullYear())*12+(n.getMonth()-j.getMonth())+1)*Number(s.rent||0); };
@@ -733,13 +737,28 @@ function renderDashP(){
 }
 
 function renderDashR(){
-  const wrap=g('dr2'); const r=[...PP].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,6);
-  if(!r.length){wrap.innerHTML=`<div class="emp" style="padding:16px"><div class="ei">💳</div><p>No payments yet</p></div>`;return;}
-  wrap.innerHTML=r.map(p=>{const s=SS.find(x=>x.id===p.studentId);const dt=p.date?new Date(p.date).toLocaleDateString('en-IN',{day:'2-digit',month:'short'}):'?';
-    return`<div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--b);font-size:12px">
-      <div style="display:flex;align-items:center;gap:7px">${s?av(s):`<div class="av">?</div>`}<div><div style="font-weight:600">${s?.name||'?'}</div><div style="color:var(--m);font-size:10px">${dt}</div></div></div>
-      <div style="font-weight:700;color:var(--gr)">${F(p.amount)}</div>
-    </div>`;
+  const wrap=g('dr2');
+  if(!PP.length){wrap.innerHTML='<div class="emp" style="padding:16px"><div class="ei">💳</div><p>No payments yet</p></div>';return;}
+  // Group by student+date, show combined
+  const grouped={};
+  PP.forEach(function(p){
+    const key=p.studentId+'_'+(p.date||'').substr(0,10);
+    if(!grouped[key]) grouped[key]={studentId:p.studentId,date:p.date,rent:0,deposit:0};
+    const pt=(p.paymentType||'rent').toLowerCase();
+    if(pt==='deposit') grouped[key].deposit+=Number(p.amount||0);
+    else grouped[key].rent+=Number(p.amount||0);
+  });
+  const list=Object.values(grouped).sort(function(a,b){return new Date(b.date)-new Date(a.date);}).slice(0,6);
+  wrap.innerHTML=list.map(function(g2){
+    const s=SS.find(function(x){return x.id===g2.studentId;});
+    const dt=g2.date?new Date(g2.date).toLocaleDateString('en-IN',{day:'2-digit',month:'short'}):'?';
+    const total=g2.rent+g2.deposit;
+    const detail=(g2.rent>0&&g2.deposit>0)?'Rent '+F(g2.rent)+' + Dep '+F(g2.deposit):(g2.rent>0?'Rent':'Deposit');
+    return '<div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--b);font-size:12px">'+
+      '<div style="display:flex;align-items:center;gap:7px">'+(s?av(s):'<div class="av">?</div>')+
+      '<div><div style="font-weight:600">'+(s?s.name:'?')+'</div>'+
+      '<div style="color:var(--m);font-size:10px">'+dt+' · '+detail+'</div></div></div>'+
+      '<div style="font-weight:700;color:var(--gr)">'+F(total)+'</div></div>';
   }).join('');
 }
 
@@ -859,7 +878,7 @@ function openEdit(id){const s=SS.find(x=>x.id===id);if(!s)return;
   g('eid').value=id;g('en').value=s.name||'';
   // Show existing photo
   if(s.photoUrl&&s.photoUrl.startsWith('http')){g('epv').src=s.photoUrl;g('epv').style.display='block';g('epp').style.display='none';}
-  else{g('epv').style.display='none';g('epp').style.display='block';}g('ec').value=s.course||'';g('er').value=s.room||'';g('eb').value=s.bed||'';g('emob').value=s.mobile||'';g('epm').value=s.parentMobile||'';g('ernt').value=s.rent||'';g('edep').value=s.deposit||'';g('ejd').value=s.joinDate||'';g('edd').value=s.dueDay||5;g('eadr').value=s.address||'';g('ent').value=s.notes||'';updEBal();closeM('vm');openM('em');}
+  else{g('epv').style.display='none';g('epp').style.display='block';}g('ec').value=s.course||'';g('edob').value=s.dob||'';g('er').value=s.room||'';g('eb').value=s.bed||'';g('emob').value=s.mobile||'';g('epm').value=s.parentMobile||'';g('ernt').value=s.rent||'';g('edep').value=s.deposit||'';g('ejd').value=s.joinDate||'';g('edd').value=s.dueDay||5;g('eadr').value=s.address||'';g('ent').value=s.notes||'';updEBal();closeM('vm');openM('em');}
 async function saveEdit(){
   const id=g('eid').value,name=g('en').value.trim(),room=g('er').value.trim(),bed=g('eb').value.trim(),mobile=g('emob').value.trim(),rent=parseFloat(g('ernt').value)||0;
   if(!name||!room||!bed||!mobile||!rent){showT('⚠️ Fill required fields','terr');return;}
@@ -869,7 +888,7 @@ async function saveEdit(){
     const pf=g('eph')?.files[0];
     if(pf){showL('Uploading photo...');const b64=await f2b64(pf);const pr=await API({action:'uploadPhoto',base64Data:b64.split(',')[1],fileName:name.replace(/\s+/g,'_')+'_Photo.jpg',mimeType:pf.type,folderName:'LMA_'+name.replace(/\s+/g,'_')});photoUrl=pr.url;photoFileId=pr.fileId;}
     const s=SS.find(x=>x.id===id);
-    await API({action:'updateStudent',student:{id,name,room,bed,mobile,parentMobile:g('epm').value.trim(),rent,deposit:parseFloat(g('edep').value)||0,joinDate:g('ejd').value,dueDay:parseInt(g('edd').value)||5,course:g('ec').value.trim(),address:g('eadr').value.trim(),notes:g('ent').value.trim(),photoUrl:photoUrl||(s?.photoUrl||''),photoFileId:photoFileId||(s?.photoFileId||'')}});
+    await API({action:'updateStudent',student:{id,name,room,bed,mobile,parentMobile:g('epm').value.trim(),rent,deposit:parseFloat(g('edep').value)||0,joinDate:g('ejd').value,dueDay:parseInt(g('edd').value)||5,course:g('ec').value.trim(),address:g('eadr').value.trim(),notes:g('ent').value.trim(),dob:g('edob')?.value||'',photoUrl:photoUrl||(s?.photoUrl||''),photoFileId:photoFileId||(s?.photoFileId||'')}});
     closeM('em');await refreshAll();showT('✅ Updated!','tok');
   }catch(e){showT('❌ '+e.message,'terr');}finally{btn.innerHTML='💾 Save Changes';btn.disabled=false;hideL();}
 }
@@ -1176,19 +1195,14 @@ async function saveExpense() {
 
 function confirmDelEx(id) {
   if(!confirm('Delete this expense?')) return;
-  showL('Deleting...');
-  API({action:'deleteExpense', id})
-    .catch(e => console.log('Delete API failed:', e.message))
-    .finally(() => {
-      EX = EX.filter(function(e){ return e.id !== id; });
-      localStorage.setItem('lma_expenses', JSON.stringify(EX));
-      renderExpenses();
-      renderExpenseSummary();
-      showT('Deleted!', 'terr');
-      hideL();
-    });
+  EX = EX.filter(function(e){ return e.id !== id; });
+  localStorage.setItem('lma_expenses', JSON.stringify(EX));
+  renderExpenses();
+  renderExpenseSummary();
+  showT('Deleted!', 'terr');
+  API({action:'deleteExpense', id}).catch(function(e){ console.log('API del failed'); });
 }
-async function deleteExpense(id) { confirmDelEx(id); }
+function deleteExpense(id) { confirmDelEx(id); }
 
 function renderExpenseSummary() {
   const lTotal = EX.filter(e=>e.partner==='Lokesh').reduce((s,e)=>s+Number(e.amount||0),0);
