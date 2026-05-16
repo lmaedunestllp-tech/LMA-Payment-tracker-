@@ -1123,17 +1123,16 @@ function sendInvoiceWA(s, payment) {
 let EX = []; // expenses cache
 
 async function loadExpenses() {
+  showL('Loading expenses...');
   try {
     const r = await API({action:'getExpenses'});
     EX = r.expenses || [];
-    renderExpenses();
-    renderExpenseSummary();
   } catch(e) {
-    // Load from localStorage as fallback
     EX = JSON.parse(localStorage.getItem('lma_expenses') || '[]');
-    renderExpenses();
-    renderExpenseSummary();
   }
+  renderExpenses();
+  renderExpenseSummary();
+  hideL();
 }
 
 async function saveExpense() {
@@ -1160,12 +1159,11 @@ async function saveExpense() {
   try {
     await API({action:'addExpense', expense});
   } catch(e) {
-    // Save to localStorage if API fails
-    EX.push(expense);
-    localStorage.setItem('lma_expenses', JSON.stringify(EX));
+    console.log('API failed, using localStorage:', e.message);
   }
-
+  // Push only once
   EX.push(expense);
+  localStorage.setItem('lma_expenses', JSON.stringify(EX));
   closeM('exm');
   ['exAmt','exDesc','exRemark'].forEach(id => { const el=g(id); if(el) el.value=''; });
   g('exDate').value = today();
@@ -1176,16 +1174,21 @@ async function saveExpense() {
   hideL();
 }
 
-function confirmDelEx(id) { deleteExpense(id); }
-async function deleteExpense(id) {
+function confirmDelEx(id) {
   if(!confirm('Delete this expense?')) return;
-  EX = EX.filter(e => e.id !== id);
-  localStorage.setItem('lma_expenses', JSON.stringify(EX));
-  try { await API({action:'deleteExpense', id}); } catch(e) {}
-  renderExpenses();
-  renderExpenseSummary();
-  showT('Deleted', 'terr');
+  showL('Deleting...');
+  API({action:'deleteExpense', id})
+    .catch(e => console.log('Delete API failed:', e.message))
+    .finally(() => {
+      EX = EX.filter(function(e){ return e.id !== id; });
+      localStorage.setItem('lma_expenses', JSON.stringify(EX));
+      renderExpenses();
+      renderExpenseSummary();
+      showT('Deleted!', 'terr');
+      hideL();
+    });
 }
+async function deleteExpense(id) { confirmDelEx(id); }
 
 function renderExpenseSummary() {
   const lTotal = EX.filter(e=>e.partner==='Lokesh').reduce((s,e)=>s+Number(e.amount||0),0);
