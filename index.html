@@ -1108,18 +1108,37 @@ function checkBirthdays() {
   const todayMM = String(today.getMonth()+1).padStart(2,'0');
   const todayMD = todayMM + '-' + todayDD;
   
-  const bdays = SS.filter(function(s) {
-    // Check all possible DOB field names
-    const dobVal = (s.dob || s.dateOfBirth || s.birthday || s.DOB || '').toString().trim();
-    if(!dobVal || dobVal.length < 5) return false;
-    // YYYY-MM-DD -> get MM-DD
-    const parts = dobVal.split('-');
-    if(parts.length >= 3) {
-      const mm = parts[1].padStart(2,'0');
-      const dd = parts[2].substr(0,2).padStart(2,'0');
-      return (mm + '-' + dd) === todayMD;
+  // Helper: extract MM-DD and year from any date format Sheets may return
+  function parseDob(raw) {
+    if(!raw) return null;
+    // If it's a Date object (Sheets sometimes returns dates this way)
+    if(raw instanceof Date && !isNaN(raw)) {
+      return {
+        md: String(raw.getMonth()+1).padStart(2,'0') + '-' + String(raw.getDate()).padStart(2,'0'),
+        year: raw.getFullYear()
+      };
     }
-    return false;
+    const str = raw.toString().trim();
+    if(str.length < 5) return null;
+    // ISO string "2026-05-17T..." or "2026-05-17"
+    if(/^\d{4}-\d{2}-\d{2}/.test(str)) {
+      return { md: str.substr(5,2)+'-'+str.substr(8,2), year: parseInt(str.substr(0,4)) };
+    }
+    // Try generic Date parse as last resort (handles "Sat May 17 2026..." etc.)
+    const d = new Date(str);
+    if(!isNaN(d)) {
+      return {
+        md: String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'),
+        year: d.getFullYear()
+      };
+    }
+    return null;
+  }
+  
+  const bdays = SS.filter(function(s) {
+    const raw = s.dob || s.dateOfBirth || s.birthday || s.DOB;
+    const parsed = parseDob(raw);
+    return parsed && parsed.md === todayMD;
   });
   
   if(!bdays.length) { 
@@ -1129,9 +1148,9 @@ function checkBirthdays() {
   
   banner.style.display='block';
   list.innerHTML = bdays.map(function(s) {
-    const dobVal = (s.dob||s.dateOfBirth||s.birthday||'').toString();
-    const birthYear = parseInt(dobVal.substr(0,4))||2000;
-    const age = today.getFullYear() - birthYear;
+    const raw = s.dob || s.dateOfBirth || s.birthday;
+    const parsed = parseDob(raw);
+    const age = parsed ? today.getFullYear() - parsed.year : '';
     const waNum = (s.mobile||'').replace(/\D/g,'');
     const waFull = waNum.startsWith('91') ? waNum : '91'+waNum;
     const msg = 'Dear ' + s.name + ', Wishing you a very Happy Birthday! ' +
@@ -1141,7 +1160,7 @@ function checkBirthdays() {
     return '<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.2)">' +
       '<div>' +
         '<div style="font-weight:700;font-size:14px">' + s.name + ' 🎂</div>' +
-        '<div style="font-size:11px;opacity:.8">Room ' + s.room + ' · Age: ' + age + '</div>' +
+        '<div style="font-size:11px;opacity:.8">Room ' + s.room + (age?' · Age: ' + age:'') + '</div>' +
       '</div>' +
       '<a href="https://wa.me/' + waFull + '?text=' + encodeURIComponent(msg) + '" target="_blank" style="text-decoration:none">' +
         '<button style="background:white;color:#e91e63;border:none;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer">📱 Wish Now</button>' +
@@ -1369,6 +1388,27 @@ function renderExpenses() {
     if(curr) mf.value = curr;
   }
 }
+
+// ══ AUTO-LOGIN ON PAGE LOAD (FIXES REFRESH LOGOUT) ══
+// If user data exists in localStorage from a previous login,
+// skip the login screen and go straight to the app.
+(function initAuth(){
+  try {
+    if (CU && CU.username && CU.name) {
+      // Wait for DOM to be ready, then show app
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', showApp);
+      } else {
+        showApp();
+      }
+    }
+  } catch(e) {
+    console.error('Auto-login failed:', e);
+    // If anything goes wrong, clear bad data and show login
+    localStorage.removeItem('lma_cu');
+    CU = null;
+  }
+})();
 </script>
 </body>
 </html>
