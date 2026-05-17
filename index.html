@@ -222,6 +222,12 @@ html,body{font-family:"DM Sans",sans-serif;background:var(--bg);color:var(--t);h
       <!-- DASHBOARD -->
       <div class="sec active" id="sec-d">
         <div class="ph"><div><div class="pbc">Home / <span>Dashboard</span></div><div class="pt" id="wm">Welcome to Admin Panel</div><div class="psub" id="dd"></div></div><button class="btn bg" onclick="openM('asm')">+ Add Student</button></div>
+
+        <!-- Birthday Banner - always visible when birthdays exist -->
+        <div id="bdayBanner" style="display:none;background:linear-gradient(135deg,#e91e63,#f06292);border-radius:14px;padding:14px 18px;margin-bottom:16px;color:white;animation:fu .3s ease">
+          <div style="font-size:15px;font-weight:800;margin-bottom:10px">🎂 Today's Birthdays!</div>
+          <div id="bdayList"></div>
+        </div>
         <div class="sg">
           <div class="bc c1"><div class="bi">👩‍🎓</div><div class="bl">Active Registration</div><div class="bv" id="s1">0</div><div class="bsb">Currently enrolled</div></div>
           <div class="bc c2"><div class="bi">🛏️</div><div class="bl">Total Bed</div><div class="bv" id="s2">36</div><div class="bsb" id="s2b">36 vacant</div></div>
@@ -232,12 +238,6 @@ html,body{font-family:"DM Sans",sans-serif;background:var(--bg);color:var(--t);h
           <div class="bc c7"><div class="bi">🏠</div><div class="bl">Rent Due</div><div class="bv" id="s7">₹0</div><div class="bsb">Monthly rent pending</div></div>
           <div class="bc c8"><div class="bi">🔒</div><div class="bl">Deposit Due</div><div class="bv" id="s8">₹0</div><div class="bsb">Security pending</div></div>
         </div>
-        <!-- Birthday Banner -->
-        <div id="bdayBanner" style="display:none;background:linear-gradient(135deg,#e91e63,#f06292);border-radius:14px;padding:14px 18px;margin-bottom:16px;color:white">
-          <div style="font-size:14px;font-weight:700;margin-bottom:8px">🎂 Today's Birthdays!</div>
-          <div id="bdayList"></div>
-        </div>
-
         <div class="dr">
           <div class="card"><div class="chd">⚠️ Pending Dues <button class="btn bsm bo" onclick="goTo('p',document.getElementById('nl-p'))">View All</button></div><div class="cbd" id="dp"></div></div>
           <div class="card"><div class="chd">💳 Recent Payments <button class="btn bsm bo" onclick="goTo('f',document.getElementById('nl-f'))">View All</button></div><div class="cbd" id="dr2"></div></div>
@@ -483,6 +483,43 @@ html,body{font-family:"DM Sans",sans-serif;background:var(--bg);color:var(--t);h
   <div class="mmf"><button class="btn bo bsm" onclick="closeM('bm')">Close</button></div>
 </div></div>
 
+<!-- EDIT EXPENSE MODAL -->
+<div class="mov" id="exem"><div class="msh">
+  <div class="mhd"></div><div class="mmh"><h3>✏️ Edit Expense</h3></div>
+  <div class="mmb">
+    <input type="hidden" id="exeId">
+    <div class="fg"><label>Partner *</label>
+      <select id="exePartner">
+        <option value="Lokesh">👑 Lokesh</option>
+        <option value="Milind">👤 Milind Bhujbal</option>
+        <option value="Anand">👤 Anand Udavant</option>
+      </select></div>
+    <div class="fg2">
+      <div class="fg"><label>Amount ₹ *</label><input type="number" id="exeAmt"></div>
+      <div class="fg"><label>Date *</label><input type="date" id="exeDate"></div>
+    </div>
+    <div class="fg"><label>Nature *</label>
+      <select id="exeNature">
+        <option value="Maintenance">🔧 Maintenance</option>
+        <option value="Electricity">💡 Electricity</option>
+        <option value="Water">💧 Water</option>
+        <option value="Grocery">🛒 Grocery</option>
+        <option value="Furniture">🪑 Furniture</option>
+        <option value="Cleaning">🧹 Cleaning</option>
+        <option value="Internet">📶 Internet</option>
+        <option value="Repairs">🔨 Repairs</option>
+        <option value="Salary">👷 Salary</option>
+        <option value="Other">📝 Other</option>
+      </select></div>
+    <div class="fg"><label>Description</label><input type="text" id="exeDesc"></div>
+    <div class="fg"><label>Remarks</label><input type="text" id="exeRemark"></div>
+  </div>
+  <div class="mmf">
+    <button class="btn bo bsm" onclick="closeM('exem')">Cancel</button>
+    <button class="btn bg" onclick="updateExpense()" style="flex:1;justify-content:center">💾 Update</button>
+  </div>
+</div></div>
+
 <!-- ADD EXPENSE MODAL -->
 <div class="mov" id="exm"><div class="msh">
   <div class="mhd"></div><div class="mmh"><h3>💸 Add Expense</h3></div>
@@ -532,7 +569,7 @@ html,body{font-family:"DM Sans",sans-serif;background:var(--bg);color:var(--t);h
 
 <script>
 const SCRIPT_URL = localStorage.getItem('lma_su') || 'https://script.google.com/macros/s/AKfycbyzw50Yad-N5AY99uXVma45-7FIKZM4OloBTcJOlBV31SU75Dh2OFQimv3VrKxbrjgivw/exec';
-let CU = JSON.parse(sessionStorage.getItem('lma_cu') || 'null');
+let CU = JSON.parse(localStorage.getItem('lma_cu') || 'null');
 let SS = [], PP = [], curSid = null;
 const HU = {admin:{n:'Lokesh (Owner)',p:'Admin@1234',r:'admin'},manager1:{n:'Milind Bhujbal',p:'Mgr1@1234',r:'manager'},manager2:{n:'Anand Udavant',p:'Mgr2@1234',r:'manager'}};
 
@@ -593,13 +630,13 @@ function login() {
   const hu=HU[un];
   if(hu && hu.p===pw) {
     CU={username:un,name:hu.n,role:hu.r,token:btoa(un+':'+pw+':'+Date.now())};
-    sessionStorage.setItem('lma_cu',JSON.stringify(CU));
+    localStorage.setItem('lma_cu',JSON.stringify(CU));
     showApp();
-    API({action:'login',username:un,password:pw}).then(d=>{if(d.token){CU.token=d.token;sessionStorage.setItem('lma_cu',JSON.stringify(CU));}}).catch(()=>{});
+    API({action:'login',username:un,password:pw}).then(d=>{if(d.token){CU.token=d.token;localStorage.setItem('lma_cu',JSON.stringify(CU));}}).catch(()=>{});
     return;
   }
   err.textContent='Verifying...';
-  API({action:'login',username:un,password:pw}).then(d=>{CU={...d.user,token:d.token};sessionStorage.setItem('lma_cu',JSON.stringify(CU));err.textContent='';showApp();}).catch(()=>{err.textContent='❌ Incorrect password';});
+  API({action:'login',username:un,password:pw}).then(d=>{CU={...d.user,token:d.token};localStorage.setItem('lma_cu',JSON.stringify(CU));err.textContent='';showApp();}).catch(()=>{err.textContent='❌ Incorrect password';});
 }
 
 function showApp() {
@@ -611,7 +648,7 @@ function showApp() {
 
 function logout() {
   if(!confirm('Sign out?'))return;
-  sessionStorage.removeItem('lma_cu');CU=null;location.reload();
+  localStorage.removeItem('lma_cu');CU=null;location.reload();
 }
 
 function applyUser() {
@@ -777,7 +814,7 @@ async function addStudent() {
     let photoUrl='',photoFileId='';
     const pf=g('ph').files[0];
     if(pf){showL('Uploading photo...');const b64=await f2b64(pf);const pr=await API({action:'uploadPhoto',base64Data:b64.split(',')[1],fileName:name.replace(/\s+/g,'_')+'_Photo.jpg',mimeType:pf.type,folderName:'LMA_'+name.replace(/\s+/g,'_')});photoUrl=pr.url;photoFileId=pr.fileId;}
-    await API({action:'addStudent',addedBy:CU.name,student:{name,room,bed,mobile,parentMobile:g('spm').value.trim(),rent,deposit:parseFloat(g('sdep').value)||0,joinDate,dueDay:parseInt(g('sdd').value)||5,course:g('sc2').value.trim(),address:g('sadr').value.trim(),notes:g('snt').value.trim(),photoUrl,photoFileId}});
+    await API({action:'addStudent',addedBy:CU.name,student:{name,room,bed,mobile,parentMobile:g('spm').value.trim(),rent,deposit:parseFloat(g('sdep').value)||0,joinDate,dueDay:parseInt(g('sdd').value)||5,course:g('sc2').value.trim(),address:g('sadr').value.trim(),notes:g('snt').value.trim(),dob:(g('sdob')?g('sdob').value:'')||'',photoUrl,photoFileId}});
     closeM('asm');
     ['sn','sr','sb2','sm','spm','srnt','sdep','sjd','sc2','sadr','snt'].forEach(id=>{const e=g(id);if(e)e.value='';});
     g('pv').style.display='none'; g('pp').style.display='block'; g('ph').value=''; g('sbal').style.display='none';
@@ -1062,32 +1099,54 @@ document.querySelectorAll('.mov').forEach(m=>m.addEventListener('click',e=>{if(e
 
 // ══ BIRTHDAY FUNCTIONS ══
 function checkBirthdays() {
-  const today = new Date();
-  const todayMD = String(today.getMonth()+1).padStart(2,'0') + '-' + String(today.getDate()).padStart(2,'0');
-  const bdays = SS.filter(s => {
-    if(!s.dob && !s.dateOfBirth && !s.birthday) return false;
-    const dobVal = (s.dob||s.dateOfBirth||s.birthday||'').toString().trim();
-    if(!dobVal || dobVal.length < 5) return false;
-    // Handle YYYY-MM-DD format
-    const md = dobVal.length >= 7 ? dobVal.substr(5,5) : '';
-    return md === todayMD;
-  });
   const banner = g('bdayBanner');
   const list = g('bdayList');
   if(!banner || !list) return;
-  if(!bdays.length) { banner.style.display='none'; return; }
+  
+  const today = new Date();
+  const todayDD = String(today.getDate()).padStart(2,'0');
+  const todayMM = String(today.getMonth()+1).padStart(2,'0');
+  const todayMD = todayMM + '-' + todayDD;
+  
+  const bdays = SS.filter(function(s) {
+    // Check all possible DOB field names
+    const dobVal = (s.dob || s.dateOfBirth || s.birthday || s.DOB || '').toString().trim();
+    if(!dobVal || dobVal.length < 5) return false;
+    // YYYY-MM-DD -> get MM-DD
+    const parts = dobVal.split('-');
+    if(parts.length >= 3) {
+      const mm = parts[1].padStart(2,'0');
+      const dd = parts[2].substr(0,2).padStart(2,'0');
+      return (mm + '-' + dd) === todayMD;
+    }
+    return false;
+  });
+  
+  if(!bdays.length) { 
+    banner.style.display='none'; 
+    return; 
+  }
+  
   banner.style.display='block';
-  list.innerHTML = bdays.map(s => {
-    const age = new Date().getFullYear() - new Date(s.dob).getFullYear();
+  list.innerHTML = bdays.map(function(s) {
+    const dobVal = (s.dob||s.dateOfBirth||s.birthday||'').toString();
+    const birthYear = parseInt(dobVal.substr(0,4))||2000;
+    const age = today.getFullYear() - birthYear;
     const waNum = (s.mobile||'').replace(/\D/g,'');
     const waFull = waNum.startsWith('91') ? waNum : '91'+waNum;
-    const msg = 'Dear ' + s.name + ', Wishing you a very Happy Birthday! May this special day bring you lots of joy and happiness. Best wishes from LMA EduNest Girls Hostel family! Have a wonderful day ahead!';
-    return '<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.2)">' +
-      '<div><div style="font-weight:700;font-size:13px">' + s.name + ' 🎂</div>' +
-      '<div style="font-size:11px;opacity:.8">Room ' + s.room + ' | Age: ' + age + '</div></div>' +
-      '<a href="https://wa.me/' + waFull + '?text=' + encodeURIComponent(msg) + '" target="_blank">' +
-      '<button style="background:white;color:#e91e63;border:none;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer">📱 Wish Now</button></a>' +
-      '</div>';
+    const msg = 'Dear ' + s.name + ', Wishing you a very Happy Birthday! ' +
+      'May this special day bring you lots of joy and happiness. ' +
+      'Best wishes from LMA EduNest Girls Hostel family! ' + 
+      'Have a wonderful day ahead!';
+    return '<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.2)">' +
+      '<div>' +
+        '<div style="font-weight:700;font-size:14px">' + s.name + ' 🎂</div>' +
+        '<div style="font-size:11px;opacity:.8">Room ' + s.room + ' · Age: ' + age + '</div>' +
+      '</div>' +
+      '<a href="https://wa.me/' + waFull + '?text=' + encodeURIComponent(msg) + '" target="_blank" style="text-decoration:none">' +
+        '<button style="background:white;color:#e91e63;border:none;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer">📱 Wish Now</button>' +
+      '</a>' +
+    '</div>';
   }).join('');
 }
 
@@ -1196,6 +1255,39 @@ async function saveExpense() {
   hideL();
 }
 
+window._editEx = function(btn) {
+  var id = btn.id.replace('edt_','');
+  var ex = EX.find(function(e){ return e.id === id; });
+  if(!ex) return;
+  g('exeId').value = ex.id;
+  g('exePartner').value = ex.partner||'Lokesh';
+  g('exeAmt').value = ex.amount||'';
+  g('exeDate').value = ex.date||'';
+  g('exeNature').value = ex.nature||'Other';
+  g('exeDesc').value = ex.desc||'';
+  g('exeRemark').value = ex.remark||'';
+  openM('exem');
+};
+
+function updateExpense() {
+  var id = g('exeId').value;
+  var idx = EX.findIndex(function(e){ return e.id === id; });
+  if(idx < 0) { showT('Not found','terr'); return; }
+  EX[idx].partner = g('exePartner').value;
+  EX[idx].amount = parseFloat(g('exeAmt').value)||0;
+  EX[idx].date = g('exeDate').value;
+  EX[idx].nature = g('exeNature').value;
+  EX[idx].desc = g('exeDesc').value.trim();
+  EX[idx].remark = g('exeRemark').value.trim();
+  localStorage.setItem('lma_expenses', JSON.stringify(EX));
+  closeM('exem');
+  renderExpenses();
+  renderExpenseSummary();
+  showT('Updated!','tok');
+  // Update in sheet too
+  API({action:'updateExpense', expense:EX[idx]}).catch(function(){});
+}
+
 window._delEx = function(btn) {
   var row = btn.closest('.card');
   var id = btn.id.replace('del_','');
@@ -1246,7 +1338,10 @@ function renderExpenses() {
     var delBtn = '';
     if(CU && CU.role==='admin') {
       var safeId = e.id.toString();
-      delBtn = '<button id="del_'+safeId+'" onclick="window._delEx(this)" style="background:#fce4ec;border:none;color:var(--r);border-radius:7px;padding:6px 10px;font-size:12px;cursor:pointer;font-weight:700">🗑 Del</button>';
+      delBtn = '<div style="display:flex;gap:6px">'+
+        '<button id="edt_'+safeId+'" onclick="window._editEx(this)" style="background:#e8eaf6;border:none;color:var(--n);border-radius:7px;padding:6px 10px;font-size:12px;cursor:pointer;font-weight:700">✏️ Edit</button>'+
+        '<button id="del_'+safeId+'" onclick="window._delEx(this)" style="background:#fce4ec;border:none;color:var(--r);border-radius:7px;padding:6px 10px;font-size:12px;cursor:pointer;font-weight:700">🗑 Del</button>'+
+        '</div>';
     }
     html += '<div class="card" style="margin-bottom:10px"><div class="cbd">' +
       '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">' +
