@@ -453,6 +453,7 @@ html,body{font-family:"DM Sans",sans-serif;background:var(--bg);color:var(--t);h
       <div class="fg"><label>Parent Mobile</label><input type="tel" id="epm"></div>
       <div class="fg"><label>Rent ₹ *</label><input type="number" id="ernt" oninput="updEBal()"></div>
       <div class="fg"><label>Deposit ₹</label><input type="number" id="edep" oninput="updEBal()"></div>
+      <div class="fg"><label>Date of Birth</label><input type="date" id="edob"></div>
       <div class="fg"><label>Joining Date</label><input type="date" id="ejd"></div>
       <div class="fg"><label>Due Day</label><select id="edd"><option value="5">5th</option><option value="1">1st</option><option value="10">10th</option></select></div>
     </div>
@@ -862,7 +863,7 @@ function viewS(id){
   g('vf').innerHTML=`
     <button class="btn bw bsm" onclick="closeM('vm');openPay('${id}','rent')">🏠 Pay Rent</button>
     <button class="btn bp bsm" onclick="closeM('vm');openPay('${id}','deposit')">🔒 Pay Deposit</button>
-    <button class="btn bg bsm" onclick="openEdit('${id}')">✏️ Edit</button>
+    <button class="btn bg bsm" onclick="closeM('vm');setTimeout(function(){openEdit('${id}')},200)">✏️ Edit</button>
     <button class="btn bw bsm" onclick="sendAll(SS.find(x=>x.id==='${id}'))">📱 WA All</button>
     ${CU?.role==='admin'?`<button class="btn bd bsm" onclick="delS('${id}')">🗑</button>`:''}
     <button class="btn bo bsm" onclick="closeM('vm')">Close</button>
@@ -1064,9 +1065,11 @@ function checkBirthdays() {
   const today = new Date();
   const todayMD = String(today.getMonth()+1).padStart(2,'0') + '-' + String(today.getDate()).padStart(2,'0');
   const bdays = SS.filter(s => {
-    if(!s.dob) return false;
-    const dob = s.dob.toString();
-    const md = dob.substr(5,5); // MM-DD from YYYY-MM-DD
+    if(!s.dob && !s.dateOfBirth && !s.birthday) return false;
+    const dobVal = (s.dob||s.dateOfBirth||s.birthday||'').toString().trim();
+    if(!dobVal || dobVal.length < 5) return false;
+    // Handle YYYY-MM-DD format
+    const md = dobVal.length >= 7 ? dobVal.substr(5,5) : '';
     return md === todayMD;
   });
   const banner = g('bdayBanner');
@@ -1193,6 +1196,11 @@ async function saveExpense() {
   hideL();
 }
 
+window._delEx = function(btn) {
+  var row = btn.closest('.card');
+  var id = btn.id.replace('del_','');
+  confirmDelEx(id);
+};
 function confirmDelEx(id) {
   if(!confirm('Delete this expense?')) return;
   EX = EX.filter(function(e){ return e.id !== id; });
@@ -1237,7 +1245,8 @@ function renderExpenses() {
     var color = e.partner==='Lokesh'?'#1a237e':e.partner==='Milind'?'#00695c':'#e65100';
     var delBtn = '';
     if(CU && CU.role==='admin') {
-      delBtn = '<button onclick="confirmDelEx(' + JSON.stringify(e.id) + ')" style="background:#fce4ec;border:none;color:var(--r);border-radius:7px;padding:6px 10px;font-size:12px;cursor:pointer;font-weight:700">Del</button>';
+      var safeId = e.id.toString();
+      delBtn = '<button id="del_'+safeId+'" onclick="window._delEx(this)" style="background:#fce4ec;border:none;color:var(--r);border-radius:7px;padding:6px 10px;font-size:12px;cursor:pointer;font-weight:700">🗑 Del</button>';
     }
     html += '<div class="card" style="margin-bottom:10px"><div class="cbd">' +
       '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">' +
