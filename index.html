@@ -819,7 +819,6 @@ async function addStudent() {
     ['sn','sr','sb2','sm','spm','srnt','sdep','sjd','sc2','sadr','snt'].forEach(id=>{const e=g(id);if(e)e.value='';});
     g('pv').style.display='none'; g('pp').style.display='block'; g('ph').value=''; g('sbal').style.display='none';
     await refreshAll();
-    const ns=SS.find(x=>x.name===name&&x.room===room); if(ns)setTimeout(()=>sendAll(ns),800);
     showT('✅ Student added!','tok');
   } catch(e){showT('❌ '+e.message,'terr');}
   finally{btn.innerHTML='✅ Save Student';btn.disabled=false;hideL();}
@@ -901,6 +900,7 @@ function viewS(id){
     <button class="btn bw bsm" onclick="closeM('vm');openPay('${id}','rent')">🏠 Pay Rent</button>
     <button class="btn bp bsm" onclick="closeM('vm');openPay('${id}','deposit')">🔒 Pay Deposit</button>
     <button class="btn bg bsm" onclick="closeM('vm');setTimeout(function(){openEdit('${id}')},200)">✏️ Edit</button>
+    <button class="btn bg bsm" onclick="sendWelcomeInvoice('${id}')" style="background:#25D366;color:white">📄 Send Welcome+Invoice</button>
     <button class="btn bw bsm" onclick="sendAll(SS.find(x=>x.id==='${id}'))">📱 WA All</button>
     ${CU?.role==='admin'?`<button class="btn bd bsm" onclick="delS('${id}')">🗑</button>`:''}
     <button class="btn bo bsm" onclick="closeM('vm')">Close</button>
@@ -969,7 +969,7 @@ function renderDues(){
   if(!p.length){wrap.innerHTML=`<div class="emp"><div class="ei">🎉</div><h3>All dues cleared!</h3></div>`;return;}
   wrap.innerHTML=p.map(s=>{const rD=rDue(s),dD=dDue(s),tD=tDue(s);return`<div class="pend">
     <div style="display:flex;justify-content:space-between"><div><div class="pn">${s.name}</div><div class="pd">Room ${s.room} · Bed ${s.bed} · ${s.mobile}</div>${rD>0?`<div style="font-size:11px;color:var(--r);margin-top:2px">🏠 Rent: ${F(rD)}</div>`:''} ${dD>0?`<div style="font-size:11px;color:var(--r)">🔒 Dep: ${F(dD)}</div>`:''}</div><div style="text-align:right"><div style="font-size:16px;font-weight:800;color:var(--r)">${F(tD)}</div></div></div>
-    <div class="pac"><button class="btn bw bsm" onclick="sendAll(SS.find(x=>x.id==='${s.id}'))">📱 WA All</button>${s.parentMobile?`<a href="https://wa.me/${s.parentMobile.replace(/\D/g,'')}?text=${encodeURIComponent(buildMsg(s))}" target="_blank"><button class="btn bsm bo">👪 Parent</button></a>`:''}<button class="btn bw bsm" onclick="openPay('${s.id}','rent')">🏠 Pay Rent</button>${dD>0?`<button class="btn bp bsm" onclick="openPay('${s.id}','deposit')">🔒 Pay Dep</button>`:''}</div>
+    <div class="pac"><button class="btn bw bsm" onclick="sendAll(SS.find(x=>x.id==='${s.id}'))">📱 WA All</button>${s.parentMobile?`<a href="https://web.whatsapp.com/send?phone=${s.parentMobile.replace(/\D/g,'')}&text=${encodeURIComponent(buildMsg(s))}" target="_blank"><button class="btn bsm bo">👪 Parent</button></a>`:''}<button class="btn bw bsm" onclick="openPay('${s.id}','rent')">🏠 Pay Rent</button>${dD>0?`<button class="btn bp bsm" onclick="openPay('${s.id}','deposit')">🔒 Pay Dep</button>`:''}</div>
   </div>`}).join('');
 }
 
@@ -1075,10 +1075,115 @@ function buildMsg(s){
   return m;
 }
 
-function sendAll(s){if(!s)return;const msg=buildMsg(s);const all=[];const sn=(s.mobile||'').replace(/\D/g,'');if(sn)all.push(sn.startsWith('91')?sn:'91'+sn);if(s.parentMobile){const p=s.parentMobile.replace(/\D/g,'');if(p)all.push(p.startsWith('91')?p:'91'+p);}getAdmins().forEach(n=>{const w=n.startsWith('91')?n:'91'+n;if(!all.includes(w))all.push(w);});all.forEach((n,i)=>setTimeout(()=>window.open('https://wa.me/'+n+'?text='+encodeURIComponent(msg),'_blank'),i*2000));showT('📱 Opening WA for '+all.length+' contacts','tok');}
-function notifyAdmins(name,amt,room,bed,pt){const ad=getAdmins();if(!ad.length)return;const NL2='\n';const msg='*LMA EduNest* '+NL2+'Payment Received!'+NL2+NL2+'Student: *'+name+'*'+NL2+'Room:'+room+' Bed:'+bed+NL2+'Type:'+(pt==='deposit'?'Deposit':'Rent')+NL2+'Amount: *'+F(amt)+'*'+NL2+'Date:'+new Date().toLocaleDateString('en-IN')+NL2+'By:'+CU.name;ad.forEach((n,i)=>{const w=n.startsWith('91')?n:'91'+n;setTimeout(()=>window.open('https://wa.me/'+w+'?text='+encodeURIComponent(msg),'_blank'),(i+1)*1500);});}
-function bulkWA(){const p=SS.filter(s=>tDue(s)>0);if(!p.length){showT('No pending!','tok');return;}p.forEach((s,i)=>setTimeout(()=>window.open('https://wa.me/'+(s.mobile||'').replace(/\D/g,'')+'?text='+encodeURIComponent(buildMsg(s)),'_blank'),i*2000));showT('📱 Sending to '+p.length,'');}
-function sendSummary(){const ad=getAdmins();if(!ad.length){showT('Set admin WA in Settings','terr');return;}const p=SS.filter(s=>tDue(s)>0);if(!p.length){showT('No pending!','tok');return;}const NL3='\n';let m='LMA EduNest LLP'+NL3+'Pending Dues'+NL3+new Date().toLocaleDateString('en-IN')+NL3+NL3;let t=0;p.forEach((s,i)=>{const td=tDue(s);t+=td;m+=(i+1)+'. *'+s.name+'*'+NL3+'Room:'+s.room+' | Rent:'+F(Math.round(rDue(s)))+' | Dep:'+F(Math.round(dDue(s)))+' = *'+F(Math.round(td))+'*'+NL3+NL3;});m+='Total: *'+F(Math.round(t))+'*';ad.forEach((n,i)=>{const w=n.startsWith('91')?n:'91'+n;setTimeout(()=>window.open('https://wa.me/'+w+'?text='+encodeURIComponent(m),'_blank'),i*2000);});showT('📊 Sending','tok');}
+// ══ NEXT DUE DATE CALCULATION ══
+// Based on joinDate + dueDay - returns next upcoming rent due date
+function nextDueDate(s) {
+  if(!s.joinDate) return '';
+  const dueDay = parseInt(s.dueDay) || 5;
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  // Start from current month's dueDay
+  let nextDue = new Date(today.getFullYear(), today.getMonth(), dueDay);
+  // If already past, jump to next month
+  if(nextDue < today) {
+    nextDue = new Date(today.getFullYear(), today.getMonth()+1, dueDay);
+  }
+  return nextDue.toLocaleDateString('en-IN', {day:'2-digit',month:'short',year:'numeric'});
+}
+
+// ══ WHATSAPP WEB URL BUILDER ══
+// Forces web.whatsapp.com (browser-based WA Web) instead of native app
+function waWebUrl(phone, text) {
+  const num = phone.replace(/\D/g,'');
+  const full = num.startsWith('91') ? num : '91'+num;
+  return 'https://web.whatsapp.com/send?phone=' + full + '&text=' + encodeURIComponent(text);
+}
+
+// ══ SEND WELCOME + INVOICE (MANUAL) ══
+// Generates PDF invoice → uploads to Drive → opens WhatsApp Web with message + PDF link
+async function sendWelcomeInvoice(id) {
+  const s = SS.find(x => x.id === id);
+  if(!s) { showT('Student not found','terr'); return; }
+  if(!s.mobile) { showT('Student mobile number missing','terr'); return; }
+  
+  const rP = rPaid(s.id), dP = dPaid(s.id);
+  const rD = rDue(s), dD = dDue(s), tD = tDue(s);
+  const ndd = nextDueDate(s);
+  
+  showL('Generating invoice PDF...');
+  
+  let pdfLink = '';
+  try {
+    const resp = await API({
+      action: 'generateInvoicePDF',
+      student: {
+        id: s.id, name: s.name, room: s.room, bed: s.bed,
+        mobile: s.mobile, address: s.address||'',
+        joinDate: s.joinDate, dueDay: s.dueDay||5,
+        rent: s.rent, deposit: s.deposit||0
+      },
+      paid: { rent: rP, deposit: dP, total: rP+dP },
+      due:  { rent: Math.round(rD), deposit: Math.round(dD), total: Math.round(tD) },
+      nextDueDate: ndd,
+      generatedBy: CU.name
+    });
+    pdfLink = resp.url || '';
+  } catch(e) {
+    hideL();
+    showT('❌ PDF generation failed: ' + e.message, 'terr');
+    return;
+  }
+  hideL();
+  
+  // Build the WhatsApp message
+  const NL = '\n';
+  let msg = '*LMA EduNest LLP - Girls Hostel, Pune*' + NL;
+  msg += '━━━━━━━━━━━━━━━━━━━━━' + NL + NL;
+  msg += 'Dear *' + s.name + '*,' + NL + NL;
+  msg += 'Welcome to LMA EduNest! Below are your hostel details:' + NL + NL;
+  msg += '*🏠 Hostel Details*' + NL;
+  msg += '• Room: ' + s.room + ' | Bed: ' + s.bed + NL;
+  msg += '• Joining Date: ' + (s.joinDate || '—') + NL;
+  msg += '• Monthly Rent Due Day: ' + (s.dueDay||5) + 'th of every month' + NL + NL;
+  msg += '*💰 Payment Details*' + NL;
+  msg += '• Monthly Rent: ' + F(s.rent) + '/month' + NL;
+  msg += '• Security Deposit: ' + F(s.deposit||0) + NL + NL;
+  msg += '*✅ Paid So Far*' + NL;
+  msg += '• Rent Paid: ' + F(rP) + NL;
+  msg += '• Deposit Paid: ' + F(dP) + NL;
+  msg += '• Total Paid: ' + F(rP + dP) + NL + NL;
+  
+  if(tD > 0) {
+    msg += '*⚠️ Pending Balance*' + NL;
+    if(rD > 0) msg += '• Rent Due: ' + F(Math.round(rD)) + NL;
+    if(dD > 0) msg += '• Deposit Due: ' + F(Math.round(dD)) + NL;
+    msg += '• *Total Due: ' + F(Math.round(tD)) + '*' + NL + NL;
+    msg += 'Please clear pending dues at the earliest.' + NL + NL;
+  } else {
+    msg += '*🎉 All payments are clear!*' + NL + NL;
+  }
+  
+  msg += '*📅 Next Rent Due Date:* ' + ndd + NL + NL;
+  
+  if(pdfLink) {
+    msg += '*📄 Your Invoice PDF:*' + NL;
+    msg += pdfLink + NL + NL;
+  }
+  
+  msg += '━━━━━━━━━━━━━━━━━━━━━' + NL;
+  msg += 'For any queries, please contact:' + NL;
+  msg += '📞 LMA EduNest Office' + NL;
+  msg += '🙏 Thank you!';
+  
+  // Open WhatsApp Web (NOT wa.me - that uses native app)
+  window.open(waWebUrl(s.mobile, msg), '_blank');
+  showT('✅ Opening WhatsApp Web — message ready to send!', 'tok');
+}
+
+function sendAll(s){if(!s)return;const msg=buildMsg(s);const all=[];const sn=(s.mobile||'').replace(/\D/g,'');if(sn)all.push(sn.startsWith('91')?sn:'91'+sn);if(s.parentMobile){const p=s.parentMobile.replace(/\D/g,'');if(p)all.push(p.startsWith('91')?p:'91'+p);}getAdmins().forEach(n=>{const w=n.startsWith('91')?n:'91'+n;if(!all.includes(w))all.push(w);});all.forEach((n,i)=>setTimeout(()=>window.open('https://web.whatsapp.com/send?phone='+n+'&text='+encodeURIComponent(msg),'_blank'),i*2000));showT('📱 Opening WA for '+all.length+' contacts','tok');}
+function notifyAdmins(name,amt,room,bed,pt){const ad=getAdmins();if(!ad.length)return;const NL2='\n';const msg='*LMA EduNest* '+NL2+'Payment Received!'+NL2+NL2+'Student: *'+name+'*'+NL2+'Room:'+room+' Bed:'+bed+NL2+'Type:'+(pt==='deposit'?'Deposit':'Rent')+NL2+'Amount: *'+F(amt)+'*'+NL2+'Date:'+new Date().toLocaleDateString('en-IN')+NL2+'By:'+CU.name;ad.forEach((n,i)=>{const w=n.startsWith('91')?n:'91'+n;setTimeout(()=>window.open('https://web.whatsapp.com/send?phone='+w+'&text='+encodeURIComponent(msg),'_blank'),(i+1)*1500);});}
+function bulkWA(){const p=SS.filter(s=>tDue(s)>0);if(!p.length){showT('No pending!','tok');return;}p.forEach((s,i)=>setTimeout(()=>window.open('https://web.whatsapp.com/send?phone='+(s.mobile||'').replace(/\D/g,'')+'&text='+encodeURIComponent(buildMsg(s)),'_blank'),i*2000));showT('📱 Sending to '+p.length,'');}
+function sendSummary(){const ad=getAdmins();if(!ad.length){showT('Set admin WA in Settings','terr');return;}const p=SS.filter(s=>tDue(s)>0);if(!p.length){showT('No pending!','tok');return;}const NL3='\n';let m='LMA EduNest LLP'+NL3+'Pending Dues'+NL3+new Date().toLocaleDateString('en-IN')+NL3+NL3;let t=0;p.forEach((s,i)=>{const td=tDue(s);t+=td;m+=(i+1)+'. *'+s.name+'*'+NL3+'Room:'+s.room+' | Rent:'+F(Math.round(rDue(s)))+' | Dep:'+F(Math.round(dDue(s)))+' = *'+F(Math.round(td))+'*'+NL3+NL3;});m+='Total: *'+F(Math.round(t))+'*';ad.forEach((n,i)=>{const w=n.startsWith('91')?n:'91'+n;setTimeout(()=>window.open('https://web.whatsapp.com/send?phone='+w+'&text='+encodeURIComponent(m),'_blank'),i*2000);});showT('📊 Sending','tok');}
 function sendReminders(){showL('Sending...');API({action:'sendReminders'}).then(()=>showT('✅ Email sent!','tok')).catch(e=>showT('❌'+e.message,'terr')).finally(hideL);}
 function saveTpl(){localStorage.setItem('lma_wmt',g('wmt').value);localStorage.setItem('lma_wpt',g('wpt').value);showT('✅ Saved!','tok');}
 
@@ -1162,7 +1267,7 @@ function checkBirthdays() {
         '<div style="font-weight:700;font-size:14px">' + s.name + ' 🎂</div>' +
         '<div style="font-size:11px;opacity:.8">Room ' + s.room + (age?' · Age: ' + age:'') + '</div>' +
       '</div>' +
-      '<a href="https://wa.me/' + waFull + '?text=' + encodeURIComponent(msg) + '" target="_blank" style="text-decoration:none">' +
+      '<a href="https://web.whatsapp.com/send?phone=' + waFull + '&text=' + encodeURIComponent(msg) + '" target="_blank" style="text-decoration:none">' +
         '<button style="background:white;color:#e91e63;border:none;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer">📱 Wish Now</button>' +
       '</a>' +
     '</div>';
@@ -1211,11 +1316,11 @@ function sendInvoiceWA(s, payment) {
   const msg = generateInvoice(s, payment);
   const waNum = (s.mobile||'').replace(/\D/g,'');
   const waFull = waNum.startsWith('91') ? waNum : '91'+waNum;
-  setTimeout(() => window.open('https://wa.me/' + waFull + '?text=' + encodeURIComponent(msg), '_blank'), 2000);
+  setTimeout(() => window.open('https://web.whatsapp.com/send?phone=' + waFull + '&text=' + encodeURIComponent(msg), '_blank'), 2000);
   // Also send to admins
   getAdmins().forEach((num, i) => {
     const w = num.startsWith('91') ? num : '91'+num;
-    setTimeout(() => window.open('https://wa.me/' + w + '?text=' + encodeURIComponent(msg), '_blank'), (i+3)*2000);
+    setTimeout(() => window.open('https://web.whatsapp.com/send?phone=' + w + '&text=' + encodeURIComponent(msg), '_blank'), (i+3)*2000);
   });
 }
 
