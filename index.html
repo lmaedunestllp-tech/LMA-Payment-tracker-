@@ -594,18 +594,33 @@ const f2b64 = f => new Promise((res,rej)=>{const r=new FileReader();r.onload=e=>
 const toggleSB = () => { g('sb').classList.toggle('open'); g('ov').classList.toggle('show'); };
 const closeSB = () => { g('sb').classList.remove('open'); g('ov').classList.remove('show'); };
 
-// FEE CALC
+// FEE CALC - all functions defensively parse numbers
+// (Sheet data can come as strings, this prevents NaN issues)
+const num = v => {
+  const n = parseFloat(v);
+  return isNaN(n) ? 0 : n;
+};
 const rPaid = sid => PP.filter(p=>{
   if(p.studentId!==sid) return false;
   const pt=(p.paymentType||'rent').toString().trim().toLowerCase();
   return pt==='rent'||pt===''||pt==='undefined';
-}).reduce((s,p)=>s+Number(p.amount||0),0);
-const dPaid = sid => PP.filter(p=>p.studentId===sid&&(p.paymentType||'').toLowerCase()==='deposit').reduce((s,p)=>s+Number(p.amount||0),0);
-const tPaid = sid => PP.filter(p=>p.studentId===sid).reduce((s,p)=>s+Number(p.amount||0),0);
-const expR = s => { const j=new Date(s.joinDate),n=new Date(); return Math.max(1,(n.getFullYear()-j.getFullYear())*12+(n.getMonth()-j.getMonth())+1)*Number(s.rent||0); };
-const rDue = s => Math.max(0, expR(s)-rPaid(s.id));
-const dDue = s => { const dep=parseFloat(s.deposit||0)||0; const paid=dPaid(s.id); return Math.max(0, dep-paid); };
-const tDue = s => { const rd=rDue(s); const dd=dDue(s); return rd+dd; };
+}).reduce((s,p)=>s+num(p.amount),0);
+const dPaid = sid => PP.filter(p=>p.studentId===sid&&(p.paymentType||'').toLowerCase()==='deposit').reduce((s,p)=>s+num(p.amount),0);
+const tPaid = sid => PP.filter(p=>p.studentId===sid).reduce((s,p)=>s+num(p.amount),0);
+// expR: expected rent based on months elapsed since joinDate
+// If joinDate is invalid/missing, defaults to 1 month
+const expR = s => {
+  const rent = num(s.rent);
+  if(!s.joinDate) return rent; // no join date → assume 1 month
+  const j = new Date(s.joinDate);
+  if(isNaN(j.getTime())) return rent; // invalid date → assume 1 month
+  const n = new Date();
+  const months = (n.getFullYear()-j.getFullYear())*12 + (n.getMonth()-j.getMonth()) + 1;
+  return Math.max(1, months) * rent;
+};
+const rDue = s => Math.max(0, expR(s) - rPaid(s.id));
+const dDue = s => Math.max(0, num(s.deposit) - dPaid(s.id));
+const tDue = s => rDue(s) + dDue(s);
 
 // NAV
 function goTo(page, el) {
@@ -848,12 +863,22 @@ function updPay(){
 
 async function recPay(){
   if(!curSid){showT('No student','terr');return;}
-  const amount=parseFloat(g('pa').value)||0,month=g('pm2').value,date=g('pd').value,pType=g('pt').value;
-  if(!amount||!month||!date){showT('⚠️ Fill required fields','terr');return;}
+  const amtRaw=g('pa').value.trim();
+  const month=g('pm2').value, date=g('pd').value, pType=g('pt').value;
+  // Allow ₹0 payments (initial entry when nothing paid yet)
+  // Only block if field is empty or not a valid number
+  if(amtRaw === '' || isNaN(parseFloat(amtRaw))){
+    showT('⚠️ Enter a valid amount (₹0 is allowed)','terr');return;
+  }
+  if(!month || !date){
+    showT('⚠️ Month and date required','terr');return;
+  }
+  const amount = parseFloat(amtRaw);
+  if(amount < 0){ showT('⚠️ Amount cannot be negative','terr'); return; }
   const btn=g('pb'); btn.innerHTML='<span class="ld"></span> Saving...'; btn.disabled=true; showL('Recording...');
   try {
     await API({action:'addPayment',recordedBy:CU.name,payment:{studentId:curSid,amount,month,date,mode:g('pmd').value,paymentType:pType,ref:g('prf').value.trim(),note:g('prm').value.trim()}});
-    const s=SS.find(x=>x.id===curSid); if(s)notifyAdmins(s.name,amount,s.room,s.bed,pType);
+    const s=SS.find(x=>x.id===curSid); if(s && amount > 0) notifyAdmins(s.name,amount,s.room,s.bed,pType);
     closeM('pm'); ['pa','prf','prm'].forEach(id=>g(id).value=''); await refreshAll(); showT('✅ Payment recorded!','tok');
   } catch(e){showT('❌ '+e.message,'terr');}
   finally{btn.innerHTML='✅ Record Payment';btn.disabled=false;hideL();}
@@ -902,6 +927,7 @@ function viewS(id){
     <button class="btn bg bsm" onclick="closeM('vm');setTimeout(function(){openEdit('${id}')},200)">✏️ Edit</button>
     <button class="btn bg bsm" onclick="sendWelcomeInvoice('${id}')" style="background:#25D366;color:white">📄 Send Welcome+Invoice</button>
     <button class="btn bw bsm" onclick="sendAll(SS.find(x=>x.id==='${id}'))">📱 WA All</button>
+    <button class="btn bo bsm" onclick="debugStudent('${id}')" style="background:#fff3e0;color:#e65100;border:1px solid #ffb74d">🔍 Debug</button>
     ${CU?.role==='admin'?`<button class="btn bd bsm" onclick="delS('${id}')">🗑</button>`:''}
     <button class="btn bo bsm" onclick="closeM('vm')">Close</button>
   `;
@@ -1128,10 +1154,19 @@ async function sendWelcomeInvoice(id) {
       generatedBy: CU.name
     });
     pdfLink = resp.url || '';
+    if(!pdfLink) {
+      console.error('Invoice API returned no URL:', resp);
+      showT('⚠️ PDF created but no link. Sending text-only message.','terr');
+    } else {
+      console.log('✅ Invoice PDF generated:', pdfLink);
+    }
   } catch(e) {
     hideL();
-    showT('❌ PDF generation failed: ' + e.message, 'terr');
-    return;
+    console.error('Invoice PDF generation failed:', e);
+    // Don't block — offer to send text-only
+    if(!confirm('❌ PDF generation failed:\n' + e.message + '\n\nSend WhatsApp message WITHOUT invoice PDF link?')) {
+      return;
+    }
   }
   hideL();
   
@@ -1178,6 +1213,58 @@ async function sendWelcomeInvoice(id) {
   // Open WhatsApp Web (NOT wa.me - that uses native app)
   window.open(waWebUrl(s.mobile, msg), '_blank');
   showT('✅ Opening WhatsApp Web — message ready to send!', 'tok');
+}
+
+// ══ DEBUG STUDENT — shows raw data + calculations in an alert + console ══
+// Use this when amounts look wrong, to see exactly what's stored in the sheet
+function debugStudent(id) {
+  const s = SS.find(x => x.id === id);
+  if(!s) { showT('Student not found','terr'); return; }
+  const payments = PP.filter(p => p.studentId === id);
+  const rP = rPaid(id), dP = dPaid(id);
+  const eR = expR(s), rD = rDue(s), dD = dDue(s), tD = tDue(s);
+  
+  console.log('═══════ DEBUG STUDENT ═══════');
+  console.log('Raw student record from sheet:', s);
+  console.log('  - rent value:', s.rent, '| typeof:', typeof s.rent, '| parsed:', parseFloat(s.rent));
+  console.log('  - deposit value:', s.deposit, '| typeof:', typeof s.deposit, '| parsed:', parseFloat(s.deposit));
+  console.log('  - joinDate:', s.joinDate, '| Date parsed:', new Date(s.joinDate));
+  console.log('All payment records for this student:', payments);
+  payments.forEach((p,i) => {
+    console.log('  Payment '+(i+1)+':', {
+      amount: p.amount,
+      amountType: typeof p.amount,
+      amountParsed: parseFloat(p.amount),
+      paymentType: p.paymentType,
+      date: p.date
+    });
+  });
+  console.log('CALCULATED:');
+  console.log('  Expected Rent (months × monthly):', eR);
+  console.log('  Rent Paid (sum):', rP);
+  console.log('  Rent Due (expected - paid):', rD);
+  console.log('  Deposit Paid (sum):', dP);
+  console.log('  Deposit Due (target - paid):', dD);
+  console.log('  Total Due:', tD);
+  console.log('═════════════════════════════');
+  
+  const txt = '🔍 DEBUG: ' + s.name + '\n\n' +
+    '📋 Stored in sheet:\n' +
+    '  • Rent: ' + s.rent + ' (type: '+typeof s.rent+')\n' +
+    '  • Deposit: ' + s.deposit + ' (type: '+typeof s.deposit+')\n' +
+    '  • JoinDate: ' + s.joinDate + '\n\n' +
+    '💰 Payments (' + payments.length + ' records):\n' +
+    payments.map((p,i) => '  '+(i+1)+'. ₹'+p.amount+' ('+(p.paymentType||'rent')+') on '+p.date).join('\n') +
+    (payments.length === 0 ? '  (none)' : '') + '\n\n' +
+    '🧮 Calculated:\n' +
+    '  • Expected Rent: ₹' + eR + '\n' +
+    '  • Rent Paid: ₹' + rP + '\n' +
+    '  • Rent Due: ₹' + rD + '\n' +
+    '  • Deposit Paid: ₹' + dP + '\n' +
+    '  • Deposit Due: ₹' + dD + '\n' +
+    '  • Total Due: ₹' + tD + '\n\n' +
+    '(Full details in browser Console — F12)';
+  alert(txt);
 }
 
 function sendAll(s){if(!s)return;const msg=buildMsg(s);const all=[];const sn=(s.mobile||'').replace(/\D/g,'');if(sn)all.push(sn.startsWith('91')?sn:'91'+sn);if(s.parentMobile){const p=s.parentMobile.replace(/\D/g,'');if(p)all.push(p.startsWith('91')?p:'91'+p);}getAdmins().forEach(n=>{const w=n.startsWith('91')?n:'91'+n;if(!all.includes(w))all.push(w);});all.forEach((n,i)=>setTimeout(()=>window.open('https://web.whatsapp.com/send?phone='+n+'&text='+encodeURIComponent(msg),'_blank'),i*2000));showT('📱 Opening WA for '+all.length+' contacts','tok');}
