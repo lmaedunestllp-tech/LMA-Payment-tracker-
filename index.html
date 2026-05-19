@@ -600,6 +600,9 @@ const num = v => {
   const n = parseFloat(v);
   return isNaN(n) ? 0 : n;
 };
+// safeStr: convert any value to a string safely (for .replace() etc.)
+// Handles case where Sheets returns a number for mobile fields by accident
+const safeStr = v => (v === null || v === undefined) ? '' : v.toString();
 const rPaid = sid => PP.filter(p=>{
   if(p.studentId!==sid) return false;
   const pt=(p.paymentType||'rent').toString().trim().toLowerCase();
@@ -995,7 +998,7 @@ function renderDues(){
   if(!p.length){wrap.innerHTML=`<div class="emp"><div class="ei">🎉</div><h3>All dues cleared!</h3></div>`;return;}
   wrap.innerHTML=p.map(s=>{const rD=rDue(s),dD=dDue(s),tD=tDue(s);return`<div class="pend">
     <div style="display:flex;justify-content:space-between"><div><div class="pn">${s.name}</div><div class="pd">Room ${s.room} · Bed ${s.bed} · ${s.mobile}</div>${rD>0?`<div style="font-size:11px;color:var(--r);margin-top:2px">🏠 Rent: ${F(rD)}</div>`:''} ${dD>0?`<div style="font-size:11px;color:var(--r)">🔒 Dep: ${F(dD)}</div>`:''}</div><div style="text-align:right"><div style="font-size:16px;font-weight:800;color:var(--r)">${F(tD)}</div></div></div>
-    <div class="pac"><button class="btn bw bsm" onclick="sendAll(SS.find(x=>x.id==='${s.id}'))">📱 WA All</button>${s.parentMobile?`<a href="https://web.whatsapp.com/send?phone=${s.parentMobile.replace(/\D/g,'')}&text=${encodeURIComponent(buildMsg(s))}" target="_blank"><button class="btn bsm bo">👪 Parent</button></a>`:''}<button class="btn bw bsm" onclick="openPay('${s.id}','rent')">🏠 Pay Rent</button>${dD>0?`<button class="btn bp bsm" onclick="openPay('${s.id}','deposit')">🔒 Pay Dep</button>`:''}</div>
+    <div class="pac"><button class="btn bw bsm" onclick="sendAll(SS.find(x=>x.id==='${s.id}'))">📱 WA All</button>${s.parentMobile?`<a href="https://web.whatsapp.com/send?phone=${safeStr(s.parentMobile).replace(/\D/g,'')}&text=${encodeURIComponent(buildMsg(s))}" target="_blank"><button class="btn bsm bo">👪 Parent</button></a>`:''}<button class="btn bw bsm" onclick="openPay('${s.id}','rent')">🏠 Pay Rent</button>${dD>0?`<button class="btn bp bsm" onclick="openPay('${s.id}','deposit')">🔒 Pay Dep</button>`:''}</div>
   </div>`}).join('');
 }
 
@@ -1267,9 +1270,9 @@ function debugStudent(id) {
   alert(txt);
 }
 
-function sendAll(s){if(!s)return;const msg=buildMsg(s);const all=[];const sn=(s.mobile||'').replace(/\D/g,'');if(sn)all.push(sn.startsWith('91')?sn:'91'+sn);if(s.parentMobile){const p=s.parentMobile.replace(/\D/g,'');if(p)all.push(p.startsWith('91')?p:'91'+p);}getAdmins().forEach(n=>{const w=n.startsWith('91')?n:'91'+n;if(!all.includes(w))all.push(w);});all.forEach((n,i)=>setTimeout(()=>window.open('https://web.whatsapp.com/send?phone='+n+'&text='+encodeURIComponent(msg),'_blank'),i*2000));showT('📱 Opening WA for '+all.length+' contacts','tok');}
+function sendAll(s){if(!s)return;const msg=buildMsg(s);const all=[];const sn=safeStr(s.mobile).replace(/\D/g,'');if(sn)all.push(sn.startsWith('91')?sn:'91'+sn);if(s.parentMobile){const p=safeStr(s.parentMobile).replace(/\D/g,'');if(p)all.push(p.startsWith('91')?p:'91'+p);}getAdmins().forEach(n=>{const w=n.startsWith('91')?n:'91'+n;if(!all.includes(w))all.push(w);});all.forEach((n,i)=>setTimeout(()=>window.open('https://web.whatsapp.com/send?phone='+n+'&text='+encodeURIComponent(msg),'_blank'),i*2000));showT('📱 Opening WA for '+all.length+' contacts','tok');}
 function notifyAdmins(name,amt,room,bed,pt){const ad=getAdmins();if(!ad.length)return;const NL2='\n';const msg='*LMA EduNest* '+NL2+'Payment Received!'+NL2+NL2+'Student: *'+name+'*'+NL2+'Room:'+room+' Bed:'+bed+NL2+'Type:'+(pt==='deposit'?'Deposit':'Rent')+NL2+'Amount: *'+F(amt)+'*'+NL2+'Date:'+new Date().toLocaleDateString('en-IN')+NL2+'By:'+CU.name;ad.forEach((n,i)=>{const w=n.startsWith('91')?n:'91'+n;setTimeout(()=>window.open('https://web.whatsapp.com/send?phone='+w+'&text='+encodeURIComponent(msg),'_blank'),(i+1)*1500);});}
-function bulkWA(){const p=SS.filter(s=>tDue(s)>0);if(!p.length){showT('No pending!','tok');return;}p.forEach((s,i)=>setTimeout(()=>window.open('https://web.whatsapp.com/send?phone='+(s.mobile||'').replace(/\D/g,'')+'&text='+encodeURIComponent(buildMsg(s)),'_blank'),i*2000));showT('📱 Sending to '+p.length,'');}
+function bulkWA(){const p=SS.filter(s=>tDue(s)>0);if(!p.length){showT('No pending!','tok');return;}p.forEach((s,i)=>setTimeout(()=>window.open('https://web.whatsapp.com/send?phone='+safeStr(s.mobile).replace(/\D/g,'')+'&text='+encodeURIComponent(buildMsg(s)),'_blank'),i*2000));showT('📱 Sending to '+p.length,'');}
 function sendSummary(){const ad=getAdmins();if(!ad.length){showT('Set admin WA in Settings','terr');return;}const p=SS.filter(s=>tDue(s)>0);if(!p.length){showT('No pending!','tok');return;}const NL3='\n';let m='LMA EduNest LLP'+NL3+'Pending Dues'+NL3+new Date().toLocaleDateString('en-IN')+NL3+NL3;let t=0;p.forEach((s,i)=>{const td=tDue(s);t+=td;m+=(i+1)+'. *'+s.name+'*'+NL3+'Room:'+s.room+' | Rent:'+F(Math.round(rDue(s)))+' | Dep:'+F(Math.round(dDue(s)))+' = *'+F(Math.round(td))+'*'+NL3+NL3;});m+='Total: *'+F(Math.round(t))+'*';ad.forEach((n,i)=>{const w=n.startsWith('91')?n:'91'+n;setTimeout(()=>window.open('https://web.whatsapp.com/send?phone='+w+'&text='+encodeURIComponent(m),'_blank'),i*2000);});showT('📊 Sending','tok');}
 function sendReminders(){showL('Sending...');API({action:'sendReminders'}).then(()=>showT('✅ Email sent!','tok')).catch(e=>showT('❌'+e.message,'terr')).finally(hideL);}
 function saveTpl(){localStorage.setItem('lma_wmt',g('wmt').value);localStorage.setItem('lma_wpt',g('wpt').value);showT('✅ Saved!','tok');}
@@ -1343,7 +1346,7 @@ function checkBirthdays() {
     const raw = s.dob || s.dateOfBirth || s.birthday;
     const parsed = parseDob(raw);
     const age = parsed ? today.getFullYear() - parsed.year : '';
-    const waNum = (s.mobile||'').replace(/\D/g,'');
+    const waNum = safeStr(s.mobile).replace(/\D/g,'');
     const waFull = waNum.startsWith('91') ? waNum : '91'+waNum;
     const msg = 'Dear ' + s.name + ', Wishing you a very Happy Birthday! ' +
       'May this special day bring you lots of joy and happiness. ' +
@@ -1401,7 +1404,7 @@ function generateInvoice(s, payment) {
 function sendInvoiceWA(s, payment) {
   if(!s) return;
   const msg = generateInvoice(s, payment);
-  const waNum = (s.mobile||'').replace(/\D/g,'');
+  const waNum = safeStr(s.mobile).replace(/\D/g,'');
   const waFull = waNum.startsWith('91') ? waNum : '91'+waNum;
   setTimeout(() => window.open('https://web.whatsapp.com/send?phone=' + waFull + '&text=' + encodeURIComponent(msg), '_blank'), 2000);
   // Also send to admins
