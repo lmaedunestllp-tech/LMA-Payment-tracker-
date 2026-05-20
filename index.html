@@ -672,11 +672,83 @@ function showApp() {
   g('AS').classList.add('show');
   applyUser();
   refreshAll();
+  startInactivityTimer();
 }
 
 function logout() {
   if(!confirm('Sign out?'))return;
   localStorage.removeItem('lma_cu');CU=null;location.reload();
+}
+
+// ══ AUTO-LOGOUT ON INACTIVITY ══
+// 30 minutes total inactivity → auto logout
+// 29 minutes → warning popup ("1 minute mein logout hoga")
+// Any activity (mouse/keyboard/touch/scroll) resets the timer.
+var IDLE_LIMIT_MS = 30 * 60 * 1000;   // 30 min
+var IDLE_WARN_MS  = 29 * 60 * 1000;   // warn at 29 min (1 min before logout)
+var idleLogoutTimer = null;
+var idleWarnTimer = null;
+var idleWarnShown = false;
+
+function startInactivityTimer() {
+  resetInactivityTimer();
+  // Attach activity listeners (only once)
+  if (!window._idleListenersAttached) {
+    var events = ['mousemove','mousedown','keydown','touchstart','scroll','click'];
+    events.forEach(function(ev){
+      document.addEventListener(ev, resetInactivityTimer, true);
+    });
+    window._idleListenersAttached = true;
+  }
+}
+
+function resetInactivityTimer() {
+  // Clear existing timers
+  if (idleLogoutTimer) clearTimeout(idleLogoutTimer);
+  if (idleWarnTimer) clearTimeout(idleWarnTimer);
+  // Hide warning if shown
+  var warnEl = g('idleWarn');
+  if (warnEl) warnEl.style.display = 'none';
+  idleWarnShown = false;
+  // Only run timer if logged in
+  if (!CU) return;
+  // Set fresh timers
+  idleWarnTimer = setTimeout(showIdleWarning, IDLE_WARN_MS);
+  idleLogoutTimer = setTimeout(autoLogout, IDLE_LIMIT_MS);
+}
+
+function showIdleWarning() {
+  if (idleWarnShown) return;
+  idleWarnShown = true;
+  // Create warning element if not present
+  var warnEl = g('idleWarn');
+  if (!warnEl) {
+    warnEl = document.createElement('div');
+    warnEl.id = 'idleWarn';
+    warnEl.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);' +
+      'background:#fff;border:2px solid #ff9800;border-radius:14px;padding:20px 26px;' +
+      'box-shadow:0 10px 40px rgba(0,0,0,.3);z-index:99999;text-align:center;max-width:340px;' +
+      'font-family:inherit';
+    warnEl.innerHTML =
+      '<div style="font-size:36px;margin-bottom:8px">⏰</div>' +
+      '<div style="font-size:16px;font-weight:800;color:#e65100;margin-bottom:6px">Inactive for too long</div>' +
+      '<div style="font-size:13px;color:#555;margin-bottom:14px">Aap 1 minute mein automatically logout ho jaoge.<br>Click "Stay Logged In" to continue.</div>' +
+      '<button id="idleStayBtn" style="background:#4caf50;color:white;border:none;border-radius:8px;padding:10px 18px;font-size:13px;font-weight:700;cursor:pointer">✓ Stay Logged In</button>';
+    document.body.appendChild(warnEl);
+    g('idleStayBtn').addEventListener('click', function(){
+      warnEl.style.display = 'none';
+      idleWarnShown = false;
+      resetInactivityTimer();
+    });
+  }
+  warnEl.style.display = 'block';
+}
+
+function autoLogout() {
+  localStorage.removeItem('lma_cu');
+  CU = null;
+  alert('⏰ You have been logged out due to 30 minutes of inactivity.');
+  location.reload();
 }
 
 function applyUser() {
@@ -957,11 +1029,36 @@ function viewS(id){
 function updEBal(){const r=parseFloat(g('ernt').value)||0,d=parseFloat(g('edep').value)||0,adj=parseFloat(g('eadj')?.value)||0,b=g('ebal');if(r>0||d>0){let t=`🏠 ${F(r)}/mo · 🔒 ${F(d)}`;if(adj!==0)t+=` · ⚙️ Adj: ${adj>0?'-':'+'}${F(Math.abs(adj))}`;b.style.display='block';b.innerHTML=t;}else{b.style.display='none';}}
 function prvEPh(inp){const r=new FileReader();r.onload=e=>{g('epv').src=e.target.result;g('epv').style.display='block';g('epp').style.display='none'};r.readAsDataURL(inp.files[0]);}
 
+// Convert any date string/object to YYYY-MM-DD for HTML <input type="date">
+// Handles: YYYY-MM-DD, DD-MM-YYYY, DD/MM/YYYY, MM/DD/YYYY, ISO timestamp, Date object
+function toHTMLDate(v) {
+  if (!v) return '';
+  const s = safeStr(v).trim();
+  if (!s) return '';
+  // Already YYYY-MM-DD or starts with it (ISO timestamp)
+  if (/^\d{4}-\d{2}-\d{2}/.test(s)) return s.substr(0, 10);
+  // DD-MM-YYYY or DD/MM/YYYY format
+  const m = s.match(/^(\d{1,2})[-\/](\d{1,2})[-\/](\d{4})$/);
+  if (m) {
+    const dd = m[1].padStart(2,'0'), mm = m[2].padStart(2,'0'), yyyy = m[3];
+    return yyyy + '-' + mm + '-' + dd;
+  }
+  // Fallback: let Date parse it
+  const d = new Date(s);
+  if (!isNaN(d.getTime())) {
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth()+1).padStart(2,'0');
+    const dd = String(d.getDate()).padStart(2,'0');
+    return yyyy + '-' + mm + '-' + dd;
+  }
+  return '';
+}
+
 function openEdit(id){const s=SS.find(x=>x.id===id);if(!s)return;
   g('eid').value=id;g('en').value=s.name||'';
   // Show existing photo
-  if(s.photoUrl&&s.photoUrl.startsWith('http')){g('epv').src=s.photoUrl;g('epv').style.display='block';g('epp').style.display='none';}
-  else{g('epv').style.display='none';g('epp').style.display='block';}g('ec').value=s.course||'';g('edob').value=s.dob||'';g('er').value=s.room||'';g('eb').value=s.bed||'';g('emob').value=s.mobile||'';g('epm').value=s.parentMobile||'';g('ernt').value=s.rent||'';g('edep').value=s.deposit||'';if(g('eadj'))g('eadj').value=s.rentAdjustment||'';g('ejd').value=s.joinDate||'';g('edd').value=s.dueDay||5;g('eadr').value=s.address||'';g('ent').value=s.notes||'';updEBal();closeM('vm');openM('em');}
+  if(s.photoUrl&&safeStr(s.photoUrl).startsWith('http')){g('epv').src=s.photoUrl;g('epv').style.display='block';g('epp').style.display='none';}
+  else{g('epv').style.display='none';g('epp').style.display='block';}g('ec').value=s.course||'';g('edob').value=toHTMLDate(s.dob);g('er').value=s.room||'';g('eb').value=s.bed||'';g('emob').value=s.mobile||'';g('epm').value=s.parentMobile||'';g('ernt').value=s.rent||'';g('edep').value=s.deposit||'';if(g('eadj'))g('eadj').value=s.rentAdjustment||'';g('ejd').value=toHTMLDate(s.joinDate);g('edd').value=s.dueDay||5;g('eadr').value=s.address||'';g('ent').value=s.notes||'';updEBal();closeM('vm');openM('em');}
 async function saveEdit(){
   const id=g('eid').value,name=g('en').value.trim(),room=g('er').value.trim(),bed=g('eb').value.trim(),mobile=g('emob').value.trim(),rent=parseFloat(g('ernt').value)||0;
   const rentAdjustment = parseFloat(g('eadj')?.value) || 0;
