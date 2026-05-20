@@ -228,6 +228,11 @@ html,body{font-family:"DM Sans",sans-serif;background:var(--bg);color:var(--t);h
           <div style="font-size:15px;font-weight:800;margin-bottom:10px">🎂 Today's Birthdays!</div>
           <div id="bdayList"></div>
         </div>
+        <!-- Upcoming Dues Banner - shows students whose rent is due in next 5 days -->
+        <div id="upcomingBanner" style="display:none;background:linear-gradient(135deg,#ff9800,#ffb74d);border-radius:14px;padding:14px 18px;margin-bottom:16px;color:white;animation:fu .3s ease">
+          <div style="font-size:15px;font-weight:800;margin-bottom:10px">⏰ Upcoming Rent Dues (Next 5 Days)</div>
+          <div id="upcomingList"></div>
+        </div>
         <div class="sg">
           <div class="bc c1"><div class="bi">👩‍🎓</div><div class="bl">Active Registration</div><div class="bv" id="s1">0</div><div class="bsb">Currently enrolled</div></div>
           <div class="bc c2"><div class="bi">🛏️</div><div class="bl">Total Bed</div><div class="bv" id="s2">36</div><div class="bsb" id="s2b">36 vacant</div></div>
@@ -390,6 +395,7 @@ html,body{font-family:"DM Sans",sans-serif;background:var(--bg);color:var(--t);h
       <div class="fg"><label>Parent Mobile</label><input type="tel" id="spm" placeholder="98765 43210"></div>
       <div class="fg"><label>Monthly Rent ₹ *</label><input type="number" id="srnt" placeholder="6000" oninput="updBal()"></div>
       <div class="fg"><label>Security Deposit ₹</label><input type="number" id="sdep" placeholder="10000" oninput="updBal()"></div>
+      <div class="fg"><label>Rent Adjustment ₹ <span style="font-weight:400;color:var(--m);font-size:10px">(optional)</span></label><input type="number" id="sadj" placeholder="0" oninput="updBal()" title="Credit for mid-month join, discount, etc. Positive = reduces due, Negative = extra charge"></div>
       <div class="fg"><label>Joining Date *</label><input type="date" id="sjd"></div>
       <div class="fg"><label>Due Day</label><select id="sdd"><option value="5">5th</option><option value="1">1st</option><option value="10">10th</option></select></div>
     </div>
@@ -453,6 +459,7 @@ html,body{font-family:"DM Sans",sans-serif;background:var(--bg);color:var(--t);h
       <div class="fg"><label>Parent Mobile</label><input type="tel" id="epm"></div>
       <div class="fg"><label>Rent ₹ *</label><input type="number" id="ernt" oninput="updEBal()"></div>
       <div class="fg"><label>Deposit ₹</label><input type="number" id="edep" oninput="updEBal()"></div>
+      <div class="fg"><label>Rent Adjustment ₹ <span style="font-weight:400;color:var(--m);font-size:10px">(credit/penalty)</span></label><input type="number" id="eadj" placeholder="0" oninput="updEBal()" title="Positive number reduces due (credit/discount). Negative adds to due (penalty)."></div>
       <div class="fg"><label>Date of Birth</label><input type="date" id="edob"></div>
       <div class="fg"><label>Joining Date</label><input type="date" id="ejd"></div>
       <div class="fg"><label>Due Day</label><select id="edd"><option value="5">5th</option><option value="1">1st</option><option value="10">10th</option></select></div>
@@ -621,7 +628,10 @@ const expR = s => {
   const months = (n.getFullYear()-j.getFullYear())*12 + (n.getMonth()-j.getMonth()) + 1;
   return Math.max(1, months) * rent;
 };
-const rDue = s => Math.max(0, expR(s) - rPaid(s.id));
+// rDue subtracts rentAdjustment (positive = credit/discount, negative = extra charge)
+// Use case: mid-month join (set adjustment = amount of unused days)
+//           discount given (positive adjustment), penalty (negative adjustment)
+const rDue = s => Math.max(0, expR(s) - rPaid(s.id) - num(s.rentAdjustment));
 const dDue = s => Math.max(0, num(s.deposit) - dPaid(s.id));
 const tDue = s => rDue(s) + dDue(s);
 
@@ -726,6 +736,7 @@ async function refreshAll() {
 function renderAll() {
   renderStats(); renderStudList(SS); renderDashP(); renderDashR(); updateBadge(); populateMF();
   checkBirthdays();
+  checkUpcomingDues();
   const ac=document.querySelector('.sec.active');
   if(ac){const id=ac.id;if(id==='sec-f')renderFees();if(id==='sec-p')renderDues();if(id==='sec-b')renderBeds();if(id==='sec-ex'){renderExpenses();renderExpenseSummary();}}
 }
@@ -820,21 +831,26 @@ function renderDashR(){
 
 // ADD STUDENT
 function updBal(){
-  const r=parseFloat(g('srnt').value)||0,d=parseFloat(g('sdep').value)||0,b=g('sbal');
-  if(r>0||d>0){b.style.display='block';b.innerHTML=`🏠 Rent: <strong>${F(r)}</strong>/mo · 🔒 Deposit: <strong>${F(d)}</strong> · 💰 First month: <strong>${F(r+d)}</strong>`;}else{b.style.display='none';}
+  const r=parseFloat(g('srnt').value)||0,d=parseFloat(g('sdep').value)||0,adj=parseFloat(g('sadj')?.value)||0,b=g('sbal');
+  if(r>0||d>0){
+    let txt = `🏠 Rent: <strong>${F(r)}</strong>/mo · 🔒 Deposit: <strong>${F(d)}</strong> · 💰 First month: <strong>${F(r+d)}</strong>`;
+    if(adj !== 0) txt += `<br>⚙️ Adjustment: <strong>${adj>0?'-':'+'}${F(Math.abs(adj))}</strong> (${adj>0?'credit/discount':'extra charge'})`;
+    b.style.display='block';b.innerHTML=txt;
+  }else{b.style.display='none';}
 }
 
 async function addStudent() {
   const name=g('sn').value.trim(),room=g('sr').value.trim(),bed=g('sb2').value.trim(),mobile=g('sm').value.trim(),rent=parseFloat(g('srnt').value)||0,joinDate=g('sjd').value;
+  const rentAdjustment = parseFloat(g('sadj')?.value) || 0;
   if(!name||!room||!bed||!mobile||!rent||!joinDate){showT('⚠️ Fill all required fields','terr');return;}
   const btn=g('asb'); btn.innerHTML='<span class="ld"></span> Saving...'; btn.disabled=true; showL('Saving student...');
   try {
     let photoUrl='',photoFileId='';
     const pf=g('ph').files[0];
     if(pf){showL('Uploading photo...');const b64=await f2b64(pf);const pr=await API({action:'uploadPhoto',base64Data:b64.split(',')[1],fileName:name.replace(/\s+/g,'_')+'_Photo.jpg',mimeType:pf.type,folderName:'LMA_'+name.replace(/\s+/g,'_')});photoUrl=pr.url;photoFileId=pr.fileId;}
-    await API({action:'addStudent',addedBy:CU.name,student:{name,room,bed,mobile,parentMobile:g('spm').value.trim(),rent,deposit:parseFloat(g('sdep').value)||0,joinDate,dueDay:parseInt(g('sdd').value)||5,course:g('sc2').value.trim(),address:g('sadr').value.trim(),notes:g('snt').value.trim(),dob:(g('sdob')?g('sdob').value:'')||'',photoUrl,photoFileId}});
+    await API({action:'addStudent',addedBy:CU.name,student:{name,room,bed,mobile,parentMobile:g('spm').value.trim(),rent,deposit:parseFloat(g('sdep').value)||0,rentAdjustment,joinDate,dueDay:parseInt(g('sdd').value)||5,course:g('sc2').value.trim(),address:g('sadr').value.trim(),notes:g('snt').value.trim(),dob:(g('sdob')?g('sdob').value:'')||'',photoUrl,photoFileId}});
     closeM('asm');
-    ['sn','sr','sb2','sm','spm','srnt','sdep','sjd','sc2','sadr','snt'].forEach(id=>{const e=g(id);if(e)e.value='';});
+    ['sn','sr','sb2','sm','spm','srnt','sdep','sadj','sjd','sc2','sadr','snt'].forEach(id=>{const e=g(id);if(e)e.value='';});
     g('pv').style.display='none'; g('pp').style.display='block'; g('ph').value=''; g('sbal').style.display='none';
     await refreshAll();
     showT('✅ Student added!','tok');
@@ -938,16 +954,17 @@ function viewS(id){
 }
 
 // EDIT
-function updEBal(){const r=parseFloat(g('ernt').value)||0,d=parseFloat(g('edep').value)||0,b=g('ebal');if(r>0||d>0){b.style.display='block';b.innerHTML=`🏠 ${F(r)}/mo · 🔒 ${F(d)}`;}else{b.style.display='none';}}
+function updEBal(){const r=parseFloat(g('ernt').value)||0,d=parseFloat(g('edep').value)||0,adj=parseFloat(g('eadj')?.value)||0,b=g('ebal');if(r>0||d>0){let t=`🏠 ${F(r)}/mo · 🔒 ${F(d)}`;if(adj!==0)t+=` · ⚙️ Adj: ${adj>0?'-':'+'}${F(Math.abs(adj))}`;b.style.display='block';b.innerHTML=t;}else{b.style.display='none';}}
 function prvEPh(inp){const r=new FileReader();r.onload=e=>{g('epv').src=e.target.result;g('epv').style.display='block';g('epp').style.display='none'};r.readAsDataURL(inp.files[0]);}
 
 function openEdit(id){const s=SS.find(x=>x.id===id);if(!s)return;
   g('eid').value=id;g('en').value=s.name||'';
   // Show existing photo
   if(s.photoUrl&&s.photoUrl.startsWith('http')){g('epv').src=s.photoUrl;g('epv').style.display='block';g('epp').style.display='none';}
-  else{g('epv').style.display='none';g('epp').style.display='block';}g('ec').value=s.course||'';g('edob').value=s.dob||'';g('er').value=s.room||'';g('eb').value=s.bed||'';g('emob').value=s.mobile||'';g('epm').value=s.parentMobile||'';g('ernt').value=s.rent||'';g('edep').value=s.deposit||'';g('ejd').value=s.joinDate||'';g('edd').value=s.dueDay||5;g('eadr').value=s.address||'';g('ent').value=s.notes||'';updEBal();closeM('vm');openM('em');}
+  else{g('epv').style.display='none';g('epp').style.display='block';}g('ec').value=s.course||'';g('edob').value=s.dob||'';g('er').value=s.room||'';g('eb').value=s.bed||'';g('emob').value=s.mobile||'';g('epm').value=s.parentMobile||'';g('ernt').value=s.rent||'';g('edep').value=s.deposit||'';if(g('eadj'))g('eadj').value=s.rentAdjustment||'';g('ejd').value=s.joinDate||'';g('edd').value=s.dueDay||5;g('eadr').value=s.address||'';g('ent').value=s.notes||'';updEBal();closeM('vm');openM('em');}
 async function saveEdit(){
   const id=g('eid').value,name=g('en').value.trim(),room=g('er').value.trim(),bed=g('eb').value.trim(),mobile=g('emob').value.trim(),rent=parseFloat(g('ernt').value)||0;
+  const rentAdjustment = parseFloat(g('eadj')?.value) || 0;
   if(!name||!room||!bed||!mobile||!rent){showT('⚠️ Fill required fields','terr');return;}
   const btn=g('esb');btn.innerHTML='<span class="ld"></span>';btn.disabled=true;showL('Updating...');
   try{
@@ -955,7 +972,7 @@ async function saveEdit(){
     const pf=g('eph')?.files[0];
     if(pf){showL('Uploading photo...');const b64=await f2b64(pf);const pr=await API({action:'uploadPhoto',base64Data:b64.split(',')[1],fileName:name.replace(/\s+/g,'_')+'_Photo.jpg',mimeType:pf.type,folderName:'LMA_'+name.replace(/\s+/g,'_')});photoUrl=pr.url;photoFileId=pr.fileId;}
     const s=SS.find(x=>x.id===id);
-    await API({action:'updateStudent',student:{id,name,room,bed,mobile,parentMobile:g('epm').value.trim(),rent,deposit:parseFloat(g('edep').value)||0,joinDate:g('ejd').value,dueDay:parseInt(g('edd').value)||5,course:g('ec').value.trim(),address:g('eadr').value.trim(),notes:g('ent').value.trim(),dob:g('edob')?.value||'',photoUrl:photoUrl||(s?.photoUrl||''),photoFileId:photoFileId||(s?.photoFileId||'')}});
+    await API({action:'updateStudent',student:{id,name,room,bed,mobile,parentMobile:g('epm').value.trim(),rent,deposit:parseFloat(g('edep').value)||0,rentAdjustment,joinDate:g('ejd').value,dueDay:parseInt(g('edd').value)||5,course:g('ec').value.trim(),address:g('eadr').value.trim(),notes:g('ent').value.trim(),dob:g('edob')?.value||'',photoUrl:photoUrl||(s?.photoUrl||''),photoFileId:photoFileId||(s?.photoFileId||'')}});
     closeM('em');await refreshAll();showT('✅ Updated!','tok');
   }catch(e){showT('❌ '+e.message,'terr');}finally{btn.innerHTML='💾 Save Changes';btn.disabled=false;hideL();}
 }
@@ -1359,6 +1376,73 @@ function checkBirthdays() {
       '</div>' +
       '<a href="https://web.whatsapp.com/send?phone=' + waFull + '&text=' + encodeURIComponent(msg) + '" target="_blank" style="text-decoration:none">' +
         '<button style="background:white;color:#e91e63;border:none;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer">📱 Wish Now</button>' +
+      '</a>' +
+    '</div>';
+  }).join('');
+}
+
+// ══ UPCOMING DUES (Next 5 Days) ══
+// Shows orange banner on dashboard with students whose rent due date
+// falls in the next 5 days (based on their dueDay setting).
+function checkUpcomingDues() {
+  const banner = g('upcomingBanner');
+  const list = g('upcomingList');
+  if(!banner || !list) return;
+  
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  const todayDay = today.getDate();
+  
+  // For each active student, calculate their next rent due date
+  const upcoming = [];
+  SS.forEach(function(s) {
+    if(!s.dueDay) return;
+    const dueDay = parseInt(s.dueDay) || 5;
+    
+    // Calculate next due date
+    let nextDue = new Date(today.getFullYear(), today.getMonth(), dueDay);
+    if(nextDue < today) {
+      // Already past this month's due day → next month
+      nextDue = new Date(today.getFullYear(), today.getMonth()+1, dueDay);
+    }
+    
+    // Days until due
+    const diffDays = Math.ceil((nextDue - today) / (1000*60*60*24));
+    
+    // Show if due in 0-5 days AND student has not paid this month's rent
+    if(diffDays >= 0 && diffDays <= 5) {
+      upcoming.push({ student: s, daysLeft: diffDays, dueDate: nextDue });
+    }
+  });
+  
+  if(!upcoming.length) {
+    banner.style.display = 'none';
+    return;
+  }
+  
+  // Sort by closest due first
+  upcoming.sort((a,b) => a.daysLeft - b.daysLeft);
+  
+  banner.style.display = 'block';
+  list.innerHTML = upcoming.map(function(u) {
+    const s = u.student;
+    const daysTxt = u.daysLeft === 0 ? 'TODAY' : 
+                    u.daysLeft === 1 ? 'TOMORROW' : 
+                    'in ' + u.daysLeft + ' days';
+    const dueStr = u.dueDate.toLocaleDateString('en-IN', {day:'2-digit', month:'short'});
+    const waNum = safeStr(s.mobile).replace(/\D/g,'');
+    const waFull = waNum.startsWith('91') ? waNum : '91'+waNum;
+    const msg = 'Dear ' + s.name + ', this is a friendly reminder ' +
+      'that your monthly rent of ' + F(num(s.rent)) + ' is due on ' + dueStr + '. ' +
+      'Kindly arrange the payment at your earliest convenience. ' +
+      'Thank you! - LMA EduNest Office';
+    return '<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.2)">' +
+      '<div>' +
+        '<div style="font-weight:700;font-size:14px">' + s.name + ' · Room ' + s.room + '</div>' +
+        '<div style="font-size:11px;opacity:.9">' + F(num(s.rent)) + ' due ' + daysTxt + ' (' + dueStr + ')</div>' +
+      '</div>' +
+      '<a href="https://web.whatsapp.com/send?phone=' + waFull + '&text=' + encodeURIComponent(msg) + '" target="_blank" style="text-decoration:none">' +
+        '<button style="background:white;color:#e65100;border:none;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer">📱 Remind</button>' +
       '</a>' +
     '</div>';
   }).join('');
