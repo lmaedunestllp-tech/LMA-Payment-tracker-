@@ -912,9 +912,11 @@ function updBal(){
 }
 
 async function addStudent() {
+  if(_saveLock){ console.log('Save in progress, ignoring duplicate tap'); return; }
   const name=g('sn').value.trim(),room=g('sr').value.trim(),bed=g('sb2').value.trim(),mobile=g('sm').value.trim(),rent=parseFloat(g('srnt').value)||0,joinDate=g('sjd').value;
   const rentAdjustment = parseFloat(g('sadj')?.value) || 0;
   if(!name||!room||!bed||!mobile||!rent||!joinDate){showT('⚠️ Fill all required fields','terr');return;}
+  _saveLock = true;
   const btn=g('asb'); btn.innerHTML='<span class="ld"></span> Saving...'; btn.disabled=true; showL('Saving student...');
   try {
     let photoUrl='',photoFileId='';
@@ -927,7 +929,7 @@ async function addStudent() {
     await refreshAll();
     showT('✅ Student added!','tok');
   } catch(e){showT('❌ '+e.message,'terr');}
-  finally{btn.innerHTML='✅ Save Student';btn.disabled=false;hideL();}
+  finally{btn.innerHTML='✅ Save Student';btn.disabled=false;hideL();_saveLock=false;}
 }
 
 // PAY
@@ -952,7 +954,13 @@ function updPay(){
   else{const td=tDue(s);g('ps2').textContent=td>0?'Total: '+F(td):'All clear';g('pa').placeholder=td>0?td:'Amount';}
 }
 
+// Global lock flag - prevents double-save from rapid taps / slow network
+// Mobile devices sometimes don't update button disabled state instantly,
+// so user can tap twice and trigger duplicate API calls
+var _saveLock = false;
+
 async function recPay(){
+  if(_saveLock){ console.log('Save in progress, ignoring duplicate tap'); return; }
   if(!curSid){showT('No student','terr');return;}
   const amtRaw=g('pa').value.trim();
   const month=g('pm2').value, date=g('pd').value, pType=g('pt').value;
@@ -966,13 +974,14 @@ async function recPay(){
   }
   const amount = parseFloat(amtRaw);
   if(amount < 0){ showT('⚠️ Amount cannot be negative','terr'); return; }
+  _saveLock = true;
   const btn=g('pb'); btn.innerHTML='<span class="ld"></span> Saving...'; btn.disabled=true; showL('Recording...');
   try {
     await API({action:'addPayment',recordedBy:CU.name,payment:{studentId:curSid,amount,month,date,mode:g('pmd').value,paymentType:pType,ref:g('prf').value.trim(),note:g('prm').value.trim()}});
     const s=SS.find(x=>x.id===curSid); if(s && amount > 0) notifyAdmins(s.name,amount,s.room,s.bed,pType);
     closeM('pm'); ['pa','prf','prm'].forEach(id=>g(id).value=''); await refreshAll(); showT('✅ Payment recorded!','tok');
   } catch(e){showT('❌ '+e.message,'terr');}
-  finally{btn.innerHTML='✅ Record Payment';btn.disabled=false;hideL();}
+  finally{btn.innerHTML='✅ Record Payment';btn.disabled=false;hideL();_saveLock=false;}
 }
 
 // VIEW STUDENT
@@ -1060,9 +1069,11 @@ function openEdit(id){const s=SS.find(x=>x.id===id);if(!s)return;
   if(s.photoUrl&&safeStr(s.photoUrl).startsWith('http')){g('epv').src=s.photoUrl;g('epv').style.display='block';g('epp').style.display='none';}
   else{g('epv').style.display='none';g('epp').style.display='block';}g('ec').value=s.course||'';g('edob').value=toHTMLDate(s.dob);g('er').value=s.room||'';g('eb').value=s.bed||'';g('emob').value=s.mobile||'';g('epm').value=s.parentMobile||'';g('ernt').value=s.rent||'';g('edep').value=s.deposit||'';if(g('eadj'))g('eadj').value=s.rentAdjustment||'';g('ejd').value=toHTMLDate(s.joinDate);g('edd').value=s.dueDay||5;g('eadr').value=s.address||'';g('ent').value=s.notes||'';updEBal();closeM('vm');openM('em');}
 async function saveEdit(){
+  if(_saveLock){ console.log('Save in progress, ignoring duplicate tap'); return; }
   const id=g('eid').value,name=g('en').value.trim(),room=g('er').value.trim(),bed=g('eb').value.trim(),mobile=g('emob').value.trim(),rent=parseFloat(g('ernt').value)||0;
   const rentAdjustment = parseFloat(g('eadj')?.value) || 0;
   if(!name||!room||!bed||!mobile||!rent){showT('⚠️ Fill required fields','terr');return;}
+  _saveLock = true;
   const btn=g('esb');btn.innerHTML='<span class="ld"></span>';btn.disabled=true;showL('Updating...');
   try{
     let photoUrl='',photoFileId='';
@@ -1071,7 +1082,7 @@ async function saveEdit(){
     const s=SS.find(x=>x.id===id);
     await API({action:'updateStudent',student:{id,name,room,bed,mobile,parentMobile:g('epm').value.trim(),rent,deposit:parseFloat(g('edep').value)||0,rentAdjustment,joinDate:g('ejd').value,dueDay:parseInt(g('edd').value)||5,course:g('ec').value.trim(),address:g('eadr').value.trim(),notes:g('ent').value.trim(),dob:g('edob')?.value||'',photoUrl:photoUrl||(s?.photoUrl||''),photoFileId:photoFileId||(s?.photoFileId||'')}});
     closeM('em');await refreshAll();showT('✅ Updated!','tok');
-  }catch(e){showT('❌ '+e.message,'terr');}finally{btn.innerHTML='💾 Save Changes';btn.disabled=false;hideL();}
+  }catch(e){showT('❌ '+e.message,'terr');}finally{btn.innerHTML='💾 Save Changes';btn.disabled=false;hideL();_saveLock=false;}
 }
 
 // DELETE
@@ -1785,6 +1796,37 @@ function renderExpenses() {
     CU = null;
   }
 })();
+
+// ══ GLOBAL ERROR CATCHER (for mobile crash diagnosis) ══
+// Mobile devices sometimes silently fail (UI freezes) without showing errors.
+// This handler catches uncaught errors and shows them in a toast/alert
+// so we can see what's actually crashing instead of just a frozen screen.
+window.addEventListener('error', function(e) {
+  console.error('Uncaught error:', e.error || e.message);
+  try {
+    var msg = e.message || (e.error && e.error.message) || 'Unknown error';
+    var src = e.filename ? (' [' + e.filename.split('/').pop() + ':' + e.lineno + ']') : '';
+    // Use toast if available, else alert
+    if (typeof showT === 'function') {
+      showT('⚠️ Error: ' + msg + src, 'terr');
+    } else {
+      alert('Error: ' + msg + src);
+    }
+    // Release save lock if stuck
+    if (typeof _saveLock !== 'undefined') _saveLock = false;
+  } catch(ee) { /* don't crash the crash handler */ }
+});
+
+window.addEventListener('unhandledrejection', function(e) {
+  console.error('Unhandled promise rejection:', e.reason);
+  try {
+    var msg = (e.reason && e.reason.message) || String(e.reason) || 'Unknown';
+    if (typeof showT === 'function') {
+      showT('⚠️ Promise error: ' + msg, 'terr');
+    }
+    if (typeof _saveLock !== 'undefined') _saveLock = false;
+  } catch(ee) {}
+});
 </script>
 </body>
 </html>
