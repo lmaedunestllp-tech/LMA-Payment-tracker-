@@ -951,6 +951,33 @@ async function addStudent() {
   // Only 5 fields are now mandatory: Name, Room, Bed, Mobile, Rent
   // Joining Date is auto-filled if empty (admin can edit later)
   if(!name||!room||!bed||!mobile||!rent){showT('⚠️ Fill required fields: Name, Room, Bed, Mobile, Rent','terr');return;}
+  
+  // ══ DUPLICATE CHECK 1: Same name + same mobile (case-insensitive) ══
+  // Block strict - exact match means same person re-entered by mistake
+  const cleanMobile = safeStr(mobile).replace(/\D/g,'');
+  const nameLower = name.toLowerCase();
+  const nameMobileDup = SS.find(function(x) {
+    if(x.status === 'deleted' || x.status === 'inactive') return false;
+    const xMobile = safeStr(x.mobile).replace(/\D/g,'');
+    const xName = safeStr(x.name).toLowerCase().trim();
+    return xName === nameLower && xMobile === cleanMobile;
+  });
+  if(nameMobileDup) {
+    showT('❌ Duplicate: "' + nameMobileDup.name + '" with mobile ' + nameMobileDup.mobile + ' already exists (Room ' + nameMobileDup.room + ', Bed ' + nameMobileDup.bed + ')','terr');
+    return;
+  }
+  
+  // ══ DUPLICATE CHECK 2: Same room + same bed (active students only) ══
+  // Block strict - one bed can have only one active occupant
+  const roomBedDup = SS.find(function(x) {
+    if(x.status === 'deleted' || x.status === 'inactive') return false;
+    return safeStr(x.room).trim() === room && safeStr(x.bed).trim() === bed;
+  });
+  if(roomBedDup) {
+    showT('❌ Room ' + room + ' Bed ' + bed + ' is already occupied by "' + roomBedDup.name + '". Choose different bed or vacate first.','terr');
+    return;
+  }
+  
   _saveLock = true;
   const btn=g('asb'); btn.innerHTML='<span class="ld"></span> Saving...'; btn.disabled=true; showL('Saving student...');
   try {
