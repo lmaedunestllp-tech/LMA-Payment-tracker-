@@ -405,7 +405,7 @@ html,body{font-family:"DM Sans",sans-serif;background:var(--bg);color:var(--t);h
       <div class="fg"><label>Monthly Rent ₹ *</label><input type="number" id="srnt" placeholder="6000" oninput="updBal()"></div>
       <div class="fg"><label>Security Deposit ₹</label><input type="number" id="sdep" placeholder="10000" oninput="updBal()"></div>
       <div class="fg"><label>Rent Adjustment ₹ <span style="font-weight:400;color:var(--m);font-size:10px">(optional)</span></label><input type="number" id="sadj" placeholder="0" oninput="updBal()" title="Credit for mid-month join, discount, etc. Positive = reduces due, Negative = extra charge"></div>
-      <div class="fg"><label>Joining Date *</label><input type="date" id="sjd"></div>
+      <div class="fg"><label>Joining Date <span style="font-weight:400;color:var(--m);font-size:10px">(optional, defaults to today)</span></label><input type="date" id="sjd"></div>
       <div class="fg"><label>Due Day</label><select id="sdd"><option value="5">5th</option><option value="1">1st</option><option value="10">10th</option></select></div>
     </div>
     <div id="sbal" style="display:none;background:#e8f5e9;border:1px solid #a5d6a7;border-radius:10px;padding:10px 13px;font-size:12px;color:#1b5e20;margin-bottom:10px;line-height:1.7"></div>
@@ -590,10 +590,28 @@ let SS = [], PP = [], curSid = null;
 const HU = {admin:{n:'Lokesh (Owner)',p:'Admin@1234',r:'admin'},manager1:{n:'Milind Bhujbal',p:'Mgr1@1234',r:'manager'},manager2:{n:'Anand Udavant',p:'Mgr2@1234',r:'manager'}};
 
 async function API(d) {
-  const r = await fetch(SCRIPT_URL, {method:'POST', body:JSON.stringify({...d, token:CU?.token})});
-  const j = await r.json();
-  if(!j.ok) throw new Error(j.error||'API error');
-  return j;
+  // For long operations like PDF generation, fetch can hang indefinitely.
+  // Use AbortController with 90-second timeout - long enough for PDF gen,
+  // short enough to fail fast if Apps Script is stuck.
+  const ctrl = new AbortController();
+  const timeoutId = setTimeout(() => ctrl.abort(), 90000);
+  try {
+    const r = await fetch(SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify({...d, token: CU?.token}),
+      signal: ctrl.signal
+    });
+    clearTimeout(timeoutId);
+    const j = await r.json();
+    if(!j.ok) throw new Error(j.error || 'API error');
+    return j;
+  } catch(e) {
+    clearTimeout(timeoutId);
+    if(e.name === 'AbortError') {
+      throw new Error('Request timeout - operation took too long. Check Drive folder, PDF may have been saved.');
+    }
+    throw e;
+  }
 }
 
 const F = n => '₹'+Number(n||0).toLocaleString('en-IN');
@@ -922,9 +940,54 @@ function updBal(){
 
 async function addStudent() {
   if(_saveLock){ console.log('Save in progress, ignoring duplicate tap'); return; }
-  const name=g('sn').value.trim(),room=g('sr').value.trim(),bed=g('sb2').value.trim(),mobile=g('sm').value.trim(),rent=parseFloat(g('srnt').value)||0,joinDate=g('sjd').value;
+  const name=g('sn').value.trim(),room=g('sr').value.trim(),bed=g('sb2').value.trim(),mobile=g('sm').value.trim(),rent=parseFloat(g('srnt').value)||0;
+  // Joining date now optional - if empty, auto-fill with today's date (YYYY-MM-DD format)
+  let joinDate = g('sjd').value;
+  if(!joinDate) {
+    const t = new Date();
+    joinDate = t.getFullYear() + '-' + String(t.getMonth()+1).padStart(2,'0') + '-' + String(t.getDate()).padStart(2,'0');
+  }
   const rentAdjustment = parseFloat(g('sadj')?.value) || 0;
-  if(!name||!room||!bed||!mobile||!rent||!joinDate){showT('⚠️ Fill all required fields','terr');return;}
+  // Only 5 fields are now mandatory: Name, Room, Bed, Mobile, Rent
+  // Joining Date is auto-filled if empty (admin can edit later)
+  if(!name||!room||!bed||!mobile||!rent){showT('⚠️ Fill required fields: Name, Room, Bed, Mobile, Rent','terr');return;}
+  
+  // ══ DUPLICATE CHECK 1: Same name + same mobile (case-insensitive) ══
+  // Block strict - exact match means same person re-entered by mistake
+  const cleanMobile = safeStr(mobile).replace(/\D/g,'');
+  const nameLower = name.toLowerCase().trim();
+  console.log('🔍 Duplicate check starting. SS array length:', SS.length);
+  console.log('🔍 Checking for: name="' + nameLower + '" mobile="' + cleanMobile + '"');
+  console.log('🔍 Existing students:', SS.map(function(x){return {id:x.id, name:x.name, mobile:x.mobile, status:x.status, room:x.room, bed:x.bed};}));
+  const nameMobileDup = SS.find(function(x) {
+    if(x.status === 'deleted' || x.status === 'inactive') return false;
+    const xMobile = safeStr(x.mobile).replace(/\D/g,'');
+    const xName = safeStr(x.name).toLowerCase().trim();
+    const match = xName === nameLower && xMobile === cleanMobile;
+    if(match) console.log('🔍 MATCH FOUND:', x.name, x.mobile);
+    return match;
+  });
+  if(nameMobileDup) {
+    console.log('🚫 BLOCKING - duplicate found');
+    showT('❌ Duplicate: "' + nameMobileDup.name + '" with mobile ' + nameMobileDup.mobile + ' already exists (Room ' + nameMobileDup.room + ', Bed ' + nameMobileDup.bed + ')','terr');
+    alert('❌ Duplicate Entry Blocked\n\nStudent "' + nameMobileDup.name + '" with mobile ' + nameMobileDup.mobile + ' already exists (Room ' + nameMobileDup.room + ', Bed ' + nameMobileDup.bed + ').\n\nPlease check existing records before adding.');
+    return;
+  }
+  
+  // ══ DUPLICATE CHECK 2: Same room + same bed (active students only) ══
+  // Block strict - one bed can have only one active occupant
+  const roomBedDup = SS.find(function(x) {
+    if(x.status === 'deleted' || x.status === 'inactive') return false;
+    return safeStr(x.room).trim() === room && safeStr(x.bed).trim() === bed;
+  });
+  if(roomBedDup) {
+    console.log('🚫 BLOCKING - bed occupied');
+    showT('❌ Room ' + room + ' Bed ' + bed + ' is already occupied by "' + roomBedDup.name + '". Choose different bed or vacate first.','terr');
+    alert('❌ Bed Already Occupied\n\nRoom ' + room + ' Bed ' + bed + ' is currently occupied by "' + roomBedDup.name + '".\n\nPlease choose a different bed or vacate the current occupant first.');
+    return;
+  }
+  console.log('✅ No duplicates found, proceeding to save');
+  
   _saveLock = true;
   const btn=g('asb'); btn.innerHTML='<span class="ld"></span> Saving...'; btn.disabled=true; showL('Saving student...');
   try {
@@ -1273,9 +1336,10 @@ async function sendWelcomeInvoice(id) {
   const rD = rDue(s), dD = dDue(s), tD = tDue(s);
   const ndd = nextDueDate(s);
   
-  showL('Generating invoice PDF...');
+  showL('Generating invoice PDF... (may take up to 60s)');
   
   let pdfLink = '';
+  let pdfFailed = false;
   try {
     const resp = await API({
       action: 'generateInvoicePDF',
@@ -1300,8 +1364,12 @@ async function sendWelcomeInvoice(id) {
   } catch(e) {
     hideL();
     console.error('Invoice PDF generation failed:', e);
-    // Don't block — offer to send text-only
-    if(!confirm('❌ PDF generation failed:\n' + e.message + '\n\nSend WhatsApp message WITHOUT invoice PDF link?')) {
+    pdfFailed = true;
+    // PDF likely created in Drive even if response timed out
+    const msgPrompt = e.message.indexOf('timeout') >= 0
+      ? '⏱️ PDF request timed out, but it may have been saved in Drive.\n\nSend WhatsApp message WITHOUT invoice link? (Check Drive folder LMA_EduNest_Hostel/Invoices later)'
+      : '❌ PDF generation failed:\n' + e.message + '\n\nSend WhatsApp message WITHOUT invoice PDF link?';
+    if(!confirm(msgPrompt)) {
       return;
     }
   }
