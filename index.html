@@ -432,6 +432,7 @@ html,body{font-family:"DM Sans",sans-serif;background:var(--bg);color:var(--t);h
       <div style="display:flex;justify-content:space-between;font-size:12px;padding:2px 0"><span style="color:var(--m)">🔒 Deposit Due</span><span id="bvd" style="font-weight:700"></span></div>
       <div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700;border-top:1px solid var(--b);margin-top:5px;padding-top:5px"><span>💰 Total Due</span><span id="bvt"></span></div>
     </div>
+    <div id="ppsum" style="display:none;background:#fff8e1;border:1px solid #ffe082;border-radius:10px;padding:10px 13px;margin-bottom:12px;font-size:12px"></div>
     <div class="fg"><label>Payment Type *</label><select id="pt" onchange="updPay()"><option value="rent">🏠 Rent Payment</option><option value="deposit">🔒 Security Deposit</option><option value="both">💰 Both</option></select></div>
     <div class="fg2">
       <div class="fg"><label>Month *</label><input type="month" id="pm2"></div>
@@ -1015,7 +1016,47 @@ function openPay(sid,type){
   g('bvd').textContent=dD>0?F(dD):'✓ Clear'; g('bvd').style.color=dD>0?'var(--r)':'var(--gr)';
   g('bvt').textContent=tD>0?F(tD):'✓ All Clear'; g('bvt').style.color=tD>0?'var(--r)':'var(--gr)';
   g('pt').value=type||'rent'; g('pd').value=today(); g('pm2').value=thisM();
+  // Always clear amount field so previous value / confusion doesn't carry over
+  g('pa').value='';
+  ['prf','prm'].forEach(id=>{ if(g(id)) g(id).value=''; });
+  showPartialSummary(s);
   updPay(); openM('pm');
+}
+
+// Shows this month's partial payment breakdown (how much paid, how much remaining)
+function showPartialSummary(s){
+  const box=g('ppsum');
+  if(!box) return;
+  const thisMonth = thisM(); // e.g. "2026-05"
+  // Sum payments made for the current month, split by type
+  let rentPaidThisMonth = 0, depPaidThisMonth = 0;
+  PP.forEach(function(p){
+    if(p.studentId !== s.id) return;
+    if(safeStr(p.month) !== thisMonth) return;
+    const pt=(p.paymentType||'rent').toString().trim().toLowerCase();
+    if(pt==='deposit') depPaidThisMonth += num(p.amount);
+    else rentPaidThisMonth += num(p.amount);
+  });
+  const monthName = new Date(thisMonth+'-01').toLocaleDateString('en-IN',{month:'long',year:'numeric'});
+  const rD=rDue(s), dD=dDue(s);
+  // Only show if there's some partial payment activity OR pending dues
+  if(rentPaidThisMonth===0 && depPaidThisMonth===0 && rD===0 && dD===0){
+    box.style.display='none';
+    return;
+  }
+  let html = '<div style="font-weight:700;color:#e65100;margin-bottom:6px">📊 ' + monthName + ' Summary</div>';
+  if(rentPaidThisMonth>0 || rD>0){
+    html += '<div style="display:flex;justify-content:space-between;padding:2px 0">'+
+      '<span style="color:var(--m)">🏠 Rent: paid '+F(rentPaidThisMonth)+'</span>'+
+      '<span style="font-weight:700;color:'+(rD>0?'var(--r)':'var(--gr)')+'">'+(rD>0?'baki '+F(rD):'✓ clear')+'</span></div>';
+  }
+  if(depPaidThisMonth>0 || dD>0){
+    html += '<div style="display:flex;justify-content:space-between;padding:2px 0">'+
+      '<span style="color:var(--m)">🔒 Deposit: paid '+F(depPaidThisMonth)+'</span>'+
+      '<span style="font-weight:700;color:'+(dD>0?'var(--r)':'var(--gr)')+'">'+(dD>0?'baki '+F(dD):'✓ clear')+'</span></div>';
+  }
+  box.innerHTML = html;
+  box.style.display='block';
 }
 
 function updPay(){
