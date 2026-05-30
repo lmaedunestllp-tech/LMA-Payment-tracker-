@@ -12,12 +12,13 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 
-<!-- PWA: Inline manifest (no separate manifest.json file needed) -->
-<link rel="manifest" href='data:application/manifest+json;charset=utf-8,{"name":"LMA EduNest LLP","short_name":"LMA EduNest","description":"LMA EduNest Girls Hostel Management","start_url":".","scope":".","display":"standalone","orientation":"portrait","background_color":"%231a237e","theme_color":"%231a237e","icons":[{"src":"data:image/svg%2Bxml;utf8,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 192 192%22%3E%3Crect width=%22192%22 height=%22192%22 rx=%2230%22 fill=%22%231a237e%22/%3E%3Ctext x=%2296%22 y=%22115%22 font-family=%22Arial,sans-serif%22 font-size=%2272%22 font-weight=%22900%22 text-anchor=%22middle%22 fill=%22%23c8973a%22%3ELMA%3C/text%3E%3C/svg%3E","sizes":"192x192","type":"image/svg+xml","purpose":"any maskable"},{"src":"data:image/svg%2Bxml;utf8,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 512 512%22%3E%3Crect width=%22512%22 height=%22512%22 rx=%2280%22 fill=%22%231a237e%22/%3E%3Ctext x=%22256%22 y=%22310%22 font-family=%22Arial,sans-serif%22 font-size=%22195%22 font-weight=%22900%22 text-anchor=%22middle%22 fill=%22%23c8973a%22%3ELMA%3C/text%3E%3C/svg%3E","sizes":"512x512","type":"image/svg+xml","purpose":"any maskable"}]}'>
+<!-- PWA: Inline manifest pointing to real PNG icon files (in same folder) -->
+<link rel="manifest" href='data:application/manifest+json;charset=utf-8,{"name":"LMA EduNest LLP","short_name":"LMA EduNest","description":"LMA EduNest Girls Hostel Management","start_url":".","scope":".","display":"standalone","orientation":"portrait","background_color":"%231a237e","theme_color":"%231a237e","icons":[{"src":"icon-192.png","sizes":"192x192","type":"image/png","purpose":"any"},{"src":"icon-512.png","sizes":"512x512","type":"image/png","purpose":"any"},{"src":"icon-192.png","sizes":"192x192","type":"image/png","purpose":"maskable"},{"src":"icon-512.png","sizes":"512x512","type":"image/png","purpose":"maskable"}]}'>
 
-<!-- PWA: Inline SVG favicon/icon (no separate icon files needed) -->
-<link rel="icon" type="image/svg+xml" href='data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192"><rect width="192" height="192" rx="30" fill="%231a237e"/><text x="96" y="115" font-family="Arial,sans-serif" font-size="72" font-weight="900" text-anchor="middle" fill="%23c8973a">LMA</text></svg>'>
-<link rel="apple-touch-icon" href='data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192"><rect width="192" height="192" rx="30" fill="%231a237e"/><text x="96" y="115" font-family="Arial,sans-serif" font-size="72" font-weight="900" text-anchor="middle" fill="%23c8973a">LMA</text></svg>'>
+<!-- PWA: Favicon (browser tab icon) and Apple Touch Icon (iOS home screen) -->
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
 
 <title>LMA EduNest LLP</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -1916,23 +1917,14 @@ function renderExpenses() {
 })();
 
 // ══ PWA: Service Worker Registration ══
-// Enables "Install App" prompt on mobile Chrome → home screen icon → APK-like feel.
-// SW is created from inline JS as a Blob URL, so no separate sw.js file is needed.
-// The SW is minimal (network-first, no aggressive caching) so user always gets latest version.
+// Registers external sw.js file (must exist in same folder on GitHub Pages).
+// Real sw.js is required for desktop PWA install icon to appear in Chrome.
+// (Blob URL based SW works on mobile but Chrome desktop strictly requires a real file)
+// The SW itself is minimal (network-first) so user always gets latest version.
 (function registerSW(){
   if (!('serviceWorker' in navigator)) return;
   try {
-    var swCode = '' +
-      'self.addEventListener("install", function(e){ self.skipWaiting(); });\n' +
-      'self.addEventListener("activate", function(e){ e.waitUntil(self.clients.claim()); });\n' +
-      'self.addEventListener("fetch", function(e){\n' +
-      '  // Network-first strategy - always try fresh from network, no aggressive caching\n' +
-      '  // This ensures user gets latest portal updates immediately\n' +
-      '  e.respondWith(fetch(e.request).catch(function(){ return new Response("Offline", {status: 503}); }));\n' +
-      '});';
-    var blob = new Blob([swCode], { type: 'application/javascript' });
-    var swUrl = URL.createObjectURL(blob);
-    navigator.serviceWorker.register(swUrl)
+    navigator.serviceWorker.register('sw.js')
       .then(function(reg){ console.log('✅ PWA service worker registered'); })
       .catch(function(err){ console.log('SW registration skipped:', err.message); });
   } catch(e) {
