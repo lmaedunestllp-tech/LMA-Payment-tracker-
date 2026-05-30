@@ -243,14 +243,14 @@ html,body{font-family:"DM Sans",sans-serif;background:var(--bg);color:var(--t);h
           <div id="upcomingList"></div>
         </div>
         <div class="sg">
-          <div class="bc c1"><div class="bi">👩‍🎓</div><div class="bl">Active Registration</div><div class="bv" id="s1">0</div><div class="bsb">Currently enrolled</div></div>
-          <div class="bc c2"><div class="bi">🛏️</div><div class="bl">Total Bed</div><div class="bv" id="s2">36</div><div class="bsb" id="s2b">36 vacant</div></div>
-          <div class="bc c3"><div class="bi">🟢</div><div class="bl">Total Vacant Bed</div><div class="bv" id="s3">36</div><div class="bsb">Available now</div></div>
-          <div class="bc c4"><div class="bi">🔴</div><div class="bl">Total Occupied Bed</div><div class="bv" id="s4">0</div><div class="bsb">Currently occupied</div></div>
-          <div class="bc c5"><div class="bi">💰</div><div class="bl">Total Payment</div><div class="bv" id="s5">₹0</div><div class="bsb">All time collected</div></div>
-          <div class="bc c6"><div class="bi">⚠️</div><div class="bl">Total Due</div><div class="bv" id="s6">₹0</div><div class="bsb">Outstanding balance</div></div>
-          <div class="bc c7"><div class="bi">🏠</div><div class="bl">Rent Due</div><div class="bv" id="s7">₹0</div><div class="bsb">Monthly rent pending</div></div>
-          <div class="bc c8"><div class="bi">🔒</div><div class="bl">Deposit Due</div><div class="bv" id="s8">₹0</div><div class="bsb">Security pending</div></div>
+          <div class="bc c1" onclick="goTo('s',document.getElementById('nl-s'))" style="cursor:pointer" title="Click to view all students"><div class="bi">👩‍🎓</div><div class="bl">Active Registration</div><div class="bv" id="s1">0</div><div class="bsb">Currently enrolled · Click to view</div></div>
+          <div class="bc c2" onclick="goTo('b',document.getElementById('nl-b'))" style="cursor:pointer" title="Click to view rooms & beds"><div class="bi">🛏️</div><div class="bl">Total Bed</div><div class="bv" id="s2">36</div><div class="bsb" id="s2b">36 vacant</div></div>
+          <div class="bc c3" onclick="goTo('b',document.getElementById('nl-b'))" style="cursor:pointer" title="Click to view rooms & beds"><div class="bi">🟢</div><div class="bl">Total Vacant Bed</div><div class="bv" id="s3">36</div><div class="bsb">Available now</div></div>
+          <div class="bc c4" onclick="goTo('b',document.getElementById('nl-b'))" style="cursor:pointer" title="Click to view rooms & beds"><div class="bi">🔴</div><div class="bl">Total Occupied Bed</div><div class="bv" id="s4">0</div><div class="bsb">Currently occupied</div></div>
+          <div class="bc c5" onclick="goTo('f',document.getElementById('nl-f'))" style="cursor:pointer" title="Click to view all payments"><div class="bi">💰</div><div class="bl">Total Payment</div><div class="bv" id="s5">₹0</div><div class="bsb">All time collected · Click to view</div></div>
+          <div class="bc c6" onclick="goTo('p',document.getElementById('nl-p'))" style="cursor:pointer" title="Click to view pending dues"><div class="bi">⚠️</div><div class="bl">Total Due</div><div class="bv" id="s6">₹0</div><div class="bsb">Outstanding balance · Click to view</div></div>
+          <div class="bc c7" onclick="goTo('p',document.getElementById('nl-p'))" style="cursor:pointer" title="Click to view pending dues"><div class="bi">🏠</div><div class="bl">Rent Due</div><div class="bv" id="s7">₹0</div><div class="bsb">Monthly rent pending</div></div>
+          <div class="bc c8" onclick="goTo('p',document.getElementById('nl-p'))" style="cursor:pointer" title="Click to view pending dues"><div class="bi">🔒</div><div class="bl">Deposit Due</div><div class="bv" id="s8">₹0</div><div class="bsb">Security pending</div></div>
         </div>
         <div class="dr">
           <div class="card"><div class="chd">⚠️ Pending Dues <button class="btn bsm bo" onclick="goTo('p',document.getElementById('nl-p'))">View All</button></div><div class="cbd" id="dp"></div></div>
