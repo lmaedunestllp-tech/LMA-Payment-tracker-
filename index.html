@@ -1624,6 +1624,7 @@ function checkUpcomingDues() {
   const upcoming = [];
   SS.forEach(function(s) {
     if(!s.dueDay) return;
+    if(s.status === 'deleted' || s.status === 'inactive') return;
     const dueDay = parseInt(s.dueDay) || 5;
     
     // Calculate next due date
@@ -1636,8 +1637,20 @@ function checkUpcomingDues() {
     // Days until due
     const diffDays = Math.ceil((nextDue - today) / (1000*60*60*24));
     
-    // Show if due in 0-5 days AND student has not paid this month's rent
-    if(diffDays >= 0 && diffDays <= 5) {
+    // Check if student has already paid for the month the due date falls in
+    // e.g. due date is 05 Jun → check if Jun 2026 rent is paid
+    const dueMonth = nextDue.getFullYear() + '-' + String(nextDue.getMonth()+1).padStart(2,'0');
+    let paidForDueMonth = 0;
+    PP.forEach(function(p) {
+      if(p.studentId !== s.id) return;
+      if(safeStr(p.month) !== dueMonth) return;
+      const pt = (p.paymentType||'rent').toString().trim().toLowerCase();
+      if(pt !== 'deposit') paidForDueMonth += num(p.amount);
+    });
+    
+    // Show only if: due within 0-5 days AND that month's rent NOT yet paid in full
+    const expectedRent = num(s.rent);
+    if(diffDays >= 0 && diffDays <= 5 && paidForDueMonth < expectedRent) {
       upcoming.push({ student: s, daysLeft: diffDays, dueDate: nextDue });
     }
   });
