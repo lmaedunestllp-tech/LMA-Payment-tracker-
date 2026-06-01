@@ -1033,7 +1033,9 @@ function showPartialSummary(s){
   let rentPaidThisMonth = 0, depPaidThisMonth = 0;
   PP.forEach(function(p){
     if(p.studentId !== s.id) return;
-    if(safeStr(p.month) !== thisMonth) return;
+    // Month field may be "2026-06" or full date "2026-06-01" - normalize to YYYY-MM
+    const pMonth = safeStr(p.month).slice(0, 7);
+    if(pMonth !== thisMonth) return;
     const pt=(p.paymentType||'rent').toString().trim().toLowerCase();
     if(pt==='deposit') depPaidThisMonth += num(p.amount);
     else rentPaidThisMonth += num(p.amount);
@@ -1643,7 +1645,9 @@ function checkUpcomingDues() {
     let paidForDueMonth = 0;
     PP.forEach(function(p) {
       if(p.studentId !== s.id) return;
-      if(safeStr(p.month) !== dueMonth) return;
+      // Month field may be stored as "2026-06" or full date "2026-06-01" - normalize to YYYY-MM
+      const pMonth = safeStr(p.month).slice(0, 7);
+      if(pMonth !== dueMonth) return;
       const pt = (p.paymentType||'rent').toString().trim().toLowerCase();
       if(pt !== 'deposit') paidForDueMonth += num(p.amount);
     });
