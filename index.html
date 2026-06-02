@@ -1346,18 +1346,42 @@ function buildMsg(s){
 }
 
 // ══ NEXT DUE DATE CALCULATION ══
-// Based on joinDate + dueDay - returns next upcoming rent due date
+// Returns the next UNPAID month's rent due date.
+// If current/upcoming months are already paid (advance), keeps moving forward
+// until it finds a month whose rent isn't fully paid yet.
 function nextDueDate(s) {
   if(!s.joinDate) return '';
   const dueDay = parseInt(s.dueDay) || 5;
   const today = new Date();
   today.setHours(0,0,0,0);
+  const expectedRent = num(s.rent);
+  
   // Start from current month's dueDay
   let nextDue = new Date(today.getFullYear(), today.getMonth(), dueDay);
   // If already past, jump to next month
   if(nextDue < today) {
     nextDue = new Date(today.getFullYear(), today.getMonth()+1, dueDay);
   }
+  
+  // Now skip any months whose rent is already paid in full (advance payments)
+  // Safety: check max 12 months ahead to avoid infinite loops
+  for(let i = 0; i < 12; i++) {
+    const monthKey = nextDue.getFullYear() + '-' + String(nextDue.getMonth()+1).padStart(2,'0');
+    let paidForMonth = 0;
+    PP.forEach(function(p){
+      if(p.studentId !== s.id) return;
+      // Month field may be "2026-06" or full date "2026-06-01" - normalize
+      const pMonth = safeStr(p.month).slice(0, 7);
+      if(pMonth !== monthKey) return;
+      const pt = (p.paymentType||'rent').toString().trim().toLowerCase();
+      if(pt !== 'deposit') paidForMonth += num(p.amount);
+    });
+    // If this month's rent is NOT fully paid, this is the next due
+    if(paidForMonth < expectedRent) break;
+    // Otherwise, this month is paid (advance) - move to next month
+    nextDue = new Date(nextDue.getFullYear(), nextDue.getMonth()+1, dueDay);
+  }
+  
   return nextDue.toLocaleDateString('en-IN', {day:'2-digit',month:'short',year:'numeric'});
 }
 
