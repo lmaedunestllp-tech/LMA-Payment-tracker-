@@ -1676,10 +1676,14 @@ function checkUpcomingDues() {
     const dueStr = u.dueDate.toLocaleDateString('en-IN', {day:'2-digit', month:'short'});
     const waNum = safeStr(s.mobile).replace(/\D/g,'');
     const waFull = waNum.startsWith('91') ? waNum : '91'+waNum;
-    const msg = 'Dear ' + s.name + ', this is a friendly reminder ' +
-      'that your monthly rent of ' + F(num(s.rent)) + ' is due on ' + dueStr + '. ' +
-      'Kindly arrange the payment at your earliest convenience. ' +
-      'Thank you! - LMA EduNest Office';
+    // Professional reminder message with proper line breaks
+    // \n creates new line in WhatsApp messages (URL-encoded as %0A)
+    const NL = '\n';
+    const msg = 'Dear ' + s.name + ',' + NL + NL +
+      'This is a friendly reminder that your monthly rent of ' + F(num(s.rent)) + ' is due on ' + dueStr + '. ' +
+      'Kindly arrange the payment at your earliest convenience.' + NL + NL +
+      'Thank you!' + NL +
+      'LMA EduNest LLP';
     return '<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.2)">' +
       '<div>' +
         '<div style="font-weight:700;font-size:14px">' + s.name + ' · Room ' + s.room + '</div>' +
