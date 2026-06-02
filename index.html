@@ -1400,6 +1400,12 @@ async function sendWelcomeInvoice(id) {
   if(!s) { showT('Student not found','terr'); return; }
   if(!s.mobile) { showT('Student mobile number missing','terr'); return; }
   
+  // Pre-open empty tab IMMEDIATELY (while we still have user-gesture).
+  // Popup blockers kill window.open() called after async/await — so we open
+  // the tab now (allowed since this runs synchronously from the click handler)
+  // and update its URL later when message is ready.
+  const waTab = window.open('about:blank', '_blank');
+  
   const rP = rPaid(s.id), dP = dPaid(s.id);
   const rD = rDue(s), dD = dDue(s), tD = tDue(s);
   const ndd = nextDueDate(s);
@@ -1438,6 +1444,8 @@ async function sendWelcomeInvoice(id) {
       ? '⏱️ PDF request timed out, but it may have been saved in Drive.\n\nSend WhatsApp message WITHOUT invoice link? (Check Drive folder LMA_EduNest_Hostel/Invoices later)'
       : '❌ PDF generation failed:\n' + e.message + '\n\nSend WhatsApp message WITHOUT invoice PDF link?';
     if(!confirm(msgPrompt)) {
+      // User cancelled - close the pre-opened blank tab so it doesn't linger
+      if(waTab && !waTab.closed) waTab.close();
       return;
     }
   }
@@ -1483,8 +1491,14 @@ async function sendWelcomeInvoice(id) {
   msg += '📞 LMA EduNest Office' + NL;
   msg += '🙏 Thank you!';
   
-  // Open WhatsApp Web (NOT wa.me - that uses native app)
-  window.open(waWebUrl(s.mobile, msg), '_blank');
+  // Use the pre-opened tab (set its URL now that we have the WhatsApp URL ready).
+  // Fall back to window.open in case pre-open was blocked (very strict popup settings).
+  const waUrl = waWebUrl(s.mobile, msg);
+  if(waTab && !waTab.closed) {
+    waTab.location.href = waUrl;
+  } else {
+    window.open(waUrl, '_blank');
+  }
   showT('✅ Opening WhatsApp Web — message ready to send!', 'tok');
 }
 
