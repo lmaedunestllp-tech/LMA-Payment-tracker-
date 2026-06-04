@@ -405,7 +405,7 @@ html,body{font-family:"DM Sans",sans-serif;background:var(--bg);color:var(--t);h
       <div class="fg"><label>Parent Mobile</label><input type="tel" id="spm" placeholder="98765 43210"></div>
       <div class="fg"><label>Monthly Rent ₹ *</label><input type="number" id="srnt" placeholder="6000" oninput="updBal()"></div>
       <div class="fg"><label>Security Deposit ₹</label><input type="number" id="sdep" placeholder="10000" oninput="updBal()"></div>
-      <div class="fg"><label>Rent Adjustment ₹ <span style="font-weight:400;color:var(--m);font-size:10px">(optional)</span></label><input type="number" id="sadj" placeholder="0" oninput="updBal()" title="Credit for mid-month join, discount, etc. Positive = reduces due, Negative = extra charge"></div>
+      <div class="fg"><label>Rent Adjustment ₹ <span style="font-weight:400;color:var(--m);font-size:10px">(optional)</span></label><input type="text" inputmode="numeric" pattern="-?[0-9]*" id="sadj" placeholder="0" oninput="updBal()" title="Credit for mid-month join, discount, etc. Positive = reduces due, Negative = extra charge"></div>
       <div class="fg"><label>Joining Date <span style="font-weight:400;color:var(--m);font-size:10px">(optional, defaults to today)</span></label><input type="date" id="sjd"></div>
       <div class="fg"><label>Due Day</label><select id="sdd"><option value="5">5th</option><option value="1">1st</option><option value="10">10th</option></select></div>
     </div>
@@ -470,7 +470,7 @@ html,body{font-family:"DM Sans",sans-serif;background:var(--bg);color:var(--t);h
       <div class="fg"><label>Parent Mobile</label><input type="tel" id="epm"></div>
       <div class="fg"><label>Rent ₹ *</label><input type="number" id="ernt" oninput="updEBal()"></div>
       <div class="fg"><label>Deposit ₹</label><input type="number" id="edep" oninput="updEBal()"></div>
-      <div class="fg"><label>Rent Adjustment ₹ <span style="font-weight:400;color:var(--m);font-size:10px">(credit/penalty)</span></label><input type="number" id="eadj" placeholder="0" oninput="updEBal()" title="Positive number reduces due (credit/discount). Negative adds to due (penalty)."></div>
+      <div class="fg"><label>Rent Adjustment ₹ <span style="font-weight:400;color:var(--m);font-size:10px">(credit/penalty)</span></label><input type="text" inputmode="numeric" pattern="-?[0-9]*" id="eadj" placeholder="0" oninput="updEBal()" title="Positive number reduces due (credit/discount). Negative adds to due (penalty)."></div>
       <div class="fg"><label>Date of Birth</label><input type="date" id="edob"></div>
       <div class="fg"><label>Joining Date</label><input type="date" id="ejd"></div>
       <div class="fg"><label>Due Day</label><select id="edd"><option value="5">5th</option><option value="1">1st</option><option value="10">10th</option></select></div>
@@ -702,6 +702,46 @@ function showApp() {
   applyUser();
   refreshAll();
   startInactivityTimer();
+  initBackButton();
+}
+
+// ══ BACK BUTTON HANDLING (Mobile PWA / Browser) ══
+// Without this, back button on Android closes the PWA app entirely.
+// With this: first close any open modal, else navigate to dashboard.
+// Only exits if user is already on dashboard with no modal (confirms first).
+function initBackButton(){
+  // Push initial state so back doesn't exit immediately
+  if(!window._backInited){
+    window._backInited = true;
+    history.pushState({page:'dashboard'}, '', '');
+    window.addEventListener('popstate', function(){
+      // First priority: close any open modal/sheet
+      const openModal = document.querySelector('.mov.open');
+      if(openModal){
+        openModal.classList.remove('open');
+        history.pushState({page:'dashboard'}, '', ''); // re-push so next back works
+        return;
+      }
+      // Second: close sidebar if open
+      const sb = document.querySelector('.sb.open');
+      if(sb){
+        closeSB();
+        history.pushState({page:'dashboard'}, '', '');
+        return;
+      }
+      // Third: if not on dashboard, navigate to dashboard
+      const dashSec = g('sec-d');
+      if(dashSec && !dashSec.classList.contains('active')){
+        const dashNav = g('nl-d');
+        goTo('d', dashNav);
+        history.pushState({page:'dashboard'}, '', '');
+        return;
+      }
+      // Already on dashboard: re-push state (prevents accidental exit)
+      // User must use Sign Out / OS swipe to actually close
+      history.pushState({page:'dashboard'}, '', '');
+    });
+  }
 }
 
 function logout() {
@@ -1051,12 +1091,12 @@ function showPartialSummary(s){
   if(rentPaidThisMonth>0 || rD>0){
     html += '<div style="display:flex;justify-content:space-between;padding:2px 0">'+
       '<span style="color:var(--m)">🏠 Rent: paid '+F(rentPaidThisMonth)+'</span>'+
-      '<span style="font-weight:700;color:'+(rD>0?'var(--r)':'var(--gr)')+'">'+(rD>0?'baki '+F(rD):'✓ clear')+'</span></div>';
+      '<span style="font-weight:700;color:'+(rD>0?'var(--r)':'var(--gr)')+'">'+(rD>0?'due '+F(rD):'✓ clear')+'</span></div>';
   }
   if(depPaidThisMonth>0 || dD>0){
     html += '<div style="display:flex;justify-content:space-between;padding:2px 0">'+
       '<span style="color:var(--m)">🔒 Deposit: paid '+F(depPaidThisMonth)+'</span>'+
-      '<span style="font-weight:700;color:'+(dD>0?'var(--r)':'var(--gr)')+'">'+(dD>0?'baki '+F(dD):'✓ clear')+'</span></div>';
+      '<span style="font-weight:700;color:'+(dD>0?'var(--r)':'var(--gr)')+'">'+(dD>0?'due '+F(dD):'✓ clear')+'</span></div>';
   }
   box.innerHTML = html;
   box.style.display='block';
@@ -1074,6 +1114,23 @@ function updPay(){
 // Mobile devices sometimes don't update button disabled state instantly,
 // so user can tap twice and trigger duplicate API calls
 var _saveLock = false;
+var _saveLockSince = 0;
+// SAFETY WATCHDOG: Force-release stuck _saveLock after 90 seconds.
+// Prevents "save button not working" issue when previous attempt's lock got stuck
+// (network drop mid-save, browser tab background, error before finally{} ran, etc.)
+// Without this, user has to refresh page to recover.
+setInterval(function(){
+  if(_saveLock){
+    if(_saveLockSince === 0) _saveLockSince = Date.now();
+    else if(Date.now() - _saveLockSince > 90000){
+      console.warn('⚠️ _saveLock stuck for 90s+ - auto-releasing');
+      _saveLock = false;
+      _saveLockSince = 0;
+    }
+  } else {
+    _saveLockSince = 0;
+  }
+}, 10000);
 
 async function recPay(){
   if(_saveLock){ console.log('Save in progress, ignoring duplicate tap'); return; }
@@ -1088,7 +1145,7 @@ async function recPay(){
   if(!month || !date){
     showT('⚠️ Month and date required','terr');return;
   }
-  const amount = parseFloat(amtRaw);
+  const amount = Math.round(parseFloat(amtRaw));
   if(amount < 0){ showT('⚠️ Amount cannot be negative','terr'); return; }
   _saveLock = true;
   const btn=g('pb'); btn.innerHTML='<span class="ld"></span> Saving...'; btn.disabled=true; showL('Recording...');
@@ -1406,8 +1463,28 @@ async function sendWelcomeInvoice(id) {
   // and update its URL later when message is ready.
   const waTab = window.open('about:blank', '_blank');
   
-  const rP = rPaid(s.id), dP = dPaid(s.id);
-  const rD = rDue(s), dD = dDue(s), tD = tDue(s);
+  // ── INVOICE PERIOD: Auto-detect to CURRENT month only ──
+  // Earlier invoice showed lifetime cumulative paid amount (e.g. May 2,100 + June 4,200 = 6,300).
+  // Now invoice shows only this month's payments — each month's receipt is separate.
+  // History tab + dashboard cards still show cumulative; only invoice/WA message is per-month.
+  const invoiceMonth = thisM(); // e.g. "2026-06"
+  const invoiceMonthName = new Date(invoiceMonth+'-01').toLocaleDateString('en-IN',{month:'long',year:'numeric'});
+  let rP = 0, dP = 0;
+  PP.forEach(function(p){
+    if(p.studentId !== s.id) return;
+    // Month field may be "2026-06" or full date "2026-06-01" - normalize
+    const pMonth = safeStr(p.month).slice(0, 7);
+    if(pMonth !== invoiceMonth) return;
+    const pt = (p.paymentType||'rent').toString().trim().toLowerCase();
+    if(pt === 'deposit') dP += num(p.amount);
+    else rP += num(p.amount);
+  });
+  // For "due" in this invoice: difference between this month's expected and this month's paid
+  const expectedRentThisMonth = num(s.rent);
+  const rD = Math.max(0, expectedRentThisMonth - rP);
+  // Deposit due stays as overall deposit due (it's a one-time charge, not monthly)
+  const dD = dDue(s);
+  const tD = rD + dD;
   const ndd = nextDueDate(s);
   
   showL('Generating invoice PDF... (may take up to 60s)');
@@ -1426,6 +1503,7 @@ async function sendWelcomeInvoice(id) {
       paid: { rent: rP, deposit: dP, total: rP+dP },
       due:  { rent: Math.round(rD), deposit: Math.round(dD), total: Math.round(tD) },
       nextDueDate: ndd,
+      invoicePeriod: invoiceMonthName,
       generatedBy: CU.name
     });
     pdfLink = resp.url || '';
@@ -1464,7 +1542,7 @@ async function sendWelcomeInvoice(id) {
   msg += '*💰 Payment Details*' + NL;
   msg += '• Monthly Rent: ' + F(s.rent) + '/month' + NL;
   msg += '• Security Deposit: ' + F(s.deposit||0) + NL + NL;
-  msg += '*✅ Paid So Far*' + NL;
+  msg += '*✅ Paid for ' + invoiceMonthName + '*' + NL;
   msg += '• Rent Paid: ' + F(rP) + NL;
   msg += '• Deposit Paid: ' + F(dP) + NL;
   msg += '• Total Paid: ' + F(rP + dP) + NL + NL;
