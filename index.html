@@ -477,6 +477,7 @@ html,body{font-family:"DM Sans",sans-serif;background:var(--bg);color:var(--t);h
         <div style="font-size:11px;font-weight:600;color:var(--m);text-transform:uppercase;margin-bottom:4px">Photo</div>
         <div class="pu" onclick="document.getElementById('eph').click()"><img id="epv" src="" style="display:none"><span id="epp" style="text-align:center;font-size:10px;color:var(--m);padding:4px">📷<br>Change</span></div>
         <input type="file" id="eph" accept="image/*" style="display:none" onchange="prvEPh(this)">
+        <button type="button" id="ermphoto" onclick="removePhoto()" style="display:none;margin-top:6px;width:80px;background:#fce4ec;border:1px solid #f8bbd0;color:var(--r);border-radius:6px;padding:4px 6px;font-size:10px;font-weight:600;cursor:pointer">❌ Remove</button>
       </div>
       <div style="flex:1;min-width:0">
         <div class="fg"><label>Full Name *</label><input type="text" id="en"></div>
@@ -1245,7 +1246,24 @@ function viewS(id){
 
 // EDIT
 function updEBal(){const r=parseFloat(g('ernt').value)||0,d=parseFloat(g('edep').value)||0,adj=parseFloat(g('eadj')?.value)||0,b=g('ebal');if(r>0||d>0){let t=`🏠 ${F(r)}/mo · 🔒 ${F(d)}`;if(adj!==0)t+=` · ⚙️ Adj: ${adj>0?'-':'+'}${F(Math.abs(adj))}`;b.style.display='block';b.innerHTML=t;}else{b.style.display='none';}}
-function prvEPh(inp){const r=new FileReader();r.onload=e=>{g('epv').src=e.target.result;g('epv').style.display='block';g('epp').style.display='none'};r.readAsDataURL(inp.files[0]);}
+function prvEPh(inp){const r=new FileReader();r.onload=e=>{g('epv').src=e.target.result;g('epv').style.display='block';g('epp').style.display='none';g('ermphoto').style.display='block';window._photoRemoved=false;};r.readAsDataURL(inp.files[0]);}
+
+// ══ REMOVE PHOTO ══
+// Marks photo for deletion. Actual Drive delete + sheet clear happens during saveEdit.
+// Resets the preview to placeholder so user sees the change before save.
+function removePhoto(){
+  if(!confirm('Remove this photo?\n\nPhoto will be deleted from Drive when you click Save.'))return;
+  // Reset preview
+  g('epv').src='';
+  g('epv').style.display='none';
+  g('epp').style.display='block';
+  g('ermphoto').style.display='none';
+  // Clear file input too (so any pending pick is discarded)
+  if(g('eph')) g('eph').value='';
+  // Flag so saveEdit knows to clear photoUrl + delete from Drive
+  window._photoRemoved = true;
+  showT('🗑 Photo will be removed on Save','tok');
+}
 
 // Convert any date string/object to YYYY-MM-DD for HTML <input type="date">
 // Handles: YYYY-MM-DD, DD-MM-YYYY, DD/MM/YYYY, MM/DD/YYYY, ISO timestamp, Date object
@@ -1274,9 +1292,11 @@ function toHTMLDate(v) {
 
 function openEdit(id){const s=SS.find(x=>x.id===id);if(!s)return;
   g('eid').value=id;g('en').value=s.name||'';
-  // Show existing photo
-  if(s.photoUrl&&safeStr(s.photoUrl).startsWith('http')){g('epv').src=fixPhotoUrl(s.photoUrl);g('epv').style.display='block';g('epp').style.display='none';}
-  else{g('epv').style.display='none';g('epp').style.display='block';}g('ec').value=s.course||'';g('edob').value=toHTMLDate(s.dob);g('er').value=s.room||'';g('eb').value=s.bed||'';g('emob').value=s.mobile||'';g('epm').value=s.parentMobile||'';g('ernt').value=s.rent||'';g('edep').value=s.deposit||'';if(g('eadj'))g('eadj').value=s.rentAdjustment||'';g('ejd').value=toHTMLDate(s.joinDate);g('edd').value=s.dueDay||5;g('eadr').value=s.address||'';g('ent').value=s.notes||'';updEBal();closeM('vm');openM('em');}
+  // Show existing photo + toggle Remove button visibility
+  // Reset photo-removal flag (set when user clicks Remove)
+  window._photoRemoved = false;
+  if(s.photoUrl&&safeStr(s.photoUrl).startsWith('http')){g('epv').src=fixPhotoUrl(s.photoUrl);g('epv').style.display='block';g('epp').style.display='none';g('ermphoto').style.display='block';}
+  else{g('epv').style.display='none';g('epp').style.display='block';g('ermphoto').style.display='none';}g('ec').value=s.course||'';g('edob').value=toHTMLDate(s.dob);g('er').value=s.room||'';g('eb').value=s.bed||'';g('emob').value=s.mobile||'';g('epm').value=s.parentMobile||'';g('ernt').value=s.rent||'';g('edep').value=s.deposit||'';if(g('eadj'))g('eadj').value=s.rentAdjustment||'';g('ejd').value=toHTMLDate(s.joinDate);g('edd').value=s.dueDay||5;g('eadr').value=s.address||'';g('ent').value=s.notes||'';updEBal();closeM('vm');openM('em');}
 async function saveEdit(){
   if(_saveLock){ console.log('Save in progress, ignoring duplicate tap'); return; }
   const id=g('eid').value,name=g('en').value.trim(),room=g('er').value.trim(),bed=g('eb').value.trim(),mobile=g('emob').value.trim(),rent=parseFloat(g('ernt').value)||0;
@@ -1287,10 +1307,32 @@ async function saveEdit(){
   try{
     let photoUrl='',photoFileId='';
     const pf=g('eph')?.files[0];
-    if(pf){showL('Uploading photo...');const b64=await f2b64(pf);const pr=await API({action:'uploadPhoto',base64Data:b64.split(',')[1],fileName:name.replace(/\s+/g,'_')+'_Photo.jpg',mimeType:pf.type,folderName:'LMA_'+name.replace(/\s+/g,'_')});photoUrl=pr.url;photoFileId=pr.fileId;}
     const s=SS.find(x=>x.id===id);
-    await API({action:'updateStudent',student:{id,name,room,bed,mobile,parentMobile:g('epm').value.trim(),rent,deposit:parseFloat(g('edep').value)||0,rentAdjustment,joinDate:g('ejd').value,dueDay:parseInt(g('edd').value)||5,course:g('ec').value.trim(),address:g('eadr').value.trim(),notes:g('ent').value.trim(),dob:g('edob')?.value||'',photoUrl:photoUrl||(s?.photoUrl||''),photoFileId:photoFileId||(s?.photoFileId||'')}});
+    // Photo handling priority: NEW upload > REMOVE > KEEP existing
+    if(pf){
+      // Case 1: User picked a new photo file → upload (overrides any remove flag)
+      showL('Uploading photo...');
+      const b64=await f2b64(pf);
+      const pr=await API({action:'uploadPhoto',base64Data:b64.split(',')[1],fileName:name.replace(/\s+/g,'_')+'_Photo.jpg',mimeType:pf.type,folderName:'LMA_'+name.replace(/\s+/g,'_')});
+      photoUrl=pr.url;photoFileId=pr.fileId;
+    } else if(window._photoRemoved){
+      // Case 2: User clicked Remove Photo → delete from Drive + clear sheet
+      // Don't fail the whole save if Drive delete errors (file may already be gone)
+      if(s?.photoFileId){
+        showL('Removing photo from Drive...');
+        try{ await API({action:'deletePhoto', fileId: s.photoFileId}); }
+        catch(delErr){ console.warn('Drive delete failed (file maybe already gone):', delErr); }
+      }
+      photoUrl = ''; photoFileId = '';  // explicit clear (overrides existing)
+    } else {
+      // Case 3: No change → keep existing
+      photoUrl = s?.photoUrl || '';
+      photoFileId = s?.photoFileId || '';
+    }
+    showL('Saving changes...');
+    await API({action:'updateStudent',student:{id,name,room,bed,mobile,parentMobile:g('epm').value.trim(),rent,deposit:parseFloat(g('edep').value)||0,rentAdjustment,joinDate:g('ejd').value,dueDay:parseInt(g('edd').value)||5,course:g('ec').value.trim(),address:g('eadr').value.trim(),notes:g('ent').value.trim(),dob:g('edob')?.value||'',photoUrl,photoFileId}});
     closeM('em');await refreshAll();showT('✅ Updated!','tok');
+    window._photoRemoved=false; // reset flag for next edit
   }catch(e){showT('❌ '+e.message,'terr');}finally{btn.innerHTML='💾 Save Changes';btn.disabled=false;hideL();_saveLock=false;}
 }
 
