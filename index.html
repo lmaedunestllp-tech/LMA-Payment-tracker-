@@ -447,6 +447,26 @@ html,body{font-family:"DM Sans",sans-serif;background:var(--bg);color:var(--t);h
   <div class="mmf"><button class="btn bo bsm" onclick="closeM('pm')">Cancel</button><button class="btn bg" id="pb" onclick="recPay()" style="flex:1;justify-content:center">✅ Record Payment</button></div>
 </div></div>
 
+<!-- EDIT PAYMENT MODAL -->
+<div class="mov" id="epm"><div class="msh">
+  <div class="mhd"></div><div class="mmh"><h3>✏️ Edit Payment</h3></div>
+  <div class="mmb">
+    <input type="hidden" id="epid">
+    <input type="hidden" id="epsid">
+    <div id="epinfo" style="background:#fff8e1;border:1px solid #ffe082;border-radius:10px;padding:10px 13px;margin-bottom:12px;font-size:12px;color:#7a5a00"></div>
+    <div class="fg"><label>Payment Type *</label><select id="ept"><option value="rent">🏠 Rent Payment</option><option value="deposit">🔒 Security Deposit</option><option value="both">💰 Both</option></select></div>
+    <div class="fg2">
+      <div class="fg"><label>Month *</label><input type="month" id="epmonth"></div>
+      <div class="fg"><label>Amount ₹ *</label><input type="number" id="epa" placeholder="Amount"></div>
+      <div class="fg"><label>Date *</label><input type="date" id="epd"></div>
+      <div class="fg"><label>Mode</label><select id="epmd"><option>Cash</option><option>UPI / GPay</option><option>PhonePe</option><option>Bank Transfer</option><option>Cheque</option></select></div>
+    </div>
+    <div class="fg"><label>Reference</label><input type="text" id="eprf" placeholder="UTR / Transaction ref"></div>
+    <div class="fg"><label>Remarks</label><input type="text" id="eprm" placeholder="Notes..."></div>
+  </div>
+  <div class="mmf"><button class="btn bo bsm" onclick="closeM('epm')">Cancel</button><button class="btn bg" id="epb" onclick="saveEditPay()" style="flex:1;justify-content:center">💾 Update Payment</button></div>
+</div></div>
+
 <!-- EDIT STUDENT -->
 <div class="mov" id="em"><div class="msh">
   <div class="mhd"></div><div class="mmh"><h3>✏️ Edit Student</h3></div>
@@ -1202,7 +1222,10 @@ function viewS(id){
         ${pays2.map(p=>{const dt=p.date?new Date(p.date).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}):'?';
           return`<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 12px;border-bottom:1px solid var(--b);font-size:12px">
           <div style="flex:1"><span class="${p.paymentType==='deposit'?'ptd':p.paymentType==='both'?'ptb':'ptr'}">${p.paymentType==='deposit'?'🔒 Dep':p.paymentType==='both'?'💰 Both':'🏠 Rent'}</span><span style="font-weight:700;color:var(--gr);margin-left:6px">${F(p.amount)}</span><div style="color:var(--m);font-size:10px;margin-top:2px">${dt} · ${p.mode}${p.recordedBy?' · '+p.recordedBy:''}</div></div>
-          <button onclick="delPay('${p.id}','${id}')" style="background:#fce4ec;border:none;color:var(--r);border-radius:7px;padding:5px 9px;font-size:11px;cursor:pointer;font-weight:600">🗑</button>
+          <div style="display:flex;gap:4px">
+            <button onclick="editPay('${p.id}','${id}')" style="background:#e3f2fd;border:none;color:#1565c0;border-radius:7px;padding:5px 9px;font-size:11px;cursor:pointer;font-weight:600" title="Edit payment">✏️</button>
+            <button onclick="delPay('${p.id}','${id}')" style="background:#fce4ec;border:none;color:var(--r);border-radius:7px;padding:5px 9px;font-size:11px;cursor:pointer;font-weight:600" title="Delete payment">🗑</button>
+          </div>
         </div>`;}).join('')}
       </div>`;
     }).join(''):`<p style="color:var(--m);font-size:13px;text-align:center;padding:16px">No payments yet.</p>`}
@@ -1275,6 +1298,80 @@ async function saveEdit(){
 async function delS(id){const s=SS.find(x=>x.id===id);if(!confirm('Remove '+s?.name+'?'))return;showL('Removing...');try{await API({action:'deleteStudent',id});closeM('vm');await refreshAll();showT('Removed','terr');}catch(e){showT('❌ '+e.message,'terr');}finally{hideL();}}
 async function delPay(pid,sid){if(!confirm('Delete payment?'))return;showL('Deleting...');try{await API({action:'deletePayment',id:pid});await refreshAll();viewS(sid);showT('✅ Deleted!','tok');}catch(e){showT('❌ '+e.message,'terr');}finally{hideL();}}
 
+// ══ EDIT PAYMENT — opens modal pre-filled with payment data ══
+// pid = payment ID, sid = student ID (so we can refresh student card after update)
+// reopenSource: 'student' to reopen viewS modal, 'fees' to refresh Fees page
+function editPay(pid, sid){
+  const p = PP.find(x => x.id === pid);
+  if(!p){ showT('Payment not found','terr'); return; }
+  const s = SS.find(x => x.id === p.studentId);
+  // Store context so saveEditPay can refresh correct view
+  window._editPayContext = { pid, sid: sid || p.studentId, reopenSource: sid ? 'student' : 'fees' };
+  // Pre-fill all fields
+  g('epid').value = pid;
+  g('epsid').value = p.studentId;
+  g('epinfo').innerHTML = `<strong>${s?.name||'Unknown'}</strong> · Room ${s?.room||'?'}<br>Original: ${F(num(p.amount))} on ${p.date}`;
+  g('ept').value = (p.paymentType||'rent').toLowerCase();
+  // Month field expects YYYY-MM format (input type="month")
+  g('epmonth').value = safeStr(p.month).slice(0, 7);
+  g('epa').value = Math.round(num(p.amount));
+  // Date field expects YYYY-MM-DD (input type="date")
+  g('epd').value = toHTMLDate(p.date);
+  g('epmd').value = p.mode || 'Cash';
+  g('eprf').value = p.ref || '';
+  g('eprm').value = p.note || p.remarks || '';
+  // Close source modal first if applicable, then open edit modal
+  if(window._editPayContext.reopenSource === 'student') closeM('vm');
+  openM('epm');
+}
+
+// Wrapper called from Fees page (no student modal to close/reopen)
+function editPayF(pid){ editPay(pid, null); }
+
+async function saveEditPay(){
+  if(_saveLock){ console.log('Save in progress, ignoring duplicate tap'); return; }
+  const pid = g('epid').value;
+  const sid = g('epsid').value;
+  const amount = Math.round(parseFloat(g('epa').value) || 0);
+  const paymentType = g('ept').value;
+  const month = g('epmonth').value;
+  const date = g('epd').value;
+  const mode = g('epmd').value;
+  const ref = g('eprf').value.trim();
+  const note = g('eprm').value.trim();
+  if(amount <= 0){ showT('⚠️ Amount must be greater than 0','terr'); return; }
+  if(!month){ showT('⚠️ Month is required','terr'); return; }
+  if(!date){ showT('⚠️ Date is required','terr'); return; }
+  _saveLock = true;
+  const btn = g('epb');
+  btn.innerHTML = '<span class="ld"></span>';
+  btn.disabled = true;
+  showL('Updating payment...');
+  try {
+    await API({
+      action: 'updatePayment',
+      payment: { id: pid, amount, paymentType, month, date, mode, ref, note }
+    });
+    closeM('epm');
+    await refreshAll();
+    showT('✅ Payment updated!','tok');
+    // Reopen source view to show updated data
+    const ctx = window._editPayContext || {};
+    if(ctx.reopenSource === 'student' && ctx.sid){
+      setTimeout(()=>viewS(ctx.sid), 200);
+    } else if(ctx.reopenSource === 'fees'){
+      renderFees();
+    }
+  } catch(e){
+    showT('❌ '+e.message,'terr');
+  } finally {
+    btn.innerHTML = '💾 Update Payment';
+    btn.disabled = false;
+    hideL();
+    _saveLock = false;
+  }
+}
+
 // FEES
 function populateMF(){const sel=g('mf');if(!sel)return;const m=[...new Set(PP.map(p=>p.month))].sort().reverse();sel.innerHTML='<option value="">All Months</option>'+m.map(x=>`<option value="${x}">${x}</option>`).join('');}
 function renderFees(){
@@ -1297,7 +1394,7 @@ function renderFees(){
         <div style="background:#e8eaf6;border-radius:8px;padding:7px"><div style="color:var(--m);font-size:9px">🔒 Dep Paid</div><div style="font-weight:700;color:var(--n)">${F(dP)}</div>${dD>0?`<div style="color:var(--r);font-size:9px">Due: ${F(dD)}</div>`:`<div style="color:var(--gr);font-size:9px">✓</div>`}</div>
         <div style="background:${tD>0?'#fce4ec':'#e8f5e9'};border-radius:8px;padding:7px"><div style="color:var(--m);font-size:9px">💰 Total Due</div><div style="font-weight:800;color:${tD>0?'var(--r)':'var(--gr)'}">${F(tD)}</div></div>
       </div>
-      ${sP.length?sP.map(p=>{const dt=p.date?new Date(p.date).toLocaleDateString('en-IN',{day:'2-digit',month:'short'}):'?';return`<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--b);font-size:11px"><div><span class="${p.paymentType==='deposit'?'ptd':p.paymentType==='both'?'ptb':'ptr'}">${p.paymentType==='deposit'?'🔒':'🏠'}</span> <span style="font-weight:700;color:var(--gr)">${F(p.amount)}</span></div><div style="display:flex;align-items:center;gap:5px"><span style="color:var(--m)">${dt} · ${p.mode}</span><button onclick="delPayF('${p.id}')" style="background:#fce4ec;border:none;color:var(--r);border-radius:5px;padding:2px 6px;font-size:10px;cursor:pointer">🗑</button></div></div>`;}).join(''):`<div style="color:var(--m);font-size:11px;text-align:center;padding:6px">No payments${mf?' for '+mf:''}</div>`}
+      ${sP.length?sP.map(p=>{const dt=p.date?new Date(p.date).toLocaleDateString('en-IN',{day:'2-digit',month:'short'}):'?';return`<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--b);font-size:11px"><div><span class="${p.paymentType==='deposit'?'ptd':p.paymentType==='both'?'ptb':'ptr'}">${p.paymentType==='deposit'?'🔒':'🏠'}</span> <span style="font-weight:700;color:var(--gr)">${F(p.amount)}</span></div><div style="display:flex;align-items:center;gap:4px"><span style="color:var(--m)">${dt} · ${p.mode}</span><button onclick="editPayF('${p.id}')" style="background:#e3f2fd;border:none;color:#1565c0;border-radius:5px;padding:2px 6px;font-size:10px;cursor:pointer" title="Edit">✏️</button><button onclick="delPayF('${p.id}')" style="background:#fce4ec;border:none;color:var(--r);border-radius:5px;padding:2px 6px;font-size:10px;cursor:pointer" title="Delete">🗑</button></div></div>`;}).join(''):`<div style="color:var(--m);font-size:11px;text-align:center;padding:6px">No payments${mf?' for '+mf:''}</div>`}
     </div></div>`;
   }).join('');
 }
