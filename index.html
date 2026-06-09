@@ -448,7 +448,7 @@ html,body{font-family:"DM Sans",sans-serif;background:var(--bg);color:var(--t);h
 </div></div>
 
 <!-- EDIT PAYMENT MODAL -->
-<div class="mov" id="epm"><div class="msh">
+<div class="mov" id="epaym"><div class="msh">
   <div class="mhd"></div><div class="mmh"><h3>✏️ Edit Payment</h3></div>
   <div class="mmb">
     <input type="hidden" id="epid">
@@ -464,7 +464,7 @@ html,body{font-family:"DM Sans",sans-serif;background:var(--bg);color:var(--t);h
     <div class="fg"><label>Reference</label><input type="text" id="eprf" placeholder="UTR / Transaction ref"></div>
     <div class="fg"><label>Remarks</label><input type="text" id="eprm" placeholder="Notes..."></div>
   </div>
-  <div class="mmf"><button class="btn bo bsm" onclick="closeM('epm')">Cancel</button><button class="btn bg" id="epb" onclick="saveEditPay()" style="flex:1;justify-content:center">💾 Update Payment</button></div>
+  <div class="mmf"><button class="btn bo bsm" onclick="closeM('epaym')">Cancel</button><button class="btn bg" id="epb" onclick="saveEditPay()" style="flex:1;justify-content:center">💾 Update Payment</button></div>
 </div></div>
 
 <!-- EDIT STUDENT -->
@@ -1322,7 +1322,7 @@ function editPay(pid, sid){
   g('eprm').value = p.note || p.remarks || '';
   // Close source modal first if applicable, then open edit modal
   if(window._editPayContext.reopenSource === 'student') closeM('vm');
-  openM('epm');
+  openM('epaym');
 }
 
 // Wrapper called from Fees page (no student modal to close/reopen)
@@ -1352,7 +1352,7 @@ async function saveEditPay(){
       action: 'updatePayment',
       payment: { id: pid, amount, paymentType, month, date, mode, ref, note }
     });
-    closeM('epm');
+    closeM('epaym');
     await refreshAll();
     showT('✅ Payment updated!','tok');
     // Reopen source view to show updated data
