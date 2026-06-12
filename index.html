@@ -1631,10 +1631,15 @@ async function sendWelcomeInvoice(id) {
     if(pt === 'deposit') dP += num(p.amount);
     else rP += num(p.amount);
   });
-  // For "due" in this invoice: difference between this month's expected and this month's paid
-  const expectedRentThisMonth = num(s.rent);
-  const rD = Math.max(0, expectedRentThisMonth - rP);
-  // Deposit due stays as overall deposit due (it's a one-time charge, not monthly)
+  // ── DUE CALCULATION ──
+  // Use dashboard's rDue()/dDue() so invoice matches dashboard exactly.
+  // These functions correctly handle:
+  //   - rentAdjustment (one-time credit/penalty, applied once across all months)
+  //   - rPaid (lifetime cumulative)
+  //   - expR = months_since_join × rent
+  // Result: a "running balance" - what student owes RIGHT NOW (not just this month).
+  // We display this as Total Outstanding Due in the invoice.
+  const rD = rDue(s);
   const dD = dDue(s);
   const tD = rD + dD;
   const ndd = nextDueDate(s);
