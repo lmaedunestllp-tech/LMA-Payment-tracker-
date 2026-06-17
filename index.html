@@ -1626,10 +1626,13 @@ async function sendWelcomeInvoice(id) {
     if(p.studentId !== s.id) return;
     // Month field may be "2026-06" or full date "2026-06-01" - normalize
     const pMonth = safeStr(p.month).slice(0, 7);
-    if(pMonth !== invoiceMonth) return;
     const pt = (p.paymentType||'rent').toString().trim().toLowerCase();
-    if(pt === 'deposit') dP += num(p.amount);
-    else rP += num(p.amount);
+    if(pt === 'deposit') {
+      dP += num(p.amount);                 // deposit one-time hai → saare months ke installments jodo (cumulative)
+    } else {
+      if(pMonth !== invoiceMonth) return;  // rent → sirf is invoice month ka
+      rP += num(p.amount);
+    }
   });
   // ── DUE CALCULATION ──
   // Use dashboard's rDue()/dDue() so invoice matches dashboard exactly.
