@@ -681,8 +681,11 @@ const expR = s => {
 // rDue subtracts rentAdjustment (positive = credit/discount, negative = extra charge)
 // Use case: mid-month join (set adjustment = amount of unused days)
 //           discount given (positive adjustment), penalty (negative adjustment)
-const rDue = s => Math.max(0, expR(s) - rPaid(s.id) - num(s.rentAdjustment));
-const dDue = s => Math.max(0, num(s.deposit) - dPaid(s.id));
+// Cancelled/exited/deleted students ka due nahi banta, na bed occupy karte
+const ARCHIVED_STATUS = ['deleted','inactive','cancelled','exited'];
+const isActive = s => !ARCHIVED_STATUS.includes((s.status||'active').toString().trim().toLowerCase());
+const rDue = s => isActive(s) ? Math.max(0, expR(s) - rPaid(s.id) - num(s.rentAdjustment)) : 0;
+const dDue = s => isActive(s) ? Math.max(0, num(s.deposit) - dPaid(s.id)) : 0;
 const tDue = s => rDue(s) + dDue(s);
 
 // NAV
@@ -905,15 +908,17 @@ function renderAll() {
 
 function renderStats() {
   const tb=parseInt(localStorage.getItem('lma_tb'))||36;
-  const tc=PP.reduce((s,p)=>s+Number(p.amount||0),0);
-  const tr=SS.reduce((s,st)=>s+rDue(st),0);
-  const td2=SS.reduce((s,st)=>s+dDue(st),0);
-  const tdu=SS.reduce((s,st)=>s+rDue(st)+dDue(st),0);
-  g('s1').textContent=SS.length;
+  const AS=SS.filter(isActive);                        // sirf active students count hote hain
+  const isRefund=p=>{const t=(p.paymentType||'').toString().toLowerCase();return t==='refund'||t==='deposit_refund';};
+  const tc=PP.reduce((s,p)=>s+(isRefund(p)?-Number(p.amount||0):Number(p.amount||0)),0); // refunds minus
+  const tr=AS.reduce((s,st)=>s+rDue(st),0);
+  const td2=AS.reduce((s,st)=>s+dDue(st),0);
+  const tdu=AS.reduce((s,st)=>s+rDue(st)+dDue(st),0);
+  g('s1').textContent=AS.length;
   g('s2').textContent=tb;
-  g('s2b').textContent=Math.max(0,tb-SS.length)+' vacant';
-  g('s3').textContent=Math.max(0,tb-SS.length);
-  g('s4').textContent=SS.length;
+  g('s2b').textContent=Math.max(0,tb-AS.length)+' vacant';
+  g('s3').textContent=Math.max(0,tb-AS.length);
+  g('s4').textContent=AS.length;
   g('s5').textContent=F(tc);
   g('s6').textContent=F(tdu);
   g('s7').textContent=F(tr);
@@ -1036,7 +1041,7 @@ async function addStudent() {
   console.log('🔍 Checking for: name="' + nameLower + '" mobile="' + cleanMobile + '"');
   console.log('🔍 Existing students:', SS.map(function(x){return {id:x.id, name:x.name, mobile:x.mobile, status:x.status, room:x.room, bed:x.bed};}));
   const nameMobileDup = SS.find(function(x) {
-    if(x.status === 'deleted' || x.status === 'inactive') return false;
+    if(!isActive(x)) return false;
     const xMobile = safeStr(x.mobile).replace(/\D/g,'');
     const xName = safeStr(x.name).toLowerCase().trim();
     const match = xName === nameLower && xMobile === cleanMobile;
@@ -1053,7 +1058,7 @@ async function addStudent() {
   // ══ DUPLICATE CHECK 2: Same room + same bed (active students only) ══
   // Block strict - one bed can have only one active occupant
   const roomBedDup = SS.find(function(x) {
-    if(x.status === 'deleted' || x.status === 'inactive') return false;
+    if(!isActive(x)) return false;
     return safeStr(x.room).trim() === room && safeStr(x.bed).trim() === bed;
   });
   if(roomBedDup) {
@@ -1234,6 +1239,8 @@ function viewS(id){
   g('vf').innerHTML=`
     <button class="btn bw bsm" onclick="closeM('vm');openPay('${id}','rent')">🏠 Pay Rent</button>
     <button class="btn bp bsm" onclick="closeM('vm');openPay('${id}','deposit')">🔒 Pay Deposit</button>
+    <button class="btn bo bsm" onclick="exitStudent('${id}')" style="background:#fff3e0;color:#e65100;border:1px solid #ffb74d">🚪 Exit / Vacate</button>
+    <button class="btn bo bsm" onclick="cancelStudent('${id}')" style="background:#ffebee;color:#c62828;border:1px solid #ef9a9a">✖ Cancel Booking</button>
     <button class="btn bg bsm" onclick="closeM('vm');setTimeout(function(){openEdit('${id}')},200)">✏️ Edit</button>
     <button class="btn bg bsm" onclick="sendWelcomeInvoice('${id}')" style="background:#25D366;color:white">📄 Send Welcome+Invoice</button>
     <button class="btn bw bsm" onclick="sendAll(SS.find(x=>x.id==='${id}'))">📱 WA All</button>
@@ -1604,7 +1611,36 @@ function waWebUrl(phone, text) {
 
 // ══ SEND WELCOME + INVOICE (MANUAL) ══
 // Generates PDF invoice → uploads to Drive → opens WhatsApp Web with message + PDF link
-async function sendWelcomeInvoice(id) {
+// ── CANCEL / EXIT (status + refund) ──
+async function setStudentStatus(id, status, loadMsg){
+  showL(loadMsg||'Updating...');
+  try{
+    await API({action:'setStatus', id:id, status:status});
+    closeM('vm'); await refreshAll(); showT('✅ Done','tok');
+  }catch(e){ showT('❌ '+e.message,'terr'); }
+  finally{ hideL(); }
+}
+async function exitStudent(id){
+  const s=SS.find(x=>x.id===id); if(!s) return;
+  if(!confirm('🚪 Exit/Vacate "'+s.name+'"?\n\nUski seat vacant ho jayegi.')) return;
+  const dep=dPaid(id);
+  if(dep>0 && confirm('Deposit ₹'+dep+' refund kar diya?\n\nOK = Haan (collection se minus hoga)\nCancel = Nahi')){
+    const amt=parseFloat(prompt('Refund amount (₹):', dep)||'0');
+    if(amt>0){ try{ await API({action:'addPayment',recordedBy:CU.name,payment:{studentId:id,amount:amt,month:thisM(),date:new Date().toISOString().slice(0,10),mode:'Cash',paymentType:'deposit_refund',ref:'',note:'Deposit refund on exit'}}); }catch(e){ showT('❌ Refund entry failed','terr'); } }
+  }
+  await setStudentStatus(id,'exited','Exit mark kar rahe...');
+}
+async function cancelStudent(id){
+  const s=SS.find(x=>x.id===id); if(!s) return;
+  if(!confirm('✖ "'+s.name+'" ki booking cancel karein?\n\nUski seat vacant ho jayegi.')) return;
+  const paid=tPaid(id);
+  if(paid>0 && confirm('Advance ₹'+paid+' refund kar diya?\n\nOK = Haan (collection se minus)\nCancel = Nahi, forfeit (income mein rahega)')){
+    const amt=parseFloat(prompt('Refund amount (₹):', paid)||'0');
+    if(amt>0){ try{ await API({action:'addPayment',recordedBy:CU.name,payment:{studentId:id,amount:amt,month:thisM(),date:new Date().toISOString().slice(0,10),mode:'Cash',paymentType:'refund',ref:'',note:'Refund on cancellation'}}); }catch(e){ showT('❌ Refund entry failed','terr'); } }
+  }
+  await setStudentStatus(id,'cancelled','Cancel kar rahe...');
+}
+  async function sendWelcomeInvoice(id) {
   const s = SS.find(x => x.id === id);
   if(!s) { showT('Student not found','terr'); return; }
   if(!s.mobile) { showT('Student mobile number missing','terr'); return; }
