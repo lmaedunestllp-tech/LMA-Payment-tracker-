@@ -1672,14 +1672,6 @@ async function cancelStudent(id){
   }
   await setStudentStatus(id,'cancelled','Cancelling booking...');
 }
-  const s=SS.find(x=>x.id===id); if(!s) return;
-  if(!confirm('Cancel booking for "'+s.name+'"?\n\nThe seat will become vacant. By default the advance is kept as income (forfeited).')) return;
-  const paid=tPaid(id);
-  if(paid>0 && confirm('This student has paid ₹'+paid+'.\n\nOK = Refund it (amount editable, deducted from collection)\nCancel = Forfeit / keep as income')){
-    await recordRefund(id, paid, 'refund');
-  }
-  await setStudentStatus(id,'cancelled','Cancelling booking...');
-}
   async function sendWelcomeInvoice(id) {
   const s = SS.find(x => x.id === id);
   if(!s) { showT('Student not found','terr'); return; }
