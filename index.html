@@ -1612,6 +1612,22 @@ function waWebUrl(phone, text) {
 // ══ SEND WELCOME + INVOICE (MANUAL) ══
 // Generates PDF invoice → uploads to Drive → opens WhatsApp Web with message + PDF link
 // ── CANCEL / EXIT (status + refund) ──
+function askYesNo(title, message, yesLabel, noLabel){
+  return new Promise(function(resolve){
+    const ov=document.createElement('div');
+    ov.style.cssText='position:fixed;inset:0;background:rgba(14,31,91,.55);display:flex;align-items:center;justify-content:center;z-index:99999;padding:20px';
+    ov.innerHTML='<div style="background:#fff;border-radius:16px;max-width:430px;width:100%;padding:24px;box-shadow:0 10px 40px rgba(0,0,0,.3)">'+
+      (title?'<div style="font-size:18px;font-weight:800;color:#0e1f5b;margin-bottom:10px">'+title+'</div>':'')+
+      '<div style="font-size:14px;color:#333;line-height:1.6;margin-bottom:22px;white-space:pre-line">'+message+'</div>'+
+      '<div style="display:flex;gap:10px;justify-content:flex-end">'+
+      '<button id="_anNo" style="padding:11px 18px;border-radius:10px;border:1px solid #ccc;background:#f4f4f4;color:#333;font-weight:600;cursor:pointer">'+(noLabel||'No')+'</button>'+
+      '<button id="_anYes" style="padding:11px 18px;border-radius:10px;border:none;background:#0e1f5b;color:#fff;font-weight:700;cursor:pointer">'+(yesLabel||'Yes')+'</button>'+
+      '</div></div>';
+    document.body.appendChild(ov);
+    ov.querySelector('#_anYes').onclick=function(){ov.remove();resolve(true);};
+    ov.querySelector('#_anNo').onclick=function(){ov.remove();resolve(false);};
+  });
+}
 async function setStudentStatus(id, status, loadMsg){
   showL(loadMsg||'Updating...');
   try{
@@ -1621,7 +1637,7 @@ async function setStudentStatus(id, status, loadMsg){
   finally{ hideL(); }
 }
 async function recordRefund(id, maxAmt, kind){
-  const amtStr = prompt('Refund amount (₹).  Paid at admission: ₹'+maxAmt+'\nYou can refund less if there are deductions.', maxAmt);
+  const amtStr = prompt('Refund amount (₹).  Paid: ₹'+maxAmt+'\nYou can refund less if there are deductions.', maxAmt);
   if(amtStr===null) return;
   const amt = parseFloat(amtStr)||0;
   if(amt<=0) return;
@@ -1636,14 +1652,26 @@ async function recordRefund(id, maxAmt, kind){
 }
 async function exitStudent(id){
   const s=SS.find(x=>x.id===id); if(!s) return;
-  if(!confirm('Exit / Vacate "'+s.name+'"?\n\nThe student is leaving and their seat will become vacant.')) return;
+  const ok=await askYesNo('Exit / Vacate', 'Mark "'+s.name+'" as exited?\nThe student is leaving and their seat will become vacant.', 'Yes, Exit', 'No');
+  if(!ok) return;
   const dep=dPaid(id);
-  if(dep>0 && confirm('Refund the deposit of ₹'+dep+'?\n\nOK = Yes, refund (amount editable, deducted from collection)\nCancel = No refund')){
-    await recordRefund(id, dep, 'deposit_refund');
+  if(dep>0){
+    const refund=await askYesNo('Refund Deposit?', 'Deposit paid: ₹'+dep+'\n\nDo you want to refund the deposit?', 'Yes, Refund', 'No');
+    if(refund) await recordRefund(id, dep, 'deposit_refund');
   }
   await setStudentStatus(id,'exited','Marking as exited...');
 }
 async function cancelStudent(id){
+  const s=SS.find(x=>x.id===id); if(!s) return;
+  const ok=await askYesNo('Cancel Booking', 'Cancel booking for "'+s.name+'"?\nThe seat will become vacant.', 'Yes, Cancel', 'No');
+  if(!ok) return;
+  const paid=tPaid(id);
+  if(paid>0){
+    const refund=await askYesNo('Refund Advance?', 'This student has paid ₹'+paid+'\n\nDo you want to refund this advance payment?', 'Yes, Refund', 'No, Keep as income');
+    if(refund) await recordRefund(id, paid, 'refund');
+  }
+  await setStudentStatus(id,'cancelled','Cancelling booking...');
+}
   const s=SS.find(x=>x.id===id); if(!s) return;
   if(!confirm('Cancel booking for "'+s.name+'"?\n\nThe seat will become vacant. By default the advance is kept as income (forfeited).')) return;
   const paid=tPaid(id);
