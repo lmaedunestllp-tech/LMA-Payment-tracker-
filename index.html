@@ -1616,29 +1616,41 @@ async function setStudentStatus(id, status, loadMsg){
   showL(loadMsg||'Updating...');
   try{
     await API({action:'setStatus', id:id, status:status});
-    closeM('vm'); await refreshAll(); showT('✅ Done','tok');
-  }catch(e){ showT('❌ '+e.message,'terr'); }
+    closeM('vm'); await refreshAll(); showT('Done','tok');
+  }catch(e){ showT('Error: '+e.message,'terr'); }
   finally{ hideL(); }
+}
+async function recordRefund(id, maxAmt, kind){
+  const amtStr = prompt('Refund amount (₹).  Paid at admission: ₹'+maxAmt+'\nYou can refund less if there are deductions.', maxAmt);
+  if(amtStr===null) return;
+  const amt = parseFloat(amtStr)||0;
+  if(amt<=0) return;
+  let note = (kind==='deposit_refund') ? 'Deposit refund on exit' : 'Refund on cancellation';
+  if(amt < maxAmt){
+    const reason = prompt('Refunding ₹'+amt+' out of ₹'+maxAmt+'.\nReason for the deduction (e.g. damages, pending dues):','');
+    if(reason && reason.trim()) note += ' - Deduction: '+reason.trim();
+  }
+  try{
+    await API({action:'addPayment',recordedBy:CU.name,payment:{studentId:id,amount:amt,month:thisM(),date:new Date().toISOString().slice(0,10),mode:'Cash',paymentType:kind,ref:'',note:note}});
+  }catch(e){ showT('Refund entry failed','terr'); }
 }
 async function exitStudent(id){
   const s=SS.find(x=>x.id===id); if(!s) return;
-  if(!confirm('🚪 Exit/Vacate "'+s.name+'"?\n\nUski seat vacant ho jayegi.')) return;
+  if(!confirm('Exit / Vacate "'+s.name+'"?\n\nThe student is leaving and their seat will become vacant.')) return;
   const dep=dPaid(id);
-  if(dep>0 && confirm('Deposit ₹'+dep+' refund kar diya?\n\nOK = Haan (collection se minus hoga)\nCancel = Nahi')){
-    const amt=parseFloat(prompt('Refund amount (₹):', dep)||'0');
-    if(amt>0){ try{ await API({action:'addPayment',recordedBy:CU.name,payment:{studentId:id,amount:amt,month:thisM(),date:new Date().toISOString().slice(0,10),mode:'Cash',paymentType:'deposit_refund',ref:'',note:'Deposit refund on exit'}}); }catch(e){ showT('❌ Refund entry failed','terr'); } }
+  if(dep>0 && confirm('Refund the deposit of ₹'+dep+'?\n\nOK = Yes, refund (amount editable, deducted from collection)\nCancel = No refund')){
+    await recordRefund(id, dep, 'deposit_refund');
   }
-  await setStudentStatus(id,'exited','Exit mark kar rahe...');
+  await setStudentStatus(id,'exited','Marking as exited...');
 }
 async function cancelStudent(id){
   const s=SS.find(x=>x.id===id); if(!s) return;
-  if(!confirm('✖ "'+s.name+'" ki booking cancel karein?\n\nUski seat vacant ho jayegi.')) return;
+  if(!confirm('Cancel booking for "'+s.name+'"?\n\nThe seat will become vacant. By default the advance is kept as income (forfeited).')) return;
   const paid=tPaid(id);
-  if(paid>0 && confirm('Advance ₹'+paid+' refund kar diya?\n\nOK = Haan (collection se minus)\nCancel = Nahi, forfeit (income mein rahega)')){
-    const amt=parseFloat(prompt('Refund amount (₹):', paid)||'0');
-    if(amt>0){ try{ await API({action:'addPayment',recordedBy:CU.name,payment:{studentId:id,amount:amt,month:thisM(),date:new Date().toISOString().slice(0,10),mode:'Cash',paymentType:'refund',ref:'',note:'Refund on cancellation'}}); }catch(e){ showT('❌ Refund entry failed','terr'); } }
+  if(paid>0 && confirm('This student has paid ₹'+paid+'.\n\nOK = Refund it (amount editable, deducted from collection)\nCancel = Forfeit / keep as income')){
+    await recordRefund(id, paid, 'refund');
   }
-  await setStudentStatus(id,'cancelled','Cancel kar rahe...');
+  await setStudentStatus(id,'cancelled','Cancelling booking...');
 }
   async function sendWelcomeInvoice(id) {
   const s = SS.find(x => x.id === id);
