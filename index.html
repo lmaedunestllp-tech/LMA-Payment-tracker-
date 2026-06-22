@@ -1222,7 +1222,7 @@ function viewS(id){
     </div>
     <div style="font-weight:700;color:var(--n);font-size:13px;margin-bottom:8px">📅 Month-wise History</div>
     ${Object.keys(byM).length?Object.entries(byM).sort((a,b)=>b[0].localeCompare(a[0])).map(([month,pays2])=>{
-      const mt=pays2.reduce((s,p)=>s+Number(p.amount||0),0);
+      const mt=pays2.reduce((s,p)=>{const _t=(p.paymentType||'').toLowerCase();return s+(_t==='refund'||_t==='deposit_refund'?-1:1)*Number(p.amount||0);},0);
       return`<div style="background:white;border:1px solid var(--b);border-radius:10px;margin-bottom:8px;overflow:hidden">
         <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:#f5f7ff;border-bottom:1px solid var(--b)"><div style="font-weight:700;color:var(--n)">${month}</div><div style="font-weight:700;color:var(--gr)">${F(mt)}</div></div>
         ${pays2.map(p=>{const dt=p.date?new Date(p.date).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}):'?';
