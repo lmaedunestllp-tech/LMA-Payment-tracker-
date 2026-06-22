@@ -1226,8 +1226,11 @@ function viewS(id){
       return`<div style="background:white;border:1px solid var(--b);border-radius:10px;margin-bottom:8px;overflow:hidden">
         <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:#f5f7ff;border-bottom:1px solid var(--b)"><div style="font-weight:700;color:var(--n)">${month}</div><div style="font-weight:700;color:var(--gr)">${F(mt)}</div></div>
         ${pays2.map(p=>{const dt=p.date?new Date(p.date).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}):'?';
+          const _t=(p.paymentType||'rent').toString().toLowerCase(), _rf=(_t==='refund'||_t==='deposit_refund');
+          const _badge=_rf?'<span style="background:#fce4ec;color:var(--r);padding:2px 7px;border-radius:20px;font-size:10px;font-weight:700">↩️ Refund</span>':(_t==='deposit'?'<span class="ptd">🔒 Dep</span>':_t==='both'?'<span class="ptb">💰 Both</span>':'<span class="ptr">🏠 Rent</span>');
+          const _amt=_rf?'<span style="font-weight:700;color:var(--r);margin-left:6px">− '+F(p.amount)+'</span>':'<span style="font-weight:700;color:var(--gr);margin-left:6px">'+F(p.amount)+'</span>';
           return`<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 12px;border-bottom:1px solid var(--b);font-size:12px">
-          <div style="flex:1"><span class="${p.paymentType==='deposit'?'ptd':p.paymentType==='both'?'ptb':'ptr'}">${p.paymentType==='deposit'?'🔒 Dep':p.paymentType==='both'?'💰 Both':'🏠 Rent'}</span><span style="font-weight:700;color:var(--gr);margin-left:6px">${F(p.amount)}</span><div style="color:var(--m);font-size:10px;margin-top:2px">${dt} · ${p.mode}${p.recordedBy?' · '+p.recordedBy:''}</div></div>
+          <div style="flex:1">${_badge}${_amt}<div style="color:var(--m);font-size:10px;margin-top:2px">${dt} · ${p.mode}${p.recordedBy?' · '+p.recordedBy:''}</div></div>
           <div style="display:flex;gap:4px">
             <button onclick="editPay('${p.id}','${id}')" style="background:#e3f2fd;border:none;color:#1565c0;border-radius:7px;padding:5px 9px;font-size:11px;cursor:pointer;font-weight:600" title="Edit payment">✏️</button>
             <button onclick="delPay('${p.id}','${id}')" style="background:#fce4ec;border:none;color:var(--r);border-radius:7px;padding:5px 9px;font-size:11px;cursor:pointer;font-weight:600" title="Delete payment">🗑</button>
