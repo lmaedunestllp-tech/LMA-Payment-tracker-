@@ -882,7 +882,7 @@ async function refreshAll() {
     SS=sr.students||[];
     PP=(pr.payments||[]).map(p=>{
       const pt=(p.paymentType||'').toString().trim().toLowerCase();
-      return {...p, paymentType: pt==='deposit'?'deposit': pt==='both'?'both':'rent'};
+      return {...p, paymentType: pt==='deposit'?'deposit': pt==='both'?'both': pt==='refund'?'refund': pt==='deposit_refund'?'deposit_refund':'rent'};
     });
     // Fetch beds config from Sheets for cross-session sync
     try {
