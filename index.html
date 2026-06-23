@@ -261,7 +261,12 @@ html,body{font-family:"DM Sans",sans-serif;background:var(--bg);color:var(--t);h
       <!-- STUDENTS -->
       <div class="sec" id="sec-s">
         <div class="ph"><div><div class="pbc">Home / <span>Students</span></div><div class="pt">👩‍🎓 Students</div></div><button class="btn bp" onclick="openM('asm')">+ Add Student</button></div>
-        <input class="si2" placeholder="Search name, room, mobile..." oninput="filterS(this.value)">
+        <input id="ssin" class="si2" placeholder="Search name, room, mobile..." oninput="filterS(this.value)">
+        <select id="avf" onchange="renderStudList(SS, g('ssin')?g('ssin').value:'')" style="padding:8px 12px;border:1.5px solid var(--b);border-radius:10px;font-size:12px;font-family:'DM Sans',sans-serif;margin-bottom:8px;width:100%">
+          <option value="active">✅ Active Students</option>
+          <option value="archived">🗄️ Archived (Exited / Cancelled)</option>
+          <option value="all">📋 All Students</option>
+        </select>
         <div id="sl"></div>
       </div>
       <!-- FEES -->
@@ -947,14 +952,18 @@ function av(s){
 
 function renderStudList(list, filter=''){
   const wrap=g('sl'); let L=list;
-  if(filter){const f=filter.toLowerCase();L=list.filter(s=>s.name.toLowerCase().includes(f)||s.mobile.includes(f)||s.room.includes(f));}
-  if(!L.length){wrap.innerHTML=`<div class="emp"><div class="ei">👩‍🎓</div><h3>${filter?'No results':'No students yet'}</h3><p>Click + Add Student</p></div>`;return;}
+  const _av=g('avf')?g('avf').value:'active';
+  if(_av==='active') L=L.filter(isActive); else if(_av==='archived') L=L.filter(s=>!isActive(s));
+  if(filter){const f=filter.toLowerCase();L=L.filter(s=>s.name.toLowerCase().includes(f)||(s.mobile||'').includes(f)||(s.room||'').toString().includes(f));}
+  if(!L.length){wrap.innerHTML=`<div class="emp"><div class="ei">👩‍🎓</div><h3>${filter?'No results':(_av==='archived'?'No archived students':'No active students')}</h3><p>${_av==='archived'?'Exited / cancelled students will appear here':'Click + Add Student'}</p></div>`;return;}
   wrap.innerHTML=L.map(s=>{
     const rP=rPaid(s.id),dP=dPaid(s.id),rD=rDue(s),dD=dDue(s),tD=tDue(s);
-    return`<div class="sc">
+    const _arch=!isActive(s), _st=(s.status||'').toString().toLowerCase();
+    const _badge=_arch?`<span style="display:inline-block;background:${_st==='cancelled'?'#fce4ec':'#eceff1'};color:${_st==='cancelled'?'var(--r)':'#546e7a'};font-size:9px;font-weight:700;padding:2px 7px;border-radius:20px;margin-left:6px;vertical-align:middle">${_st==='cancelled'?'✖ CANCELLED':_st==='exited'?'🚪 EXITED':_st.toUpperCase()}</span>`:'';
+    return`<div class="sc" style="${_arch?'opacity:.72':''}">
       <div class="sct" onclick="viewS('${s.id}')">
         ${av(s)}
-        <div style="flex:1;min-width:0"><div style="font-weight:700;font-size:14px">${s.name}</div><div style="font-size:11px;color:var(--m)">Room ${s.room} · Bed ${s.bed} · ${s.mobile}</div><div style="font-size:10px;color:var(--m)">${F(s.rent)}/mo · Deposit: ${F(s.deposit)}</div></div>
+        <div style="flex:1;min-width:0"><div style="font-weight:700;font-size:14px">${s.name}${_badge}</div><div style="font-size:11px;color:var(--m)">Room ${s.room} · Bed ${s.bed} · ${s.mobile}</div><div style="font-size:10px;color:var(--m)">${F(s.rent)}/mo · Deposit: ${F(s.deposit)}</div></div>
         <div style="text-align:right;flex-shrink:0">${tD>0?`<div style="font-size:13px;font-weight:800;color:var(--r)">${F(tD)}</div><div style="font-size:9px;color:var(--r)">Due</div>`:`<div style="font-size:12px;font-weight:700;color:var(--gr)">✓ Clear</div>`}</div>
       </div>
       <div class="spb">
@@ -963,10 +972,10 @@ function renderStudList(list, filter=''){
         <div class="spc" style="background:${tD>0?'#fce4ec':'#e8f5e9'}"><div class="spl">💰 Total Due</div><div class="spv" style="color:${tD>0?'var(--r)':'var(--gr)'}">${F(tD)}</div></div>
       </div>
       <div class="pa">
-        <button class="btn bw bsm" style="flex:1;justify-content:center" onclick="openPay('${s.id}','rent')">🏠 Pay Rent</button>
+        ${_arch?`<button class="btn bo bsm" style="flex:1;justify-content:center" onclick="viewS('${s.id}')">📋 View Details</button>`:`<button class="btn bw bsm" style="flex:1;justify-content:center" onclick="openPay('${s.id}','rent')">🏠 Pay Rent</button>
         <button class="btn bp bsm" style="flex:1;justify-content:center" onclick="openPay('${s.id}','deposit')">🔒 Pay Deposit</button>
         <button class="btn bo bsm" onclick="viewS('${s.id}')">📋 History</button>
-        <button class="btn bw bsm" onclick="sendAll(SS.find(x=>x.id==='${s.id}'))">📱</button>
+        <button class="btn bw bsm" onclick="sendAll(SS.find(x=>x.id==='${s.id}'))">📱</button>`}
       </div>
     </div>`;
   }).join('');
