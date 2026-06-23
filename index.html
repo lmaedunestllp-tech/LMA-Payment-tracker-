@@ -972,8 +972,7 @@ function renderStudList(list, filter=''){
         <div class="spc" style="background:${tD>0?'#fce4ec':'#e8f5e9'}"><div class="spl">💰 Total Due</div><div class="spv" style="color:${tD>0?'var(--r)':'var(--gr)'}">${F(tD)}</div></div>
       </div>
       <div class="pa">
-        ${_arch?`<button class="btn bo bsm" style="flex:1;justify-content:center" onclick="viewS('${s.id}')">📋 View Details</button>`:`<button class="btn bw bsm" style="flex:1;justify-content:center" onclick="openPay('${s.id}','rent')">🏠 Pay Rent</button>
-        <button class="btn bp bsm" style="flex:1;justify-content:center" onclick="openPay('${s.id}','deposit')">🔒 Pay Deposit</button>
+        ${_arch?`<button class="btn bg bsm" style="flex:1;justify-content:center" onclick="reactivateStudent('${s.id}')">♻️ Reactivate</button><button class="btn bo bsm" style="flex:1;justify-content:center" onclick="viewS('${s.id}')">📋 View Details</button>`        <button class="btn bp bsm" style="flex:1;justify-content:center" onclick="openPay('${s.id}','deposit')">🔒 Pay Deposit</button>
         <button class="btn bo bsm" onclick="viewS('${s.id}')">📋 History</button>
         <button class="btn bw bsm" onclick="sendAll(SS.find(x=>x.id==='${s.id}'))">📱</button>`}
       </div>
@@ -1648,7 +1647,23 @@ async function setStudentStatus(id, status, loadMsg){
   }catch(e){ showT('Error: '+e.message,'terr'); }
   finally{ hideL(); }
 }
-async function recordRefund(id, maxAmt, kind){
+async function reactivateStudent(id){
+  const s=SS.find(x=>x.id===id); if(!s) return;
+  const ok=await askYesNo('Reactivate Student', 'Make "'+s.name+'" active again?\nAll their past records and payments stay intact.', 'Yes, Reactivate', 'No');
+  if(!ok) return;
+  const fresh=await askYesNo('Rent Start Date', 'Start rent fresh from today?\n\nYes = join date becomes today (use this if rejoining after a gap)\nNo = keep original join date ('+(s.joinDate||'unknown')+')', 'Fresh from today', 'Keep original');
+  showL('Reactivating...');
+  try{
+    if(fresh){
+      const today=new Date().toISOString().slice(0,10);
+      await API({action:'updateStudent', student:{...s, joinDate:today}});
+    }
+    await API({action:'setStatus', id:id, status:'active'});
+    closeM('vm'); await refreshAll(); showT('Reactivated','tok');
+  }catch(e){ showT('Error: '+e.message,'terr'); }
+  finally{ hideL(); }
+}
+  async function recordRefund(id, maxAmt, kind){
   const amtStr = prompt('Refund amount (₹).  Paid: ₹'+maxAmt+'\nYou can refund less if there are deductions.', maxAmt);
   if(amtStr===null) return;
   const amt = parseFloat(amtStr)||0;
