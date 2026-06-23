@@ -249,8 +249,8 @@ html,body{font-family:"DM Sans",sans-serif;background:var(--bg);color:var(--t);h
           <div class="bc c3" onclick="goTo('b',document.getElementById('nl-b'))" style="cursor:pointer" title="Click to view rooms & beds"><div class="bi">🟢</div><div class="bl">Total Vacant Bed</div><div class="bv" id="s3">36</div><div class="bsb">Available now</div></div>
           <div class="bc c4" onclick="goTo('b',document.getElementById('nl-b'))" style="cursor:pointer" title="Click to view rooms & beds"><div class="bi">🔴</div><div class="bl">Total Occupied Bed</div><div class="bv" id="s4">0</div><div class="bsb">Currently occupied</div></div>
           <div class="bc c5" onclick="goTo('f',document.getElementById('nl-f'))" style="cursor:pointer" title="Click to view all payments"><div class="bi">💰</div><div class="bl">Total Payment</div><div class="bv" id="s5">₹0</div><div class="bsb">All time collected · Click to view</div></div>
-          <div class="bc c6" onclick="goTo('p',document.getElementById('nl-p'))" style="cursor:pointer" title="Click to view pending dues"><div class="bi">⚠️</div><div class="bl">Total Due</div><div class="bv" id="s6">₹0</div><div class="bsb">Outstanding balance · Click to view</div></div>
-          <div class="bc c7" onclick="goTo('p',document.getElementById('nl-p'))" style="cursor:pointer" title="Click to view pending dues"><div class="bi">🏠</div><div class="bl">Rent Due</div><div class="bv" id="s7">₹0</div><div class="bsb">Monthly rent pending</div></div>
+          <div class="bc c5" onclick="goTo('ex',document.getElementById('nl-ex'))" style="cursor:pointer" title="Click to view expenses"><div class="bi">🪙</div><div class="bl">Cash in Hand</div><div class="bv" id="s9">₹0</div><div class="bsb">Collection − refunds − expenses</div></div>
+          <div class="bc c6" onclick="goTo('p',document.getElementById('nl-p'))" style="cursor:pointer" title="Click to view pending dues"><div class="bi">⚠️</div><div class="bl">Total Due</div><div class="bv" id="s6">₹0</div><div class="bsb">Outstanding balance · Click to view</div></div>          <div class="bc c7" onclick="goTo('p',document.getElementById('nl-p'))" style="cursor:pointer" title="Click to view pending dues"><div class="bi">🏠</div><div class="bl">Rent Due</div><div class="bv" id="s7">₹0</div><div class="bsb">Monthly rent pending</div></div>
           <div class="bc c8" onclick="goTo('p',document.getElementById('nl-p'))" style="cursor:pointer" title="Click to view pending dues"><div class="bi">🔒</div><div class="bl">Deposit Due</div><div class="bv" id="s8">₹0</div><div class="bsb">Security pending</div></div>
         </div>
         <div class="dr">
@@ -928,6 +928,8 @@ function renderStats() {
   g('s6').textContent=F(tdu);
   g('s7').textContent=F(tr);
   g('s8').textContent=F(td2);
+  const exTotal=(()=>{try{return (JSON.parse(localStorage.getItem('lma_expenses')||'[]')).reduce((s,e)=>s+Number(e.amount||0),0);}catch(_){return 0;}})();
+  if(g('s9'))g('s9').textContent=F(tc-exTotal);
 }
 
 function updateBadge(){const n=SS.filter(s=>(rDue(s)>0)||(dDue(s)>0)).length;const b=g('sbdg');if(b){b.textContent=n;b.style.display=n>0?'inline':'none';}}
