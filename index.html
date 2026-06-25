@@ -584,7 +584,9 @@ html,body{font-family:"DM Sans",sans-serif;background:var(--bg);color:var(--t);h
       <div class="fg"><label>Date *</label><input type="date" id="exDate"></div>
     </div>
     <div class="fg"><label>Nature of Expense *</label>
-      <select id="exNature">
+      function toggleNatureOther(selId, inpId){const s=g(selId),o=g(inpId);if(s&&o)o.style.display=(s.value==='Other')?'block':'none';}
+      <select id="exNature" onchange="toggleNatureOther('exNature','exNatureOther')">
+        <option value="Rent">🏠 Rent</option>
         <option value="Maintenance">🔧 Maintenance</option>
         <option value="Electricity">💡 Electricity Bill</option>
         <option value="Water">💧 Water Bill</option>
@@ -595,7 +597,8 @@ html,body{font-family:"DM Sans",sans-serif;background:var(--bg);color:var(--t);h
         <option value="Repairs">🔨 Repairs</option>
         <option value="Salary">👷 Salary/Wages</option>
         <option value="Other">📝 Other</option>
-      </select></div>
+      </select>
+      <input type="text" id="exNatureOther" placeholder="Type custom expense type..." style="display:none;margin-top:8px"></div>
     <div class="fg"><label>Description</label><input type="text" id="exDesc" placeholder="Brief description..."></div>
     <div class="fg"><label>Remarks</label><input type="text" id="exRemark" placeholder="Any additional notes..."></div>
   </div>
@@ -2144,7 +2147,8 @@ async function saveExpense() {
   const partner = g('exPartner').value;
   const amount = parseFloat(g('exAmt').value) || 0;
   const date = g('exDate').value;
-  const nature = g('exNature').value;
+  let nature = g('exNature').value;
+  if(nature==='Other'){const _cn=((g('exNatureOther')&&g('exNatureOther').value)||'').trim(); if(_cn) nature=_cn;}
   const desc = g('exDesc').value.trim();
   const remark = g('exRemark').value.trim();
 
