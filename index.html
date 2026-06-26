@@ -584,7 +584,6 @@ html,body{font-family:"DM Sans",sans-serif;background:var(--bg);color:var(--t);h
       <div class="fg"><label>Date *</label><input type="date" id="exDate"></div>
     </div>
     <div class="fg"><label>Nature of Expense *</label>
-      function toggleNatureOther(selId, inpId){const s=g(selId),o=g(inpId);if(s&&o)o.style.display=(s.value==='Other')?'block':'none';}
       <select id="exNature" onchange="toggleNatureOther('exNature','exNatureOther')">
         <option value="Rent">🏠 Rent</option>
         <option value="Maintenance">🔧 Maintenance</option>
@@ -2143,6 +2142,7 @@ async function loadExpenses() {
   hideL();
 }
 
+function toggleNatureOther(selId, inpId){const s=g(selId),o=g(inpId);if(s&&o)o.style.display=(s.value==='Other')?'block':'none';}
 async function saveExpense() {
   const partner = g('exPartner').value;
   const amount = parseFloat(g('exAmt').value) || 0;
