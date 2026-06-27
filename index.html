@@ -1006,12 +1006,14 @@ function renderDashP(){
 function renderDashR(){
   const wrap=g('dr2');
   if(!PP.length){wrap.innerHTML='<div class="emp" style="padding:16px"><div class="ei">💳</div><p>No payments yet</p></div>';return;}
-  // Group by student+date, show combined
+  // Group by student (one entry per student, all payments combined)
   const grouped={};
   PP.forEach(function(p){
-    const key=p.studentId+'_'+(p.date||'').substr(0,10);
-    if(!grouped[key]) grouped[key]={studentId:p.studentId,date:p.date,rent:0,deposit:0};
     const pt=(p.paymentType||'rent').toLowerCase();
+    if(pt==='refund'||pt==='deposit_refund') return;
+    const key=p.studentId;
+    if(!grouped[key]) grouped[key]={studentId:p.studentId,date:p.date,rent:0,deposit:0};
+    if(p.date && (!grouped[key].date || new Date(p.date) > new Date(grouped[key].date))) grouped[key].date=p.date;
     if(pt==='deposit') grouped[key].deposit+=Number(p.amount||0);
     else grouped[key].rent+=Number(p.amount||0);
   });
