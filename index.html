@@ -1771,7 +1771,7 @@ async function cancelStudent(id){
       },
       paid: { rent: rP, deposit: dP, total: rP+dP },
       due:  { rent: Math.round(rD), deposit: Math.round(dD), total: Math.round(tD) },
-      nextDueDate: ndd,
+      payments: PP.filter(function(p){return p.studentId===s.id;}).map(function(p){return {date:p.date, amount:num(p.amount), type:(p.paymentType||'rent'), mode:p.mode||''};}).sort(function(a,b){return new Date(a.date)-new Date(b.date);}),      nextDueDate: ndd,
       invoicePeriod: invoiceMonthName,
       generatedBy: CU.name
     });
