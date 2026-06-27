@@ -896,6 +896,7 @@ async function refreshAll() {
       const pt=(p.paymentType||'').toString().trim().toLowerCase();
       return {...p, paymentType: pt==='deposit'?'deposit': pt==='both'?'both': pt==='refund'?'refund': pt==='deposit_refund'?'deposit_refund':'rent'};
     });
+    try{ const er=await API({action:'getExpenses'}); EX=er.expenses||[]; localStorage.setItem('lma_expenses', JSON.stringify(EX)); }catch(_){ EX=JSON.parse(localStorage.getItem('lma_expenses')||'[]'); }
     // Fetch beds config from Sheets for cross-session sync
     try {
       const bcRes = await API({action:'getSetting', key:'beds_config'});
@@ -2134,6 +2135,7 @@ async function loadExpenses() {
   try {
     const r = await API({action:'getExpenses'});
     EX = r.expenses || [];
+    try{localStorage.setItem('lma_expenses', JSON.stringify(EX));}catch(_){}
   } catch(e) {
     EX = JSON.parse(localStorage.getItem('lma_expenses') || '[]');
   }
