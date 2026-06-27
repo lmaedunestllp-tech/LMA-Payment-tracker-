@@ -293,7 +293,7 @@ html,body{font-family:"DM Sans",sans-serif;background:var(--bg);color:var(--t);h
           <div style="background:#e8eaf6;border-radius:20px;height:8px;overflow:hidden"><div id="bbar" style="height:100%;background:linear-gradient(90deg,var(--g),var(--gl));border-radius:20px;width:0%;transition:width .5s"></div></div>
           <div style="display:flex;gap:16px;margin-top:8px;font-size:11px"><span>🔴 Occupied</span><span>🟢 Vacant</span></div>
         </div></div>
-        <div class="card" style="margin-bottom:12px"><div class="chd">🗺️ Bed Map — Movie Ticket Style</div><div class="cbd" id="btmap"></div></div>
+        <div class="card" style="margin-bottom:12px"><div class="chd">🗺️ Bed Map </div><div class="cbd" id="btmap"></div></div>
         <!-- old bed grid removed -->
       </div>
       <!-- DUES -->
@@ -896,6 +896,7 @@ async function refreshAll() {
       const pt=(p.paymentType||'').toString().trim().toLowerCase();
       return {...p, paymentType: pt==='deposit'?'deposit': pt==='both'?'both': pt==='refund'?'refund': pt==='deposit_refund'?'deposit_refund':'rent'};
     });
+    try{ const er=await API({action:'getExpenses'}); EX=er.expenses||[]; localStorage.setItem('lma_expenses', JSON.stringify(EX)); }catch(_){ EX=JSON.parse(localStorage.getItem('lma_expenses')||'[]'); }
     try{ const er=await API({action:'getExpenses'}); EX=er.expenses||[]; localStorage.setItem('lma_expenses', JSON.stringify(EX)); }catch(_){ EX=JSON.parse(localStorage.getItem('lma_expenses')||'[]'); }
     try{ const er=await API({action:'getExpenses'}); EX=er.expenses||[]; localStorage.setItem('lma_expenses', JSON.stringify(EX)); }catch(_){ EX=JSON.parse(localStorage.getItem('lma_expenses')||'[]'); }
     // Fetch beds config from Sheets for cross-session sync
