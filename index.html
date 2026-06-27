@@ -1722,7 +1722,8 @@ async function cancelStudent(id){
   // Popup blockers kill window.open() called after async/await — so we open
   // the tab now (allowed since this runs synchronously from the click handler)
   // and update its URL later when message is ready.
-  const waTab = window.open('about:blank', '_blank');
+  const isMobileDev = /Android|iPhone|iPad|iPod|Mobi/i.test(navigator.userAgent);
+  const waTab = isMobileDev ? null : window.open('about:blank', '_blank');
   
   // ── INVOICE PERIOD: Auto-detect to CURRENT month only ──
   // Earlier invoice showed lifetime cumulative paid amount (e.g. May 2,100 + June 4,200 = 6,300).
@@ -1841,12 +1842,14 @@ async function cancelStudent(id){
   // Use the pre-opened tab (set its URL now that we have the WhatsApp URL ready).
   // Fall back to window.open in case pre-open was blocked (very strict popup settings).
   const waUrl = waWebUrl(s.mobile, msg);
-  if(waTab && !waTab.closed) {
+  if(isMobileDev) {
+    window.location.href = waUrl;
+  } else if(waTab && !waTab.closed) {
     waTab.location.href = waUrl;
   } else {
     window.open(waUrl, '_blank');
   }
-  showT('✅ Opening WhatsApp Web — message ready to send!', 'tok');
+  showT('✅ Opening WhatsApp — message ready to send!', 'tok');
 }
 
 // ══ DEBUG STUDENT — shows raw data + calculations in an alert + console ══
