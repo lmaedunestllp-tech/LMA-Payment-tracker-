@@ -890,20 +890,21 @@ async function refreshAll() {
   g('sbsy').textContent='🔄 Syncing...';
   showL('Loading...');
   try {
-    const [sr,pr]=await Promise.all([API({action:'getStudents'}),API({action:'getPayments'})]);
+    // All 4 reads fire in PARALLEL (was 5 sequential round-trips incl. 3x duplicate getExpenses)
+    const [sr,pr,er,bcRes]=await Promise.all([
+      API({action:'getStudents'}),
+      API({action:'getPayments'}),
+      API({action:'getExpenses'}).catch(function(){return {expenses:null};}),
+      API({action:'getSetting', key:'beds_config'}).catch(function(){return {value:null};})
+    ]);
     SS=sr.students||[];
     PP=(pr.payments||[]).map(p=>{
       const pt=(p.paymentType||'').toString().trim().toLowerCase();
       return {...p, paymentType: pt==='deposit'?'deposit': pt==='both'?'both': pt==='refund'?'refund': pt==='deposit_refund'?'deposit_refund':'rent'};
     });
-    try{ const er=await API({action:'getExpenses'}); EX=er.expenses||[]; localStorage.setItem('lma_expenses', JSON.stringify(EX)); }catch(_){ EX=JSON.parse(localStorage.getItem('lma_expenses')||'[]'); }
-    try{ const er=await API({action:'getExpenses'}); EX=er.expenses||[]; localStorage.setItem('lma_expenses', JSON.stringify(EX)); }catch(_){ EX=JSON.parse(localStorage.getItem('lma_expenses')||'[]'); }
-    try{ const er=await API({action:'getExpenses'}); EX=er.expenses||[]; localStorage.setItem('lma_expenses', JSON.stringify(EX)); }catch(_){ EX=JSON.parse(localStorage.getItem('lma_expenses')||'[]'); }
-    // Fetch beds config from Sheets for cross-session sync
-    try {
-      const bcRes = await API({action:'getSetting', key:'beds_config'});
-      if(bcRes.value) applyBedsFromSheet(JSON.parse(bcRes.value));
-    } catch(e) {}
+    if(er && er.expenses){ EX=er.expenses; localStorage.setItem('lma_expenses', JSON.stringify(EX)); }
+    else { EX=JSON.parse(localStorage.getItem('lma_expenses')||'[]'); }
+    if(bcRes && bcRes.value){ try{ applyBedsFromSheet(JSON.parse(bcRes.value)); }catch(e){} }
     renderAll();
     g('sbsy').textContent='✅ Synced '+new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
     showT('✅ Data loaded!','tok');
@@ -958,7 +959,7 @@ function fixPhotoUrl(url){
 
 function av(s){
   const photo = fixPhotoUrl(s.photoUrl);
-  if(photo && photo.startsWith('http'))return`<div class="av"><img src="${photo}"></div>`;
+  if(photo && photo.startsWith('http'))return`<div class="av"><img src="${photo}" loading="lazy"></div>`;
   return`<div class="av" style="font-size:13px">${(s.name||'?').split(' ').map(n=>n[0]).join('').toUpperCase().substr(0,2)}</div>`;
 }
 
@@ -1228,7 +1229,7 @@ function viewS(id){
   g('vb').innerHTML=`
     <div style="background:linear-gradient(135deg,#0d1547,#283593);border-radius:14px;padding:16px;color:white;display:flex;gap:12px;margin-bottom:12px">
       <div style="width:68px;height:76px;border-radius:10px;border:3px solid var(--g);overflow:hidden;flex-shrink:0;background:#283593;display:flex;align-items:center;justify-content:center;font-size:26px">
-        ${(()=>{const p=fixPhotoUrl(s.photoUrl);return p&&p.startsWith('http')?`<img src="${p}" style="width:100%;height:100%;object-fit:cover">`:'👩';})()}
+        ${(()=>{const p=fixPhotoUrl(s.photoUrl);return p&&p.startsWith('http')?`<img src="${p}" loading="lazy" style="width:100%;height:100%;object-fit:cover">`:'👩';})()}
       </div>
       <div><div style="font-family:'Playfair Display',serif;font-size:18px;color:var(--gl)">${s.name}</div>
         <div style="font-size:11px;color:rgba(255,255,255,.7)">📍 Room ${s.room} · Bed ${s.bed}</div>
