@@ -1007,19 +1007,25 @@ function renderDashP(){
 function renderDashR(){
   const wrap=g('dr2');
   if(!PP.length){wrap.innerHTML='<div class="emp" style="padding:16px"><div class="ei">💳</div><p>No payments yet</p></div>';return;}
-  // Group by student (one entry per student, all payments combined)
+  // Only CURRENT MONTH's payments (previous months settled — show this month only)
+  const _now=new Date();
+  const _curM=_now.getMonth(), _curY=_now.getFullYear();
+  const _monthName=_now.toLocaleDateString('en-IN',{month:'long'});
   const grouped={};
   PP.forEach(function(p){
     const pt=(p.paymentType||'rent').toLowerCase();
     if(pt==='refund'||pt==='deposit_refund') return;
+    if(!p.date) return;
+    const _d=new Date(p.date);
+    if(_d.getMonth()!==_curM || _d.getFullYear()!==_curY) return;   // skip non-current-month payments
     const key=p.studentId;
     if(!grouped[key]) grouped[key]={studentId:p.studentId,date:p.date,rent:0,deposit:0};
-    if(p.date && (!grouped[key].date || new Date(p.date) > new Date(grouped[key].date))) grouped[key].date=p.date;
+    if(new Date(p.date) > new Date(grouped[key].date)) grouped[key].date=p.date;
     if(pt==='deposit') grouped[key].deposit+=Number(p.amount||0);
     else grouped[key].rent+=Number(p.amount||0);
   });
   const list=Object.values(grouped).sort(function(a,b){return new Date(b.date)-new Date(a.date);}).slice(0,6);
-  wrap.innerHTML=list.map(function(g2){
+  if(!list.length){wrap.innerHTML='<div class="emp" style="padding:16px"><div class="ei">💳</div><p>No payments in '+_monthName+' yet</p></div>';return;}  wrap.innerHTML=list.map(function(g2){
     const s=SS.find(function(x){return x.id===g2.studentId;});
     const dt=g2.date?new Date(g2.date).toLocaleDateString('en-IN',{day:'2-digit',month:'short'}):'?';
     const total=g2.rent+g2.deposit;
