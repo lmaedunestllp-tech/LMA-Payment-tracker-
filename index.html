@@ -902,7 +902,17 @@ async function refreshAll() {
       const pt=(p.paymentType||'').toString().trim().toLowerCase();
       return {...p, paymentType: pt==='deposit'?'deposit': pt==='both'?'both': pt==='refund'?'refund': pt==='deposit_refund'?'deposit_refund':'rent'};
     });
-    if(er && er.expenses){ EX=er.expenses; localStorage.setItem('lma_expenses', JSON.stringify(EX)); }
+    // SAFETY: only overwrite EX with backend data if backend actually returned an array.
+    // If backend returns null/undefined (transient error), keep whatever we have locally.
+    // Log a warning if backend list is shorter than local — helps catch save-fail-but-shown bugs.
+    if(er && Array.isArray(er.expenses)){
+      const localEx = JSON.parse(localStorage.getItem('lma_expenses')||'[]');
+      if(localEx.length > er.expenses.length){
+        console.warn('[EXPENSES] Backend returned '+er.expenses.length+' entries but local has '+localEx.length+'. Some entries may not have saved. Check Sheet for missing:', localEx.filter(le=>!er.expenses.find(be=>be.id===le.id)));
+      }
+      EX=er.expenses;
+      localStorage.setItem('lma_expenses', JSON.stringify(EX));
+    }
     else { EX=JSON.parse(localStorage.getItem('lma_expenses')||'[]'); }
     if(bcRes && bcRes.value){ try{ applyBedsFromSheet(JSON.parse(bcRes.value)); }catch(e){} }
     renderAll();
@@ -1454,11 +1464,11 @@ async function saveEditPay(){
 }
 
 // FEES
-function populateMF(){const sel=g('mf');if(!sel)return;const m=[...new Set(PP.map(p=>p.month))].sort().reverse();sel.innerHTML='<option value="">All Months</option>'+m.map(x=>`<option value="${x}">${x}</option>`).join('');}
+function populateMF(){const sel=g('mf');if(!sel)return;const m=[...new Set(PP.map(p=>safeStr(p.month).slice(0,7)).filter(Boolean))].sort().reverse();sel.innerHTML='<option value="">All Months</option>'+m.map(x=>`<option value="${x}">${x}</option>`).join('');}
 function renderFees(){
   const wrap=g('fp'),ff=g('ff')?.value||'all',mf=g('mf')?.value||'';
   let L=SS;if(ff==='rd')L=SS.filter(s=>rDue(s)>0);if(ff==='dd')L=SS.filter(s=>dDue(s)>0);if(ff==='ok')L=SS.filter(s=>tDue(s)===0);
-  const fP=mf?PP.filter(p=>p.month===mf):PP;
+  const fP=mf?PP.filter(p=>safeStr(p.month).slice(0,7)===mf):PP;
   if(!L.length){wrap.innerHTML=`<div class="emp"><div class="ei">📊</div><h3>No data</h3></div>`;return;}
   const tc=fP.reduce((s,p)=>s+Number(p.amount||0),0);
   wrap.innerHTML=`<div class="card"><div class="chd">📊 Summary${mf?' — '+mf:''}</div><div class="cbd" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;text-align:center">
@@ -1467,7 +1477,7 @@ function renderFees(){
     <div style="background:#fce4ec;border-radius:10px;padding:10px"><div style="font-size:9px;color:var(--m);font-weight:600">🔒 Dep Due</div><div style="font-weight:800;color:var(--r);font-size:18px">${F(SS.reduce((s,st)=>s+dDue(st),0))}</div></div>
   </div></div>`+L.map(s=>{
     const rP=rPaid(s.id),dP=dPaid(s.id),rD=rDue(s),dD=dDue(s),tD=tDue(s);
-    const sP=(mf?PP.filter(p=>p.studentId===s.id&&p.month===mf):PP.filter(p=>p.studentId===s.id)).sort((a,b)=>new Date(b.date)-new Date(a.date));
+    const sP=(mf?PP.filter(p=>p.studentId===s.id&&safeStr(p.month).slice(0,7)===mf):PP.filter(p=>p.studentId===s.id)).sort((a,b)=>new Date(b.date)-new Date(a.date));
     return`<div class="card"><div class="chd"><div style="display:flex;align-items:center;gap:8px">${av(s)}<div><div>${s.name}</div><div style="font-size:10px;color:var(--m);font-weight:400">Room ${s.room} · ${F(s.rent)}/mo</div></div></div><button class="btn bg bsm" onclick="openPay('${s.id}','rent')">+ Pay</button></div>
     <div class="cbd">
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;text-align:center;font-size:11px;margin-bottom:10px">
@@ -1921,12 +1931,82 @@ function saveTpl(){localStorage.setItem('lma_wmt',g('wmt').value);localStorage.s
 // EXPORT
 function exportExcel(){
   if(!SS.length){showT('No data','terr');return;}
-  const h=['Sr','Name','Room','Bed','Mobile','Parent','Rent/mo','Deposit','Joining','Rent Paid','Dep Paid','Rent Due','Dep Due','Total Due','Status'];
-  const rows=SS.map((s,i)=>{const rP=rPaid(s.id),dP=dPaid(s.id),rD=rDue(s),dD=dDue(s),tD=tDue(s);return[i+1,s.name,s.room,s.bed,s.mobile,s.parentMobile||'',s.rent,s.deposit,s.joinDate,rP,dP,Math.round(rD),Math.round(dD),Math.round(tD),tD===0?'Clear':'Pending'].map(v=>'"'+(v||'').toString().replace(/"/g,'""')+'"').join(',');});
-  const ph=['Sr','Name','Room','Month','Amount','Type','Date','Mode'];
-  const pr=PP.map((p,i)=>{const s=SS.find(x=>x.id===p.studentId);return[i+1,s?.name||'',s?.room||'',p.month,p.amount,p.paymentType||'rent',p.date,p.mode].map(v=>'"'+(v||'').toString().replace(/"/g,'""')+'"').join(',');});
-  const csv='\uFEFFLMA EduNest LLP\n'+h.map(x=>'"'+x+'"').join(',')+'\n'+rows.join('\n')+'\n\n\nPayments\n'+ph.map(x=>'"'+x+'"').join(',')+'\n'+pr.join('\n');
-  const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='LMA_EduNest_'+today()+'.csv';a.click();URL.revokeObjectURL(url);showT('📊 Excel downloaded!','tok');
+
+  // ─────────────────────────────────────────────────
+  // MONTH-AWARE EXPORT
+  // Reads the Fees & Payment tab's month filter (id="mf").
+  // If a specific month is selected (e.g. "2026-08"):
+  //   → Payments: only that month's entries
+  //   → Expenses: only entries whose date falls in that month
+  //   → Students: summary shows how much THAT student paid/owes for that month
+  // If "All Months" is selected (empty value) → full data (old behaviour).
+  // Filename encodes the month or full-export tag.
+  // ─────────────────────────────────────────────────
+  const mf = (g('mf') && g('mf').value) ? g('mf').value : ''; // e.g. "2026-08" or ""
+  const monthLabel = mf || 'All-Months';
+
+  // Helpers to test if a payment/expense belongs to selected month
+  const monthKey = mf; // already YYYY-MM after populateMF normalize fix
+  const paymentInMonth = (p) => !mf || (safeStr(p.month).slice(0,7) === monthKey);
+  const expenseInMonth = (e) => !mf || (safeStr(e.date).slice(0,7) === monthKey);
+
+  // ─── Section 1: Students ───
+  const h=['Sr','Name','Room','Bed','Mobile','Parent','Rent/mo','Deposit','Joining','Rent Paid'+(mf?' ('+monthKey+')':''),'Dep Paid'+(mf?' ('+monthKey+')':''),'Rent Due','Dep Due','Total Due','Status'];
+  // Filter students: if month selected, only include those who had ANY payment/entry that month
+  // Otherwise (All Months) show everyone.
+  const activeStudents = mf
+    ? SS.filter(s => PP.some(p => p.studentId===s.id && paymentInMonth(p)))
+    : SS;
+  const rows=activeStudents.map((s,i)=>{
+    // Rent/Dep paid — filtered to selected month if applicable
+    let rPm=0, dPm=0;
+    PP.forEach(function(p){
+      if(p.studentId!==s.id) return;
+      if(!paymentInMonth(p)) return;
+      const pt=(p.paymentType||'rent').toString().trim().toLowerCase();
+      if(pt==='deposit') dPm += num(p.amount);
+      else rPm += num(p.amount);
+    });
+    // Dues are always current running balance (not month-specific — that's a totals check)
+    const rD=rDue(s),dD=dDue(s),tD=tDue(s);
+    return[i+1,s.name,s.room,s.bed,s.mobile,s.parentMobile||'',s.rent,s.deposit,s.joinDate,rPm,dPm,Math.round(rD),Math.round(dD),Math.round(tD),tD===0?'Clear':'Pending'].map(v=>'"'+(v==null?'':v).toString().replace(/"/g,'""')+'"').join(',');
+  });
+
+  // ─── Section 2: Payments (filtered) ───
+  const ph=['Sr','Name','Room','Month','Amount','Type','Date','Mode','Recorded By'];
+  const filteredPayments = PP.filter(paymentInMonth);
+  const pr=filteredPayments.map((p,i)=>{const s=SS.find(x=>x.id===p.studentId);return[i+1,s?.name||'',s?.room||'',safeStr(p.month).slice(0,7),p.amount,p.paymentType||'rent',p.date,p.mode,p.recordedBy||''].map(v=>'"'+(v==null?'':v).toString().replace(/"/g,'""')+'"').join(',');});
+
+  // ─── Section 3: Expenses (filtered by date's month) ───
+  const eh=['Sr','Partner','Amount','Date','Nature','Description','Remark'];
+  const filteredExpenses = (Array.isArray(EX)?EX:[]).filter(expenseInMonth);
+  const er=filteredExpenses.map((e,i)=>[i+1,e.partner||'',e.amount||0,e.date||'',e.nature||'',e.desc||'',e.remark||''].map(v=>'"'+(v==null?'':v).toString().replace(/"/g,'""')+'"').join(','));
+
+  // ─── Totals row for quick tracking ───
+  const totalPaymentsAmt = filteredPayments.reduce((s,p)=>s+num(p.amount),0);
+  const totalExpensesAmt = filteredExpenses.reduce((s,e)=>s+num(e.amount),0);
+
+  // ─── Build CSV ───
+  const title = 'LMA EduNest LLP — '+(mf?('Month: '+monthKey):'All Months');
+  const csv = '\uFEFF'+title+'\n\n'
+    + 'Students ('+activeStudents.length+')\n'
+    + h.map(x=>'"'+x+'"').join(',')+'\n'
+    + rows.join('\n')+'\n\n\n'
+    + 'Payments ('+filteredPayments.length+' entries, Total: ₹'+totalPaymentsAmt+')\n'
+    + ph.map(x=>'"'+x+'"').join(',')+'\n'
+    + pr.join('\n')+'\n\n\n'
+    + 'Expenses ('+filteredExpenses.length+' entries, Total: ₹'+totalExpensesAmt+')\n'
+    + eh.map(x=>'"'+x+'"').join(',')+'\n'
+    + er.join('\n');
+
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download='LMA_EduNest_'+monthLabel+'_'+today()+'.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+  showT('📊 Downloaded: '+monthLabel+' ('+filteredPayments.length+' payments, '+filteredExpenses.length+' expenses)','tok');
 }
 function chUrl(){const u=prompt('Enter new Script URL:',SCRIPT_URL);if(u&&u.includes('script.google.com')){localStorage.setItem('lma_su',u);showT('✅ Updated - Reload page','tok');}}
 
@@ -2183,12 +2263,33 @@ async function saveExpense() {
     createdAt: new Date().toISOString()
   };
 
+  // Save to backend FIRST — only push to local cache if backend accepted.
+  // Old code silently swallowed API errors and showed "Saved" even when Sheet had no entry.
+  // That's why Milind-added entries "disappeared" on refresh: they were never in Sheet.
+  let savedToBackend = false;
+  let backendErr = null;
   try {
-    await API({action:'addExpense', expense});
+    const res = await API({action:'addExpense', expense});
+    // Accept if backend returned ok=true (or just didn't throw)
+    if(res && res.ok === false) {
+      backendErr = res.error || 'Backend rejected the entry';
+    } else {
+      savedToBackend = true;
+    }
   } catch(e) {
-    console.log('API failed, using localStorage:', e.message);
+    backendErr = e.message || 'Network error';
   }
-  // Push only once
+
+  if(!savedToBackend) {
+    // Do NOT push to local — misleading. Show real error.
+    btn.innerHTML = 'Save Expense'; btn.disabled = false;
+    hideL();
+    showT('❌ Save failed: ' + backendErr + ' — try again', 'terr');
+    console.error('addExpense backend failed:', backendErr, 'expense:', expense);
+    return;
+  }
+
+  // Backend accepted — safe to update local cache
   EX.push(expense);
   localStorage.setItem('lma_expenses', JSON.stringify(EX));
   closeM('exm');
@@ -2196,7 +2297,7 @@ async function saveExpense() {
   g('exDate').value = today();
   renderExpenses();
   renderExpenseSummary();
-  showT('Expense saved!', 'tok');
+  showT('✅ Expense saved!', 'tok');
   btn.innerHTML = 'Save Expense'; btn.disabled = false;
   hideL();
 }
